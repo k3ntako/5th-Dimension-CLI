@@ -4,14 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ts-mocha ./tests/*.test.ts"
+    "migrate": "npx sequelize-cli db:migrate",
+    "drop-test-db": "node ./tests/_setup.ts",
+    "test": "npm run drop-test-db && NODE_ENV=test npm run migrate && NODE_ENV=test ts-mocha ./tests/**/*.test.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^8.2.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "pg": "^7.13.0",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^5.21.2",
+    "sequelize-cli": "^5.5.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.5",
