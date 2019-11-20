@@ -1,13 +1,13 @@
-export interface IBookInfo {
+export interface IBook {
   authors: string[];
   title: string;
   publisher: string;
 }
 
-export interface IBook {
-  volumeInfo: IBookInfo,
+export interface IBookWrapper {
+  volumeInfo: IBook,
 }
 
 export interface IBookResponse {
-  items: IBook[];
+  items: IBookWrapper[];
 }

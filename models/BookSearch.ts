@@ -1,6 +1,6 @@
 require('dotenv').config();
 import fetch, { Response } from 'node-fetch';
-import { IBook, IBookResponse } from '../utilities/interfaces';
+import { IBookWrapper, IBookResponse } from '../utilities/interfaces';
 
 const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
@@ -9,7 +9,7 @@ const LIMIT: string = '&maxResults=5';
 
 export default class BookSearch{
   searchStr: string;
-  results: IBook[];
+  results: IBookWrapper[];
   constructor(){
     this.searchStr = "";
     this.results = [];

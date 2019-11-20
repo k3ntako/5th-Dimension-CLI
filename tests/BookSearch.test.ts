@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import BookSearch from '../models/BookSearch';
-import { IBook } from '../utilities/interfaces';
+import { IBookWrapper } from '../utilities/interfaces';
 
 describe('BookSearch', (): void => {
   describe('#search()', (): void => {
@@ -22,7 +22,7 @@ describe('BookSearch', (): void => {
   });
 
   describe('#fetchBooks()', (): void => {
-    let results: IBook[];
+    let results: IBookWrapper[];
     it('should fetch a books from Google Books based on BookSearch#searchStr', async (): Promise<void> => {
       const searchTerm: string = 'Born a Crime';
 
