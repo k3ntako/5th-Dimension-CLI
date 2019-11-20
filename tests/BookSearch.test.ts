@@ -1,20 +1,20 @@
 import { assert } from 'chai';
 import BookSearch from '../models/BookSearch';
-
+import { IBook } from '../utilities/interfaces';
 
 describe('BookSearch', (): void => {
   describe('#search()', (): void => {
-    it('should set BookSearch#searchStr to string passed in', () => {
-      const searchTerm = 'Born a Crime';
+    it('should set BookSearch#searchStr to string passed in', (): void => {
+      const searchTerm: string = 'Born a Crime';
 
-      const bookSearch = new BookSearch();
+      const bookSearch: BookSearch = new BookSearch();
       bookSearch.search(searchTerm);
 
       assert.strictEqual(bookSearch.searchStr, searchTerm);
     });
 
     it('should remove unnecessary spaces from search term', () => {
-      const bookSearch = new BookSearch();
+      const bookSearch: BookSearch = new BookSearch();
       bookSearch.search(' Born a  Crime ');
 
       assert.strictEqual(bookSearch.searchStr, 'Born a Crime');
@@ -22,11 +22,11 @@ describe('BookSearch', (): void => {
   });
 
   describe('#fetchBooks()', (): void => {
-    let results;
+    let results: IBook[];
     it('should fetch a books from Google Books based on BookSearch#searchStr', async (): Promise<void> => {
-      const searchTerm = 'Born a Crime';
+      const searchTerm: string = 'Born a Crime';
 
-      const bookSearch = new BookSearch();
+      const bookSearch: BookSearch = new BookSearch();
       bookSearch.search(searchTerm);
 
       await bookSearch.fetchBooks();

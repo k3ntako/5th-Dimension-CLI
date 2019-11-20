@@ -6,13 +6,14 @@
     "target": "es6",
     "module": "commonjs",
     "outDir": "./dist",
-    "strict": false,
+    "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "types": [
       "node",
       "mocha",
-      "chai"
+      "chai",
+      "node-fetch"
     ]
   }
 }
