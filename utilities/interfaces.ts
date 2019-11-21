@@ -11,3 +11,10 @@ export interface IBookWrapper {
 export interface IBookResponse {
   items: IBookWrapper[];
 }
+
+export interface IUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
