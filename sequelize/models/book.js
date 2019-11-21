@@ -20,6 +20,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'book_id',
       as: "authors",
     });
+
+    Book.belongsToMany(models.User, {
+      through: models.UserBook,
+      foreignKey: 'book_id',
+      as: "users",
+    });
   };
   return Book;
 };

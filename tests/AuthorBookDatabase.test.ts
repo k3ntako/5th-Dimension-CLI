@@ -26,7 +26,7 @@ describe('Database', (): void => {
     });
   });
 
-  describe('AuthorBook()', (): void => {
+  describe('AuthorBook', (): void => {
     it('should have a field for author_id and book_id', async (): Promise<void> => {
       const author: Author[] = await Author.findAll({
         where: { name: authorName }
