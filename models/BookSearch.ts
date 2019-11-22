@@ -1,6 +1,7 @@
 require('dotenv').config();
 import fetch, { Response } from 'node-fetch';
 import { IBookWrapper, IBookResponse } from '../utilities/interfaces';
+import ReadingListManager from './ReadingListManager';
 
 const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
@@ -13,6 +14,26 @@ export default class BookSearch{
   constructor(){
     this.searchStr = "";
     this.results = [];
+  }
+
+  async promptSearch(){
+    const { search } = await ReadingListManager.prompt({
+      message: "Please enter your search term...",
+      name: "search",
+      type: "input",
+    });
+
+    this.search(search);
+    await this.fetchBooks();
+
+    console.log(`Search results: "${search}"\n`);
+    this.results.forEach(book => {
+      const authors = book.volumeInfo.authors.join(",");
+      console.log(book.volumeInfo.title);
+      console.log("Author(s): " + authors);
+      console.log("Publisher: " + book.volumeInfo.publisher);
+      console.log("\n");
+    });
   }
 
   search(searchStr: string) {

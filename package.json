@@ -2,17 +2,19 @@
   "name": "fifth-dimension-2",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./bin/index.js",
   "scripts": {
     "migrate": "npx sequelize-cli db:migrate",
     "drop-test-db": "node ./tests/_setup.ts",
-    "test": "npm run drop-test-db && NODE_ENV=test npm run migrate && NODE_ENV=test ts-mocha ./tests/**/*.test.ts"
+    "test": "npm run drop-test-db && NODE_ENV=test npm run migrate && NODE_ENV=test ts-mocha ./tests/**/*.test.ts",
+    "tsc": "tsc --watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^8.2.0",
+    "inquirer": "^7.0.0",
     "node-fetch": "^2.6.0",
     "pg": "^7.13.0",
     "pg-hstore": "^2.3.3",
@@ -23,8 +25,11 @@
     "@types/chai": "^4.2.5",
     "@types/mocha": "^5.2.7",
     "@types/node-fetch": "^2.5.3",
+    "@types/pg": "^7.11.2",
+    "@types/sinon": "^7.5.1",
     "chai": "^4.2.0",
     "mocha": "^6.2.2",
+    "sinon": "^7.5.0",
     "ts-mocha": "^6.0.0",
     "typescript": "^3.7.2"
   }
