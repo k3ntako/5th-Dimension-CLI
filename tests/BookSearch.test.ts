@@ -1,8 +1,8 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
-import BookSearch from '../models/BookSearch';
-import ReadingListManager from '../models/ReadingListManager';
-import { IBook } from '../utilities/interfaces';
+import BookSearch from '../src/models/BookSearch';
+import ReadingListManager from '../src/models/ReadingListManager';
+import { IBook } from '../src/utilities/interfaces';
 
 
 describe('BookSearch', (): void => {

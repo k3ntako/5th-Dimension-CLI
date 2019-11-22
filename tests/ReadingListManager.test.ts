@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
-import ReadingListManager from '../models/ReadingListManager';
-import { IBook } from '../utilities/interfaces';
+import ReadingListManager from '../src/models/ReadingListManager';
+import { IBook } from '../src/utilities/interfaces';
 
 describe('ReadingListManager', (): void => {
   describe('#start()', (): void => {

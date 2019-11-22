@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { Author, Book, AuthorBook } from '../sequelize/models';
+import { Author, Book, AuthorBook } from '../src/sequelize/models';
 
 const bookName: string = "Tuesdays with Morrie";
 const bookPublisher: string = "Doubleday";
