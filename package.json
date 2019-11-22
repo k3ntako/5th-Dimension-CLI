@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.2.5",
+    "@types/inquirer": "^6.5.0",
     "@types/mocha": "^5.2.7",
     "@types/node-fetch": "^2.5.3",
     "@types/pg": "^7.11.2",
