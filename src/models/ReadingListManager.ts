@@ -33,6 +33,12 @@ export default class ReadingListManager {
 
   question = async (): Promise<void> => {
     const promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
+    if (this.bookSearch.results.length){
+      promptChoices.push({
+        name: "Add book(s) above to your reading list",
+        value: "add_book",
+      });
+    }
 
     const promptOptions: inquirer.ListQuestion = {
       message: "What would you like to do?",
