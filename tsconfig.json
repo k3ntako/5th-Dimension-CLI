@@ -6,6 +6,7 @@
     "target": "es6",
     "module": "commonjs",
     "allowJs": true,
+    "resolveJsonModule": true,
     "outDir": "./dist",
     "strict": false,
     "esModuleInterop": true,
@@ -20,7 +21,8 @@
     ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "src/**/*.json"
   ],
   "exclude": [
     "node_modules",
