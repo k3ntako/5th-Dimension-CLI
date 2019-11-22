@@ -10,6 +10,9 @@ module.exports = {
         queryInterface.addColumn('books', 'isbn_13', {
           type: Sequelize.STRING(50),
         }, { transaction: t }),
+        queryInterface.addColumn('books', 'issn', {
+          type: Sequelize.STRING(50),
+        }, { transaction: t }),
         queryInterface.addColumn('books', 'other_identifier', {
           type: Sequelize.STRING(255),
         }, { transaction: t }),
@@ -23,6 +26,11 @@ module.exports = {
           ['isbn_13'],
           { unique: true, transaction: t }
         ),
+        queryInterface.addIndex(
+          'books',
+          ['issn'],
+          { unique: true, transaction: t }
+        ),
       ])
     })
   },
@@ -32,6 +40,7 @@ module.exports = {
       return Promise.all([
         queryInterface.removeColumn('books', 'isbn_10', { transaction: t }),
         queryInterface.removeColumn('books', 'isbn_13', { transaction: t }),
+        queryInterface.removeColumn('books', 'issn', { transaction: t }),
         queryInterface.removeColumn('books', 'other_identifier', { transaction: t }),
         queryInterface.removeIndex(
           'books',

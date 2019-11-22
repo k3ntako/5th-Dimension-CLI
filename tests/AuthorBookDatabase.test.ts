@@ -6,6 +6,7 @@ const bookPublisher: string = "Doubleday";
 const authorName: string = "Mitch Albom";
 const isbn_10 = '0307275639';
 const isbn_13 = '9780307275639';
+const issn = '17510112';
 const other_identifier = 'OCLC:36130729';
 
 describe('Database', (): void => {
@@ -16,6 +17,7 @@ describe('Database', (): void => {
         publisher: bookPublisher,
         isbn_10,
         isbn_13,
+        issn,
         other_identifier,
       });
 
@@ -23,6 +25,7 @@ describe('Database', (): void => {
       assert.strictEqual(book.publisher, bookPublisher);
       assert.strictEqual(book.isbn_10, isbn_10);
       assert.strictEqual(book.isbn_13, isbn_13);
+      assert.strictEqual(book.issn, issn);
       assert.strictEqual(book.other_identifier, other_identifier);
     });
   });

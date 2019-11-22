@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     publisher: DataTypes.STRING(255),
     isbn_10: DataTypes.STRING(50),
     isbn_13: DataTypes.STRING(50),
+    issn: DataTypes.STRING(50),
     other_identifier: DataTypes.STRING(255),
   }, {
     underscored: true,
