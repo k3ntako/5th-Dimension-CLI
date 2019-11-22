@@ -8,7 +8,7 @@ describe('ReadingListManager', (): void => {
     it('should console.log welcome message', (): void => {
       const readingListManager: ReadingListManager = new ReadingListManager();
       readingListManager.start();
-      assert.strictEqual(fd2.fakes.consoleLogFake.callCount, 2);
+      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 2);
     });
 
     it('should call on readingListManager#question', (): void => {

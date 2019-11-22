@@ -22,3 +22,9 @@ export interface IUser {
   lastName: string;
   email: string;
 }
+
+export interface IfdCLI {
+  fakes: {
+    consoleLogFake?: sinon.SinonSpy<any>;
+  };
+}

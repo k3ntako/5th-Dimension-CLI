@@ -1,6 +1,7 @@
 import sinon from 'sinon';
+
 Object.assign(global, {
-  fd2: {
+  fdCLI: {
     fakes: {},
   }
 })
@@ -8,7 +9,7 @@ Object.assign(global, {
 beforeEach((): void => {
   // Adds spy before each test
   const consoleLogFake: sinon.SinonSpy<any> = sinon.fake();
-  global.fd2.fakes.consoleLogFake = consoleLogFake;
+  global.fdCLI.fakes.consoleLogFake = consoleLogFake;
   sinon.replace(console, 'log', consoleLogFake);
 });
 
