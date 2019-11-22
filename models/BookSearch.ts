@@ -1,16 +1,15 @@
 require('dotenv').config();
 import fetch, { Response } from 'node-fetch';
-import { IBookWrapper, IBookResponse } from '../utilities/interfaces';
-import ReadingListManager from './ReadingListManager';
+import { IBook, IBookResponse } from '../utilities/interfaces';
 
 const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
-const FIELDS: string = "&fields=items(volumeInfo(title,authors,publisher))";
+const FIELDS: string = "&fields=items(volumeInfo(title,authors,publisher,industryIdentifiers))";
 const LIMIT: string = '&maxResults=5';
 
 export default class BookSearch{
   searchStr: string;
-  results: IBookWrapper[];
+  results: IBook[];
   constructor(){
     this.searchStr = "";
     this.results = [];
@@ -52,7 +51,13 @@ export default class BookSearch{
 
     const json: IBookResponse = await response.json();
 
-    this.results = json.items;
+    this.results = [];
+    json.items.forEach(book => {
+      const { title, publisher, authors, industryIdentifiers} = book.volumeInfo;
+      if (title){
+        this.results.push({ title, publisher, authors, industryIdentifiers });
+      }
+    });
   }
 
 }

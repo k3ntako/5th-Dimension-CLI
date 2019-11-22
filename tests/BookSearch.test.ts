@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import BookSearch from '../models/BookSearch';
 import ReadingListManager from '../models/ReadingListManager';
-import { IBookWrapper } from '../utilities/interfaces';
+import { IBook } from '../utilities/interfaces';
 
 
 describe('BookSearch', (): void => {
@@ -25,7 +25,7 @@ describe('BookSearch', (): void => {
   });
 
   describe('#fetchBooks()', (): void => {
-    let results: IBookWrapper[];
+    let results: IBook[];
     it('should fetch a books from Google Books based on BookSearch#searchStr', async (): Promise<void> => {
       const searchTerm: string = 'Born a Crime';
 
@@ -44,7 +44,7 @@ describe('BookSearch', (): void => {
 
     it('each item should have appropriate keys', (): void => {
       results.forEach(book => {
-        assert.hasAllKeys(book.volumeInfo, ['title', 'authors', 'publisher'])
+        assert.hasAllKeys(book, ['title', 'authors', 'publisher', 'industryIdentifiers'])
       });
     });
   });
