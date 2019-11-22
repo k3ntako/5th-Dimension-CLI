@@ -1,5 +1,4 @@
 import { assert } from 'chai';
-import sinon from 'sinon';
 import BookSearch from '../src/models/BookSearch';
 import Book from '../src/models/Book';
 
