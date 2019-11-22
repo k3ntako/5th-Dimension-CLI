@@ -1,6 +1,5 @@
 import { assert } from 'chai';
 import User from '../src/models/User';
-import { IUser } from '../src/utilities/interfaces';
 
 // Regex for UUID
 // https://stackoverflow.com/questions/7905929/how-to-test-valid-uuid-guid

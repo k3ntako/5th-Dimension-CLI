@@ -1,8 +1,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import BookSearch from '../src/models/BookSearch';
-import ReadingListManager from '../src/models/ReadingListManager';
-import { IBook } from '../src/utilities/interfaces';
+import Book from '../src/models/Book';
 
 
 describe('BookSearch', (): void => {
@@ -25,7 +24,7 @@ describe('BookSearch', (): void => {
   });
 
   describe('#fetchBooks()', (): void => {
-    let results: IBook[];
+    let results: Book[];
     it('should fetch a books from Google Books based on BookSearch#searchStr', async (): Promise<void> => {
       const searchTerm: string = 'Born a Crime';
 
@@ -44,7 +43,8 @@ describe('BookSearch', (): void => {
 
     it('each item should have appropriate keys', (): void => {
       results.forEach(book => {
-        assert.hasAllKeys(book, ['title', 'authors', 'publisher', 'industryIdentifiers'])
+        assert.hasAllKeys(book, ['title', 'authors', 'publisher', 'isbn_10', 'isbn_13', 'issn', 'other_identifier']);
+        assert.doesNotHaveAnyKeys(book, ['industryIdentifiers', 'volumeInfo', 'items']);
       });
     });
   });

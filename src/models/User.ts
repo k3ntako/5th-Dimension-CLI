@@ -1,5 +1,4 @@
-import { IBook } from '../utilities/interfaces';
-import { User as DBUser } from '../sequelize/models';
+import { User as dbUser } from '../sequelize/models';
 
 
 export default class User {
@@ -9,7 +8,7 @@ export default class User {
   static async create(params) {
     const { firstName, lastName, email } = params;
 
-    const user = await DBUser.create({
+    const user = await dbUser.create({
       first_name: firstName,
       last_name: lastName,
       email: email,
