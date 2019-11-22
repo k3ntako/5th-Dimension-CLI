@@ -12,7 +12,6 @@ module.exports = (sequelize, DataTypes) => {
     isbn_10: DataTypes.STRING(50),
     isbn_13: DataTypes.STRING(50),
     other_identifier: DataTypes.STRING(255),
-    other_identifier_type: DataTypes.STRING(255),
   }, {
     underscored: true,
     tableName: 'books',

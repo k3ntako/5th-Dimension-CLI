@@ -13,9 +13,6 @@ module.exports = {
         queryInterface.addColumn('books', 'other_identifier', {
           type: Sequelize.STRING(255),
         }, { transaction: t }),
-        queryInterface.addColumn('books', 'other_identifier_type', {
-          type: Sequelize.STRING(255),
-        }, { transaction: t }),
         queryInterface.addIndex(
           'books',
           ['isbn_10'],
@@ -36,7 +33,6 @@ module.exports = {
         queryInterface.removeColumn('books', 'isbn_10', { transaction: t }),
         queryInterface.removeColumn('books', 'isbn_13', { transaction: t }),
         queryInterface.removeColumn('books', 'other_identifier', { transaction: t }),
-        queryInterface.removeColumn('books', 'other_identifier_type', { transaction: t }),
         queryInterface.removeIndex(
           'books',
           ['isbn_10', 'isbn_13'],
