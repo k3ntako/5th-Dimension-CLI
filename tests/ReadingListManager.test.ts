@@ -2,7 +2,9 @@ import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import ReadingListManager from '../src/models/ReadingListManager';
 import Book from '../src/models/Book';
+import User from  '../src/models/User';
 
+let defaultUser;
 
 const title: string = 'Born a Crime';
 const authors: string[] = ['Trevor Noah'];
@@ -11,15 +13,25 @@ const isbn_10: string = '0399588183';
 const isbn_13: string = '9780399588181';
 
 describe('ReadingListManager', (): void => {
+  before(async () => {
+    defaultUser = await User.loginAsDefault();
+  })
+
+  describe('new ReadingListManager()', (): void => {
+    it('should throw an error if no user is passed in', (): void => {
+      assert.throws(() => new ReadingListManager(), "No user passed in");
+    });
+  })
+
   describe('#start()', (): void => {
     it('should console.log welcome message', (): void => {
-      const readingListManager: ReadingListManager = new ReadingListManager();
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.start();
       assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 2);
     });
 
     it('should call on readingListManager#question', (): void => {
-      const readingListManager: ReadingListManager = new ReadingListManager();
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
 
       const questionFake: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(readingListManager, 'question', questionFake);
@@ -34,7 +46,7 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "exit" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager();
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       await readingListManager.question();
 
       const args = fakePrompt.lastArg;
@@ -56,7 +68,7 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "search" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager();
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       const fakePromptSearch: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "search" });
       sinon.replace(readingListManager, 'promptSearch', fakePromptSearch);
       await readingListManager.question();
@@ -69,7 +81,7 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "exit" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager();
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.bookSearch.results = [book];
       await readingListManager.question();
 
@@ -89,7 +101,7 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ search: title });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager();
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       await readingListManager.promptSearch();
 
       assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 21);

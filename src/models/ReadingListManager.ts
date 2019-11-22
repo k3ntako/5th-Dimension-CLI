@@ -1,7 +1,6 @@
-import { IBook } from '../utilities/interfaces';
 import BookSearch from './BookSearch';
-import ReadingList from './ReadingList';
 import inquirer from 'inquirer';
+import User from './User';
 const prompt = inquirer.createPromptModule();
 
 const defaultChoices: inquirer.ChoiceCollection = [{
@@ -14,11 +13,15 @@ const defaultChoices: inquirer.ChoiceCollection = [{
 
 
 export default class ReadingListManager {
-  list: IBook[];
   bookSearch: BookSearch;
-  constructor() {
-    this.list = [];
+  user: User;
+  constructor(user) {
+    if(!user || !user.id){
+      throw new Error("No user passed in");
+    }
+
     this.bookSearch = new BookSearch();
+    this.user = user;
   }
 
   static async prompt(question: inquirer.QuestionCollection): Promise<inquirer.Answers> {
