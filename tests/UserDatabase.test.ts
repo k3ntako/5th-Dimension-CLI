@@ -5,15 +5,15 @@ const firstName: string = "Kentaro";
 const lastName: string = "Kaneki";
 const email: string = "myEmail@example.com";
 
-const bookName: string = "Test Driven Development: By Example";
-const bookPublisher: string = "Addison-Wesley Professional";
+const title: string = "Test Driven Development: By Example";
+const publisher: string = "Addison-Wesley Professional";
 const authorName: string = "Kent Beck";
 
 describe('Database', (): void => {
   before(async () => {
     await Book.create({
-      name: bookName,
-      publisher: bookPublisher,
+      title,
+      publisher,
       authors: [{
         name: authorName,
       }]
@@ -49,8 +49,8 @@ describe('Database', (): void => {
 
       const book: Book[] = await Book.findAll({
         where: {
-          name: bookName,
-          publisher: bookPublisher,
+          title,
+          publisher,
         },
       });
       const book_id: string = book[0].dataValues.id;
@@ -72,8 +72,8 @@ describe('Database', (): void => {
       const books: Book[] = await user[0].getBooks();
       const book = await books[0].toJSON();
 
-      assert.strictEqual(book.name, bookName);
-      assert.strictEqual(book.publisher, bookPublisher);
+      assert.strictEqual(book.title, title);
+      assert.strictEqual(book.publisher, publisher);
     });
   });
 });

@@ -1,8 +1,8 @@
 import { assert } from 'chai';
 import { Author, Book, AuthorBook } from '../src/sequelize/models';
 
-const bookName: string = "Tuesdays with Morrie";
-const bookPublisher: string = "Doubleday";
+const title: string = "Tuesdays with Morrie";
+const publisher: string = "Doubleday";
 const authorName: string = "Mitch Albom";
 const isbn_10 = '0307275639';
 const isbn_13 = '9780307275639';
@@ -11,18 +11,18 @@ const other_identifier = 'OCLC:36130729';
 
 describe('Database', (): void => {
   describe('Book', (): void => {
-    it('should have fields for name (string) and publisher (string)', async (): Promise<void> => {
+    it('should have fields for title (string) and publisher (string)', async (): Promise<void> => {
       const book: Book = await Book.create({
-        name: bookName,
-        publisher: bookPublisher,
+        title,
+        publisher,
         isbn_10,
         isbn_13,
         issn,
         other_identifier,
       });
 
-      assert.strictEqual(book.name, bookName);
-      assert.strictEqual(book.publisher, bookPublisher);
+      assert.strictEqual(book.title, title);
+      assert.strictEqual(book.publisher, publisher);
       assert.strictEqual(book.isbn_10, isbn_10);
       assert.strictEqual(book.isbn_13, isbn_13);
       assert.strictEqual(book.issn, issn);
@@ -47,8 +47,8 @@ describe('Database', (): void => {
 
       const book: Book[] = await Book.findAll({
         where: {
-          name: bookName,
-          publisher: bookPublisher,
+          title,
+          publisher,
         }
       });
       const book_id: string = book[0].dataValues.id;
@@ -70,8 +70,8 @@ describe('Database', (): void => {
       const books: Book[] = await author[0].getBooks();
       const book = await books[0].toJSON();
 
-      assert.strictEqual(book.name, bookName);
-      assert.strictEqual(book.publisher, bookPublisher);
+      assert.strictEqual(book.title, title);
+      assert.strictEqual(book.publisher, publisher);
     });
   });
 });
