@@ -15,26 +15,6 @@ export default class BookSearch{
     this.results = [];
   }
 
-  async promptSearch(){
-    const { search } = await ReadingListManager.prompt({
-      message: "Please enter your search term...",
-      name: "search",
-      type: "input",
-    });
-
-    this.search(search);
-    await this.fetchBooks();
-
-    console.log(`Search results: "${search}"\n`);
-    this.results.forEach(book => {
-      const authors = book.volumeInfo.authors.join(",");
-      console.log(book.volumeInfo.title);
-      console.log("Author(s): " + authors);
-      console.log("Publisher: " + book.volumeInfo.publisher);
-      console.log("\n");
-    });
-  }
-
   search(searchStr: string) {
     const regex: RegExp = /\s\s+/g; // remove multiple spaces in a row
     this.searchStr = searchStr.trim().replace(regex, ' ');
