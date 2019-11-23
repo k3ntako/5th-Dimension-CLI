@@ -6,14 +6,32 @@ const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'production';
 const config = require(__dirname + '/../postgresConfig.json')[env];
-const db = {};
+
+import { AuthorBook } from './author_book';
+import { Author } from './author';
+import { Book } from './book';
+import { UserBook } from './user_book';
+import { User } from './user';
+
+
+interface Idb {
+  sequelize?: any;
+  Sequelize?: any;
+  AuthorBook?: AuthorBook;
+  Author?: Author;
+  Book?: Book;
+  UserBook?: UserBook;
+  User?: User;
+}
+
+const db: Idb = {};
 
 let sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 fs
   .readdirSync(__dirname)
   .filter(file => {
-    return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
+    return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.ts');
   })
   .forEach(file => {
     const model = sequelize['import'](path.join(__dirname, file));

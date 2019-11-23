@@ -1,6 +1,29 @@
 'use strict';
-module.exports = (sequelize, DataTypes) => {
-  const UserBook = sequelize.define('UserBook', {
+import { Association, Model } from 'sequelize';
+import { Book } from './book';
+import { User } from './user';
+
+export class UserBook extends Model {
+  public id!: string;
+  public user_id!: string;
+  public book_id!: string;
+
+  public readonly created_at!: Date;
+  public readonly updated_at!: Date;
+
+  public readonly books?: Book[];
+
+  public static associate?: Function;
+
+  public static associations: {
+    books: Association<UserBook, Book>;
+    users: Association<UserBook, User>;
+  };
+}
+
+
+export default (sequelize, DataTypes) => {
+  UserBook.init({
     id: {
       allowNull: false,
       primaryKey: true,
@@ -26,6 +49,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     underscored: true,
     tableName: 'user_books',
+    sequelize: sequelize,
   });
 
   UserBook.associate = function (models) {
