@@ -3,13 +3,18 @@ import ReadingList from './ReadingList';
 import inquirer from 'inquirer';
 import User from './User';
 import clear from 'clear';
+import emoji from 'node-emoji';
+import chalk from 'chalk';
+
 const prompt = inquirer.createPromptModule();
+const NUMBERS = ['one', 'two', 'three', 'four', 'five'];
+
 
 const defaultChoices: inquirer.ChoiceCollection = [{
-  name: "Search Google Books",
+  name: emoji.get('mag') + " Search for books!",
   value: "search",
 }, {
-  name: "View your reading list",
+  name: emoji.get('books') + " View your reading list",
   value: "view_list",
 }];
 
@@ -41,7 +46,7 @@ export default class ReadingListManager {
     const promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
     if (this.bookSearch.results.length){
       promptChoices.push({
-        name: "Add book(s) above to your reading list",
+        name: emoji.get('heavy_plus_sign') + " Add book(s) above to your reading list",
         value: "add_book",
       });
     }
@@ -68,12 +73,13 @@ export default class ReadingListManager {
     setTimeout(this.question, 300); // Delay before prompting them again
   }
 
-  static logBook(book){
+  static logBook(book, idx?: number){
+    const emojiNum = Number.isInteger(idx) ? `${emoji.get(NUMBERS[idx])}  ` : "";
     const authors = book.authors && book.authors.join(", ");
-    console.log(book.title);
+
+    console.log(emojiNum + chalk.bold(book.title));
     console.log("Author(s): " + (authors || "N/A"));
-    console.log("Publisher: " + (book.publisher || "N/A"));
-    console.log("\n");
+    console.log("Publisher: " + (book.publisher || "N/A") + "\n");
   }
 
   async promptSearch() {
@@ -86,7 +92,7 @@ export default class ReadingListManager {
     this.bookSearch.search(search);
     await this.bookSearch.fetchBooks();
 
-    console.log(`Search results: "${search}"\n`);
+    console.log(`${chalk.bold("Search results for:")} "${search}"\n`);
 
     this.bookSearch.results.forEach(ReadingListManager.logBook);
   }
@@ -97,7 +103,7 @@ export default class ReadingListManager {
     }
 
     const promptChoices: inquirer.ChoiceCollection = this.bookSearch.results.map((book, idx) => ({
-      name: book.title,
+      name: `${emoji.get(NUMBERS[idx])}  ${book.title}`,
       value: idx,
     }));
 
@@ -117,7 +123,7 @@ export default class ReadingListManager {
   async viewList(){
     const books = await ReadingList.getList(this.user);
     if(books.length){
-      console.log("Your Reading List:");
+      console.log(chalk.bold("Your Reading List:"));
       books.forEach(ReadingListManager.logBook);
     }else{
       console.log("There are no books in your reading list")

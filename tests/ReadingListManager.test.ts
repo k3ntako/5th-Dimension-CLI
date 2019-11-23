@@ -5,6 +5,8 @@ import ReadingList from '../src/models/ReadingList';
 import Book from '../src/models/Book';
 import User from  '../src/models/User';
 import { UserBook } from '../src/sequelize/models';
+import emoji from 'node-emoji';
+import chalk from 'chalk';
 
 let defaultUser;
 
@@ -73,10 +75,10 @@ describe('ReadingListManager', (): void => {
       assert.strictEqual(args.name, 'action');
       assert.strictEqual(args.type, 'list');
       assert.sameDeepMembers(args.choices, [{
-        name: 'Search Google Books',
+        name: emoji.get('mag') + " Search for books!",
         value: 'search',
       }, {
-        name: 'View your reading list',
+        name: emoji.get('books') + " View your reading list",
         value: 'view_list',
       },
       ]);
@@ -107,7 +109,7 @@ describe('ReadingListManager', (): void => {
 
 
       assert.includeDeepMembers(args.choices, [{
-        name: 'Add book(s) above to your reading list',
+        name: emoji.get('heavy_plus_sign') + " Add book(s) above to your reading list",
         value: 'add_book',
       }]);
 
@@ -133,14 +135,25 @@ describe('ReadingListManager', (): void => {
         publisher: null,
       });
 
-      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 4);
+      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 3);
 
       const arg1: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.strictEqual(arg1, title);
+      assert.strictEqual(arg1, chalk.bold(title));
       const arg2: string = fdCLI.fakes.consoleLogFake.getCall(1).lastArg;
       assert.strictEqual(arg2, "Author(s): " + authors[0]);
       const arg3: string = fdCLI.fakes.consoleLogFake.getCall(2).lastArg;
-      assert.strictEqual(arg3, "Publisher: N/A");
+      assert.strictEqual(arg3, "Publisher: N/A\n");
+    });
+
+    it('should console log the title with emoji if provided a number', async (): Promise<void> => {
+      ReadingListManager.logBook({
+        title,
+        authors,
+        publisher: null,
+      }, 0);
+
+      const arg: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
+      assert.strictEqual(arg, `${emoji.get('one')}  ${chalk.bold(title)}`);
     });
   });
 
@@ -156,7 +169,8 @@ describe('ReadingListManager', (): void => {
       await readingListManager.promptSearch();
 
       const arg0: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.include(arg0, `Search results: "${title}"`);
+      assert.strictEqual(arg0, `${chalk.bold("Search results for:")} "${title}"\n`);
+      assert.include(arg0, title);
 
       assert.strictEqual(fakeLogBook.callCount, 5);
     });
