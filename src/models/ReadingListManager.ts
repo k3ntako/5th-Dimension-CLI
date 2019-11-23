@@ -2,6 +2,7 @@ import BookSearch from './BookSearch';
 import ReadingList from './ReadingList';
 import inquirer from 'inquirer';
 import User from './User';
+import clear from 'clear';
 const prompt = inquirer.createPromptModule();
 
 const defaultChoices: inquirer.ChoiceCollection = [{
@@ -30,6 +31,7 @@ export default class ReadingListManager {
   }
 
   start() {
+    clear();
     console.log("Welcome to 5th Dimension CLI!");
     console.log("It's place to discover new books and save them for later!");
     this.question();
