@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import ReadingList from '../src/models/ReadingList';
 import User from '../src/models/User';
 
-import { Book as DBBook } from '../src/sequelize/models';
+import { Book as DBBook, User as DBUser } from '../src/sequelize/models';
 import Book from '../src/models/Book';
 
 const params = {
@@ -15,12 +15,23 @@ const params = {
   other_identifier: null,
 }
 
+const params2 = {
+  title: "Eloquent JavaScript",
+  publisher: "No Starch Press",
+  authors: ["Marijn Haverbeke"],
+  isbn_10: "1593272820",
+  isbn_13: "9781593272821",
+  issn: null,
+  other_identifier: null,
+}
+
 const bookInstance = new Book (params);
-let defaultUser;
+let defaultUser, defaultDBUser;
 
 describe('ReadingList', (): void => {
   before(async () => {
     defaultUser = await User.loginAsDefault();
+    defaultDBUser = await DBUser.findByPk(defaultUser.id)
   });
 
   describe('.addBook', (): void => {
@@ -95,6 +106,19 @@ describe('ReadingList', (): void => {
       const book2 = await ReadingList.addBook(paramsWithoutIdentifiers, defaultUser);
 
       assert.strictEqual(book1.id, book2.id);
+    });
+
+    it('should add book to ReadingList', async (): Promise<void> => {
+      const createdBook = await ReadingList.addBook(params2, defaultUser);
+
+      // get books associated with defaultUser with the same ISBN
+      const books = await defaultDBUser.getBooks({
+        where: { isbn_13: params2.isbn_13 },
+      });
+
+      const associatedBook = await books[0].toJSON();
+
+      assert.strictEqual(createdBook.id, associatedBook.id);
     });
   });
 });
