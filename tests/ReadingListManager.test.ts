@@ -4,6 +4,7 @@ import ReadingListManager from '../src/models/ReadingListManager';
 import ReadingList from '../src/models/ReadingList';
 import Book from '../src/models/Book';
 import User from  '../src/models/User';
+import { UserBook } from '../src/sequelize/models';
 
 let defaultUser;
 
@@ -76,7 +77,7 @@ describe('ReadingListManager', (): void => {
         value: 'search',
       }, {
         name: 'Look at your reading list',
-        value: 'reading_list',
+        value: 'view_list',
       },
       ]);
     });
@@ -86,7 +87,7 @@ describe('ReadingListManager', (): void => {
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      const fakePromptSearch: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "search" });
+      const fakePromptSearch: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(readingListManager, 'promptSearch', fakePromptSearch);
       await readingListManager.question();
       assert.strictEqual(fakePromptSearch.callCount, 1);
@@ -111,6 +112,36 @@ describe('ReadingListManager', (): void => {
       }]);
 
     });
+
+    it('should call ReadingListManager#viewList if user selects to view list', async (): Promise<void> => {
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "view_list" });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const fakeViewList: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(readingListManager, 'viewList', fakeViewList);
+      await readingListManager.question();
+      assert.strictEqual(fakeViewList.callCount, 1);
+    });
+  });
+
+  describe('.logBook', (): void => {
+    it('should console log information about the book', async (): Promise<void> => {
+      ReadingListManager.logBook({
+        title,
+        authors,
+        publisher: null,
+      });
+
+      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 4);
+
+      const arg1: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
+      assert.strictEqual(arg1, title);
+      const arg2: string = fdCLI.fakes.consoleLogFake.getCall(1).lastArg;
+      assert.strictEqual(arg2, "Author(s): " + authors[0]);
+      const arg3: string = fdCLI.fakes.consoleLogFake.getCall(2).lastArg;
+      assert.strictEqual(arg3, "Publisher: N/A");
+    });
   });
 
   describe('#promptSearch()', (): void => {
@@ -118,20 +149,16 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ search: title });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
+      const fakeLogBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(ReadingListManager, 'logBook', fakeLogBook);
+
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       await readingListManager.promptSearch();
 
-      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 21);
-
-
       const arg0: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
       assert.include(arg0, `Search results: "${title}"`);
-      const arg1: string = fdCLI.fakes.consoleLogFake.getCall(1).lastArg;
-      assert.include(arg1, "Born a Crime");
-      const arg2: string = fdCLI.fakes.consoleLogFake.getCall(2).lastArg;
-      assert.include(arg2, "Author(s): ");
-      const arg3: string = fdCLI.fakes.consoleLogFake.getCall(3).lastArg;
-      assert.include(arg3, "Publisher: ");
+
+      assert.strictEqual(fakeLogBook.callCount, 5);
     });
   });
 
@@ -151,7 +178,7 @@ describe('ReadingListManager', (): void => {
       ];
       await readingListManager.promptAddBook();
 
-      const callCount = fakeAddBook.callCount
+      assert.strictEqual(fakeAddBook.callCount, 2)
 
       const args0 = fakeAddBook.getCall(0).args[0];
       const args1 = fakeAddBook.getCall(1).args[0];
@@ -179,6 +206,24 @@ describe('ReadingListManager', (): void => {
         isbn_10: bookInfo2.isbn_10,
         isbn_13: bookInfo2.isbn_13
       });
+    });
+  });
+
+  describe('#viewList()', (): void => {
+    before(async (): Promise<void> => {
+      // Delete all the books added above
+      await UserBook.destroy({ where: {} });
+      await ReadingList.addBook(bookInfo1, defaultUser);
+    });
+
+    it('should console log reading list', async (): Promise<void> => {
+      const fakeLogBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(ReadingListManager, 'logBook', fakeLogBook);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      await readingListManager.viewList();
+
+      assert.strictEqual(fakeLogBook.callCount, 1);
     });
   });
 

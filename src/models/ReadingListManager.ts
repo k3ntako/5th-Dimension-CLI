@@ -9,7 +9,7 @@ const defaultChoices: inquirer.ChoiceCollection = [{
   value: "search",
 }, {
   name: "Look at your reading list",
-  value: "reading_list",
+  value: "view_list",
 }];
 
 
@@ -55,6 +55,8 @@ export default class ReadingListManager {
 
     if(action === "search"){
       await this.promptSearch();
+    } else if (action === "view_list") {
+      await this.viewList();
     } else if (action === "add_book") {
       await this.promptAddBook();
     } else {
@@ -62,6 +64,14 @@ export default class ReadingListManager {
     }
 
     setTimeout(this.question, 300); // Delay before prompting them again
+  }
+
+  static logBook(book){
+    const authors = book.authors && book.authors.join(", ");
+    console.log(book.title);
+    console.log("Author(s): " + (authors || "N/A"));
+    console.log("Publisher: " + (book.publisher || "N/A"));
+    console.log("\n");
   }
 
   async promptSearch() {
@@ -76,14 +86,7 @@ export default class ReadingListManager {
 
     console.log(`Search results: "${search}"\n`);
 
-    this.bookSearch.results.forEach(book => {
-
-      const authors = book.authors && book.authors.join(", ");
-      console.log(book.title);
-      console.log("Author(s): " + (authors || "N/A"));
-      console.log("Publisher: " + (book.publisher || "N/A"));
-      console.log("\n");
-    });
+    this.bookSearch.results.forEach(ReadingListManager.logBook);
   }
 
   async promptAddBook(){
@@ -104,9 +107,16 @@ export default class ReadingListManager {
     });
 
     const books = this.bookSearch.results.filter((_, idx) => bookIndices.includes(idx));
-    console.log(books);
 
     const promises = books.map(book => ReadingList.addBook(book, this.user));
     await Promise.all(promises);
+  }
+
+  async viewList(){
+    const books = await ReadingList.getList(this.user);
+    console.log("Your Reading List:")
+    books.forEach(ReadingListManager.logBook);
+
+
   }
 }
