@@ -77,5 +77,13 @@ export default class ReadingList {
       console.error(err);
     }
   }
+
+  static async getList(user: User){
+    const userInDB = await DBUser.findByPk(user.id);
+    let books = await userInDB.getBooks();
+
+    return await Promise.all(
+      books.map(book => book.toJSON())
+    );
   }
 }

@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import ReadingList from '../src/models/ReadingList';
 import User from '../src/models/User';
 
-import { Book as DBBook, User as DBUser } from '../src/sequelize/models';
+import { Book as DBBook, User as DBUser, UserBook } from '../src/sequelize/models';
 import Book from '../src/models/Book';
 
 const params = {
@@ -121,4 +121,25 @@ describe('ReadingList', (): void => {
       assert.strictEqual(createdBook.id, associatedBook.id);
     });
   });
+
+  describe('.getList', (): void => {
+    before(async (): Promise<void> => {
+      // Delete all the books added above
+      await UserBook.destroy({ where: {} });
+      await ReadingList.addBook(bookInstance, defaultUser);
+    });
+
+    it('should return reading list', async (): Promise<void> => {
+      const books = await ReadingList.getList(defaultUser);
+      assert.lengthOf(books, 1);
+
+      // The book should have all the fields provided.
+      // Remove the "authors" field because it's a bit more complicated to test,
+      // and the AuthorBook relationship is already tested elsewhere.
+      let paramsWithoutAuthors = Object.assign({}, params);
+      delete paramsWithoutAuthors.authors;
+
+      assert.include(books[0], paramsWithoutAuthors);
+    });
+  })
 });
