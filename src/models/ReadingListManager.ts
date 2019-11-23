@@ -9,7 +9,7 @@ const defaultChoices: inquirer.ChoiceCollection = [{
   name: "Search Google Books",
   value: "search",
 }, {
-  name: "Look at your reading list",
+  name: "View your reading list",
   value: "view_list",
 }];
 
@@ -116,9 +116,11 @@ export default class ReadingListManager {
 
   async viewList(){
     const books = await ReadingList.getList(this.user);
-    console.log("Your Reading List:")
-    books.forEach(ReadingListManager.logBook);
-
-
+    if(books.length){
+      console.log("Your Reading List:");
+      books.forEach(ReadingListManager.logBook);
+    }else{
+      console.log("There are no books in your reading list")
+    }
   }
 }

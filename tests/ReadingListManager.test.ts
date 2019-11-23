@@ -76,7 +76,7 @@ describe('ReadingListManager', (): void => {
         name: 'Search Google Books',
         value: 'search',
       }, {
-        name: 'Look at your reading list',
+        name: 'View your reading list',
         value: 'view_list',
       },
       ]);
@@ -213,17 +213,32 @@ describe('ReadingListManager', (): void => {
     before(async (): Promise<void> => {
       // Delete all the books added above
       await UserBook.destroy({ where: {} });
-      await ReadingList.addBook(bookInfo1, defaultUser);
     });
 
-    it('should console log reading list', async (): Promise<void> => {
+    it('should not console log books if user has no books in their reading list', async (): Promise<void> => {
       const fakeLogBook: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(ReadingListManager, 'logBook', fakeLogBook);
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       await readingListManager.viewList();
 
-      assert.strictEqual(fakeLogBook.callCount, 1);
+      assert.strictEqual(fakeLogBook.callCount, 0, "logBook should not be called");
+      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 1, "Console log should be called once");
+
+      const arg: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
+      assert.strictEqual(arg, "There are no books in your reading list");
+    });
+
+    it('should console log reading list', async (): Promise<void> => {
+      await ReadingList.addBook(bookInfo1, defaultUser);
+
+      const fakeLogBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(ReadingListManager, 'logBook', fakeLogBook);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      await readingListManager.viewList();
+
+      assert.strictEqual(fakeLogBook.callCount, 1, "logBook should be called once");
     });
   });
 
