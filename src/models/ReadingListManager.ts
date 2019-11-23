@@ -1,4 +1,5 @@
 import BookSearch from './BookSearch';
+import ReadingList from './ReadingList';
 import inquirer from 'inquirer';
 import User from './User';
 const prompt = inquirer.createPromptModule();
@@ -54,6 +55,8 @@ export default class ReadingListManager {
 
     if(action === "search"){
       await this.promptSearch();
+    } else if (action === "add_book") {
+      await this.promptAddBook();
     } else {
       return;
     }
@@ -72,10 +75,8 @@ export default class ReadingListManager {
     await this.bookSearch.fetchBooks();
 
     console.log(`Search results: "${search}"\n`);
-    console.log(this.bookSearch.results);
 
     this.bookSearch.results.forEach(book => {
-      console.log(book.industryIdentifiers);
 
       const authors = book.authors && book.authors.join(", ");
       console.log(book.title);
@@ -83,5 +84,29 @@ export default class ReadingListManager {
       console.log("Publisher: " + (book.publisher || "N/A"));
       console.log("\n");
     });
+  }
+
+  async promptAddBook(){
+    if (!this.bookSearch.results.length) {
+      throw new Error('No books');
+    }
+
+    const promptChoices: inquirer.ChoiceCollection = this.bookSearch.results.map((book, idx) => ({
+      name: book.title,
+      value: idx,
+    }));
+
+    const { bookIndices } = await ReadingListManager.prompt({
+      message: "Which book(s) would you like to add to your reading list?",
+      name: "bookIndices",
+      choices: promptChoices,
+      type: "checkbox",
+    });
+
+    const books = this.bookSearch.results.filter((_, idx) => bookIndices.includes(idx));
+    console.log(books);
+
+    const promises = books.map(book => ReadingList.addBook(book, this.user));
+    await Promise.all(promises);
   }
 }

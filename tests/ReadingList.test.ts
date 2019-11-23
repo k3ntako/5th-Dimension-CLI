@@ -2,8 +2,6 @@ import { assert } from 'chai';
 import ReadingList from '../src/models/ReadingList';
 import User from '../src/models/User';
 
-import sinon from 'sinon';
-
 import { Book as DBBook } from '../src/sequelize/models';
 import Book from '../src/models/Book';
 
