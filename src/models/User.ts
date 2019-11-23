@@ -1,4 +1,4 @@
-import { User as dbUser } from '../sequelize/models';
+import { User as DBUser } from '../sequelize/models';
 const DEFAULT_USER = {
   first_name: "Default",
   last_name: "User",
@@ -23,7 +23,7 @@ export default class User {
       throw new Error('No email passed in');
     }
 
-    const user = await dbUser.create({
+    const user = await DBUser.create({
       first_name: firstName,
       last_name: lastName,
       email: email,
@@ -38,11 +38,11 @@ export default class User {
   }
 
   static async loginAsDefault(){
-    const users = await dbUser.findAll({ where: { email: DEFAULT_USER.email }});
+    const users = await DBUser.findAll({ where: { email: DEFAULT_USER.email }});
     let user = users[0];
 
     if(!user){
-      user = await dbUser.create(DEFAULT_USER);
+      user = await DBUser.create(DEFAULT_USER);
     }
 
     const userJSON = await user.toJSON();
