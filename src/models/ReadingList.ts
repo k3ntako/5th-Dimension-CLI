@@ -12,9 +12,9 @@ export default class ReadingList {
   searchStr: string;
   constructor() {}
 
-  static async addBook(book: Book, user: User){
-    try{
-      const userInDB = await DBUser.findByPk(user.id);
+  static async getCount(user){
+    return await user.countBooks();
+  }
 
   static async addBook(book: Book, user: IUser){
     try{
@@ -81,9 +81,14 @@ export default class ReadingList {
     }
   }
 
-  static async getList(user: User){
-    const userInDB = await DBUser.findByPk(user.id);
-    let books = await userInDB.getBooks();
+  static async removeBook(id: string, userId: string){
+    return await db.UserBook.destroy({
+      where: {
+        book_id: id,
+        user_id: userId,
+      },
+    });
+  }
 
   static async getList(user: IUser){
     let books: IBook[] = await user.getBooks();

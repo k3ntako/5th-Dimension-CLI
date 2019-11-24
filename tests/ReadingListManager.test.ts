@@ -62,6 +62,11 @@ describe('ReadingListManager', (): void => {
   });
 
   describe('#question()', async (): Promise<void> => {
+    before(async (): Promise<void> => {
+      await db.UserBook.destroy({ where: {} });
+      await ReadingList.addBook(bookInfo1, defaultUser);
+    });
+
     it('should call ReadingListManager.prompt with appropriate arguments', async (): Promise<void> => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "exit" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
@@ -75,12 +80,15 @@ describe('ReadingListManager', (): void => {
       assert.strictEqual(args.name, 'action');
       assert.strictEqual(args.type, 'list');
       assert.sameDeepMembers(args.choices, [{
-        name: emoji.get('mag') + " Search for books!",
-        value: 'search',
-      }, {
-        name: emoji.get('books') + " View your reading list",
+          name: emoji.get('mag') + " Search for books!",
+          value: 'search',
+        }, {
+        name: emoji.get('books') + " View your reading list (1 book)",
         value: 'view_list',
-      },
+        }, {
+          name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
+          value: "remove_book",
+        }
       ]);
     });
 

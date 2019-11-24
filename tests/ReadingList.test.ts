@@ -122,6 +122,33 @@ describe('ReadingList', (): void => {
     });
   });
 
+  describe('.removeBook', (): void => {
+    before(async (): Promise<void> => {
+      // Delete all the books added above
+      await db.Book.destroy({ where: {} });
+
+      // Make sure there are on books in the books table
+      const books = db.Book.findAll({ where: {} });
+      if (books.length){
+        throw new Error('There should be no books in the database');
+      }
+    });
+
+    it('should remove book from database', async (): Promise<void> => {
+      const book = await ReadingList.addBook(bookInstance, defaultUser);
+
+      await ReadingList.removeBook(book.id, defaultUser.id);
+      const books = await db.UserBook.findAll({
+        where: {
+          book_id: book.id,
+          user_id: defaultUser.id,
+        },
+      });
+
+      assert.lengthOf(books, 0);
+    });
+  });
+
   describe('.getList', (): void => {
     before(async (): Promise<void> => {
       // Delete all the books added above
@@ -141,5 +168,19 @@ describe('ReadingList', (): void => {
 
       assert.include(books[0], paramsWithoutAuthors);
     });
-  })
+  });
+
+  describe('.getCount', (): void => {
+    before(async (): Promise<void> => {
+      // Delete all the books added above
+      await db.UserBook.destroy({ where: {} });
+      await ReadingList.addBook(params, defaultUser);
+      await ReadingList.addBook(params2, defaultUser);
+    });
+
+    it('should return reading list', async (): Promise<void> => {
+      const count = await ReadingList.getCount(defaultUser);
+      assert.strictEqual(count, 2);
+    });
+  });
 });
