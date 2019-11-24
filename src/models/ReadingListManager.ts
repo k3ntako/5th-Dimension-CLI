@@ -2,6 +2,7 @@ import BookSearch from './BookSearch';
 import ReadingList from './ReadingList';
 import inquirer from 'inquirer';
 import User from './User';
+import Loading from './Loading';
 import clear from 'clear';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
@@ -24,12 +25,14 @@ const defaultChoices: inquirer.ChoiceCollection = [{
 export default class ReadingListManager {
   googleResults: Book[];
   user: IUser;
+  loading: Loading;
   constructor(user) {
     if(!user || !user.id){
       throw new Error("No user passed in");
     }
 
     this.user = user;
+    this.loading = new Loading();
     this.googleResults = [];
   }
 
@@ -91,8 +94,9 @@ export default class ReadingListManager {
       type: "input",
     });
 
-
+    this.loading.start();
     this.googleResults = await BookSearch.search(search);
+    this.loading.stop();
 
     console.log(`${chalk.bold("Search results for:")} "${search}"\n`);
 
