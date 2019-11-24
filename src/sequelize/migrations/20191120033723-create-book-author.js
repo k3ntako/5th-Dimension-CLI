@@ -10,6 +10,7 @@ module.exports = {
           model: 'authors',
           key: 'id',
         },
+        onDelete: 'cascade',
       },
       book_id: {
         primaryKey: true,
@@ -19,6 +20,7 @@ module.exports = {
           model: 'books',
           key: 'id',
         },
+        onDelete: 'cascade',
       },
     });
   },

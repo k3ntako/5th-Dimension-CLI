@@ -14,6 +14,7 @@ module.exports = {
           model: 'books',
           key: 'id',
         },
+        onDelete: 'cascade',
       },
       user_id: {
         allowNull: false,
@@ -22,6 +23,7 @@ module.exports = {
           model: 'users',
           key: 'id',
         },
+        onDelete: 'cascade',
       },
       created_at: {
         allowNull: false,
