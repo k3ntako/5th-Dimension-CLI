@@ -20,15 +20,14 @@ const defaultChoices: inquirer.ChoiceCollection = [{
 
 
 export default class ReadingListManager {
-  bookSearch: BookSearch;
-  user: User;
+  googleResults: Book[];
   constructor(user) {
     if(!user || !user.id){
       throw new Error("No user passed in");
     }
 
-    this.bookSearch = new BookSearch();
     this.user = user;
+    this.googleResults = [];
   }
 
   static async prompt(question: inquirer.QuestionCollection): Promise<inquirer.Answers> {
@@ -46,7 +45,7 @@ export default class ReadingListManager {
     const promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
     if (this.bookSearch.results.length){
       promptChoices.push({
-        name: emoji.get('heavy_plus_sign') + " Add book(s) above to your reading list",
+    if (this.googleResults.length){
         value: "add_book",
       });
     }
@@ -89,21 +88,20 @@ export default class ReadingListManager {
       type: "input",
     });
 
-    this.bookSearch.search(search);
-    await this.bookSearch.fetchBooks();
+
+    this.googleResults = await BookSearch.search(search);
 
     console.log(`${chalk.bold("Search results for:")} "${search}"\n`);
 
-    this.bookSearch.results.forEach(ReadingListManager.logBook);
+    this.googleResults.forEach(ReadingListManager.logBook);
   }
 
   async promptAddBook(){
-    if (!this.bookSearch.results.length) {
+    if (!this.googleResults.length) {
       throw new Error('No books');
     }
 
-    const promptChoices: inquirer.ChoiceCollection = this.bookSearch.results.map((book, idx) => ({
-      name: `${emoji.get(NUMBERS[idx])}  ${book.title}`,
+    const promptChoices: inquirer.ChoiceCollection = this.googleResults.map((book, idx) => ({
       value: idx,
     }));
 
@@ -114,7 +112,7 @@ export default class ReadingListManager {
       type: "checkbox",
     });
 
-    const books = this.bookSearch.results.filter((_, idx) => bookIndices.includes(idx));
+    const books = this.googleResults.filter((_, idx) => bookIndices.includes(idx));
 
     const promises = books.map(book => ReadingList.addBook(book, this.user));
     await Promise.all(promises);

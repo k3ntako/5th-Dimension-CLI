@@ -9,20 +9,17 @@ const FIELDS: string = "&fields=items(volumeInfo(title,authors,publisher,industr
 const LIMIT: string = '&maxResults=5';
 
 export default class BookSearch{
-  searchStr: string;
-  results: Book[];
-  constructor(){
-    this.searchStr = "";
-    this.results = [];
-  }
+  constructor(){}
 
-  search(searchStr: string) {
+  static async search(searchStr: string) {
     const regex: RegExp = /\s\s+/g; // remove multiple spaces in a row
-    this.searchStr = searchStr.trim().replace(regex, ' ');
+    const parsedSearchStr = searchStr.trim().replace(regex, ' ');
+
+    return await BookSearch.fetchBooks(parsedSearchStr);
   }
 
-  async fetchBooks() {
-    const searchURL: string = this.searchStr.split(" ").join("+");
+  static async fetchBooks(searchStr: string) {
+    const searchURL: string = searchStr.split(" ").join("+");
     const url: string = BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
 
     const response: Response = await fetch(url);
@@ -32,12 +29,14 @@ export default class BookSearch{
 
     const json: IGoogleResponse = await response.json();
 
-    this.results = [];
+    const books = [];
     json.items.forEach(bookInfo => {
       const book = Book.create(bookInfo.volumeInfo);
 
-      if (book) this.results.push(book);
+      if (book) books.push(book);
     });
+
+    return books;
   }
 
 }

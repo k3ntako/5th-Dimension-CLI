@@ -4,7 +4,7 @@ import ReadingListManager from '../src/models/ReadingListManager';
 import ReadingList from '../src/models/ReadingList';
 import Book from '../src/models/Book';
 import User from  '../src/models/User';
-import { UserBook } from '../src/sequelize/models';
+import db from '../src/sequelize/models';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
 
@@ -84,7 +84,7 @@ describe('ReadingListManager', (): void => {
       ]);
     });
 
-    it('should call BookSearch#promptSearch if user selects search', async (): Promise<void> => {
+    it('should call ReadingListManager#promptSearch if user selects search', async (): Promise<void> => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "search" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
@@ -102,14 +102,14 @@ describe('ReadingListManager', (): void => {
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.bookSearch.results = [book];
+      readingListManager.googleResults = [book];
       await readingListManager.question();
 
       const args = fakePrompt.lastArg;
 
 
       assert.includeDeepMembers(args.choices, [{
-        name: emoji.get('heavy_plus_sign') + " Add book(s) above to your reading list",
+        name: emoji.get('white_check_mark') + " Add book(s) above to your reading list",
         value: 'add_book',
       }]);
 
@@ -158,7 +158,7 @@ describe('ReadingListManager', (): void => {
   });
 
   describe('#promptSearch()', (): void => {
-    it('should fetch a books from Google Books based on BookSearch#searchStr and console log the results', async (): Promise<void> => {
+    it('should fetch a books from Google Books based on search query and console log the results', async (): Promise<void> => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ search: title });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
@@ -185,7 +185,7 @@ describe('ReadingListManager', (): void => {
       sinon.replace(ReadingList, 'addBook', fakeAddBook);
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.bookSearch.results = [
+      readingListManager.googleResults = [
         new Book({ title, authors, publisher, isbn_10, isbn_13 }),
         new Book(bookInfo1),
         new Book(bookInfo2),
@@ -226,7 +226,7 @@ describe('ReadingListManager', (): void => {
   describe('#viewList()', (): void => {
     before(async (): Promise<void> => {
       // Delete all the books added above
-      await UserBook.destroy({ where: {} });
+      await db.UserBook.destroy({ where: {} });
     });
 
     it('should not console log books if user has no books in their reading list', async (): Promise<void> => {
