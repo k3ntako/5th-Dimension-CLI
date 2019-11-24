@@ -10,6 +10,8 @@ import chalk from 'chalk';
 import { User as IUser } from '../sequelize/models/user';
 import { Book as IBook } from '../sequelize/models/book';
 
+const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk.keyword('orange')(message)}`);
+
 const prompt = inquirer.createPromptModule();
 const NUMBERS = [
   emoji.get('one'),
@@ -92,12 +94,15 @@ export default class ReadingListManager {
     const { action } = await ReadingListManager.prompt(promptOptions);
 
     if(action === "search"){
+      clear();
       await this.promptSearch();
     } else if (action === "view_list") {
+      clear();
       await this.viewList();
     } else if (action === "add_book") {
       await this.promptAddBook();
     } else if (action === "remove_book") {
+      clear();
       await this.promptRemoveBook();
     } else {
       return;
@@ -116,12 +121,17 @@ export default class ReadingListManager {
   }
 
   async promptSearch() {
-    clear();
     const { search } = await ReadingListManager.prompt({
       message: "Please enter your search term...",
       name: "search",
       type: "input",
     });
+
+    if(!search || !search.trim()){
+      clear();
+      warn("No search term entered");
+      return await this.promptSearch();
+    }
 
     this.loading.start();
     this.googleResults = await BookSearch.search(search);
@@ -133,12 +143,6 @@ export default class ReadingListManager {
   }
 
   async promptAddBook(){
-    clear();
-
-    if (!this.googleResults.length) {
-      throw new Error('No books');
-    }
-
     const promptChoices: inquirer.ChoiceCollection = this.googleResults.map((book, idx) => ({
       name: `${NUMBERS[idx]}  ${book.title}`,
       value: idx,
@@ -158,8 +162,6 @@ export default class ReadingListManager {
   }
 
   async promptRemoveBook() {
-    clear();
-
     const books: IBook[] = await this.viewList();
 
     const promptChoices: inquirer.ChoiceCollection = books.map((book, idx) => ({
