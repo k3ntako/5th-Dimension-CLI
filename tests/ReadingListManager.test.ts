@@ -7,6 +7,8 @@ import User from  '../src/models/User';
 import db from '../src/sequelize/models';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
+import inquirer from 'inquirer';
+
 
 let defaultUser;
 
@@ -68,7 +70,7 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should call ReadingListManager.prompt with appropriate arguments', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "exit" });
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
@@ -88,6 +90,11 @@ describe('ReadingListManager', (): void => {
         }, {
           name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
           value: "remove_book",
+        },
+        new inquirer.Separator(),
+        {
+          name: emoji.get('closed_lock_with_key') + "  Exit",
+          value: "exit",
         }
       ]);
     });
@@ -106,7 +113,7 @@ describe('ReadingListManager', (): void => {
     it('should ask if user would like to add books to reading list if there are search results', async (): Promise<void> => {
       const book: Book = new Book({ title, authors, publisher, isbn_10, isbn_13 });
 
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "exit" });
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
@@ -117,7 +124,7 @@ describe('ReadingListManager', (): void => {
 
 
       assert.includeDeepMembers(args.choices, [{
-        name: emoji.get('white_check_mark') + " Add book(s) above to your reading list",
+        name: emoji.get('star') + " Add book(s) above to your reading list",
         value: 'add_book',
       }]);
 
@@ -278,6 +285,20 @@ describe('ReadingListManager', (): void => {
       await readingListManager.viewList();
 
       assert.strictEqual(fakeLogBook.callCount, 1, "logBook should be called once");
+    });
+  });
+
+  describe('.exit()', (): void => {
+    it('should console log good-bye message and close app', async (): Promise<void> => {
+      // Fake process.exit
+      const processExitFake: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(process, 'exit', processExitFake);
+
+      await ReadingListManager.exit();
+
+
+      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 2);
+      assert.strictEqual(processExitFake.callCount, 1);
     });
   });
 

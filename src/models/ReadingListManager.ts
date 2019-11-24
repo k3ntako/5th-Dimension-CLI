@@ -26,6 +26,8 @@ const NUMBERS = [
   emoji.get('one') + " " + emoji.get('zero'),
 ];
 
+const APP_NAME = chalk.cyanBright.bold("5th Dimension CLI");
+
 
 const defaultChoices: inquirer.ChoiceCollection = [{
   name: emoji.get('mag') + " Search for books!",
@@ -55,15 +57,23 @@ export default class ReadingListManager {
 
   start() {
     clear();
-    console.log("Welcome to 5th Dimension CLI!");
+    console.log(`Welcome to ${APP_NAME}!`);
     console.log("It's place to discover new books and save them for later!");
     this.question();
+  }
+
+  static exit(){
+
+    console.log(`Thank you for using ${APP_NAME}!`)
+    console.log("Hope to see you soon!");
+
+    process.exit();
   }
 
   question = async (): Promise<void> => {
     this.listCount = await ReadingList.getCount(this.user);
 
-    const promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
+    let promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
 
     if (this.listCount) {
       const bookPlurality = this.listCount === 1 ? "" : "s";
@@ -78,11 +88,19 @@ export default class ReadingListManager {
     }
 
     if (this.googleResults.length){
-      promptChoices.push({
-        name: emoji.get('white_check_mark') + " Add book(s) above to your reading list",
+      promptChoices.splice(2, 0, {
+        name: emoji.get('star') + " Add book(s) above to your reading list",
         value: "add_book",
-      });
+      })
     }
+
+    promptChoices = promptChoices.concat([
+      new inquirer.Separator(),
+      {
+        name: emoji.get('closed_lock_with_key') + "  Exit",
+        value: "exit",
+      },
+    ]);
 
     const promptOptions: inquirer.ListQuestion = {
       message: "What would you like to do?",
@@ -104,6 +122,9 @@ export default class ReadingListManager {
     } else if (action === "remove_book") {
       clear();
       await this.promptRemoveBook();
+    } else if (action === "exit") {
+      clear();
+      await ReadingListManager.exit();
     } else {
       return;
     }
