@@ -8,6 +8,7 @@ import db from '../src/sequelize/models';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import { UserBook } from '../src/sequelize/models/user_book';
 
 
 let defaultUser;
@@ -183,10 +184,9 @@ describe('ReadingListManager', (): void => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       await readingListManager.promptSearch();
 
-      const arg0: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.strictEqual(arg0, `${chalk.bold("Search results for:")} "${title}"\n`);
-      assert.include(arg0, title);
+      const arg: string = fdCLI.fakes.consoleLogFake.lastArg;
 
+      assert.strictEqual(arg, `${chalk.bold("Search results for:")} "${title}"\n`);
       assert.strictEqual(fakeLogBook.callCount, 5);
     });
 
@@ -208,7 +208,7 @@ describe('ReadingListManager', (): void => {
     });
   });
 
-  describe('#promptSearch()', (): void => {
+  describe('#promptAddBook()', (): void => {
     it('should call ReadingList.addBook with books selected', async (): Promise<void> => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0,2] });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
@@ -252,6 +252,119 @@ describe('ReadingListManager', (): void => {
         isbn_10: bookInfo2.isbn_10,
         isbn_13: bookInfo2.isbn_13
       });
+    });
+
+    it('should console log titles of deleted books', async (): Promise<void> => {
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0, 2] });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(ReadingList, 'addBook', fakeAddBook);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.googleResults = [
+        new Book({ title, authors, publisher, isbn_10, isbn_13 }),
+        new Book(bookInfo1),
+        new Book(bookInfo2),
+      ];
+      await readingListManager.promptAddBook();
+
+      const args = fdCLI.fakes.consoleLogFake.args;
+
+      const secondToLastArg = args[args.length - 2][0];
+      const lastArg = args[args.length - 1][0];
+      assert.strictEqual(secondToLastArg, chalk.bold("Book(s) added:"))
+      assert.include(lastArg, chalk.greenBright(title))
+      assert.include(lastArg, chalk.greenBright(bookInfo2.title))
+    });
+
+    it('should inform user that no books were added if no books were added', async (): Promise<void> => {
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [] });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(ReadingList, 'addBook', fakeAddBook);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.googleResults = [
+        new Book({ title, authors, publisher, isbn_10, isbn_13 }),
+        new Book(bookInfo1),
+        new Book(bookInfo2),
+      ];
+      await readingListManager.promptAddBook();
+
+      const arg = fdCLI.fakes.consoleLogFake.lastCall.lastArg;
+      assert.strictEqual(fakeAddBook.callCount, 0);
+      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 1);
+      assert.strictEqual(arg, "No books added");
+    });
+  });
+
+  describe('#promptRemoveBook()', (): void => {
+    beforeEach(async (): Promise<void> => {
+      // remove all books from reading list
+      await UserBook.destroy({where: {}});
+    })
+    it('should call ReadingList.removeBook with books selected', async (): Promise<void> => {
+      const book = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0] });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(ReadingList, 'removeBook', fakeRemoveBook);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      await readingListManager.promptRemoveBook();
+
+      assert.strictEqual(fakeRemoveBook.callCount, 1);
+
+      const bookId: string = fakeRemoveBook.getCall(0).args[0];
+      const userId: string = fakeRemoveBook.getCall(0).args[1];
+
+      assert.strictEqual(bookId, book.id);
+      assert.strictEqual(userId, defaultUser.id);
+    });
+
+    it('should console log titles of deleted books', async (): Promise<void> => {
+      const book1 = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
+      const book2 = await ReadingList.addBook(bookInfo1, defaultUser);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0, 1] });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(ReadingList, 'removeBook', fakeRemoveBook);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      await readingListManager.promptRemoveBook();
+
+      const args = fdCLI.fakes.consoleLogFake.args;
+
+      const secondToLastArg = args[args.length - 2][0];
+      const lastArg = args[args.length - 1][0];
+      assert.strictEqual(secondToLastArg, chalk.bold("Books removed:"))
+      assert.include(lastArg, chalk.redBright(book1.title))
+      assert.include(lastArg, chalk.redBright(book2.title))
+    });
+
+    it('should inform user that no books were removed if no books were removed', async (): Promise<void> => {
+      const book = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [] });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(ReadingList, 'removeBook', fakeRemoveBook);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      await readingListManager.promptRemoveBook();
+
+      // fakePrompt.arg
+
+      const arg = fdCLI.fakes.consoleLogFake.lastCall.lastArg;
+      assert.strictEqual(fakeRemoveBook.callCount, 0);
+      assert.strictEqual(arg, "No books removed");
     });
   });
 

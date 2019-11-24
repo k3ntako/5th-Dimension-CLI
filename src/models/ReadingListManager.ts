@@ -72,6 +72,7 @@ export default class ReadingListManager {
 
   question = async (): Promise<void> => {
     this.listCount = await ReadingList.getCount(this.user);
+    console.log("");
 
     let promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
 
@@ -176,10 +177,20 @@ export default class ReadingListManager {
       type: "checkbox",
     });
 
+    clear();
+
+    if (!bookIndices.length) {
+      return console.log('No books added');
+    }
+
     const books = this.googleResults.filter((_, idx) => bookIndices.includes(idx));
+    const titles = books.map(book => chalk.greenBright(book.title)).join('\n')
 
     const promises = books.map(book => ReadingList.addBook(book, this.user));
     await Promise.all(promises);
+
+    console.log(chalk.bold("Book(s) added:"));
+    console.log(titles);
   }
 
   async promptRemoveBook() {
