@@ -1,5 +1,8 @@
 import { assert } from 'chai';
-import { Author, Book, AuthorBook } from '../src/sequelize/models';
+import db from '../src/sequelize/models';
+import { Book as IBook } from '../src/sequelize/models/book';
+import { Author as IAuthor } from '../src/sequelize/models/author';
+import { AuthorBook as IAuthorBook } from '../src/sequelize/models/author_book';
 
 const title: string = "Tuesdays with Morrie";
 const publisher: string = "Doubleday";
@@ -12,7 +15,7 @@ const other_identifier = 'OCLC:36130729';
 describe('Database', (): void => {
   describe('Book', (): void => {
     it('should have fields for title (string) and publisher (string)', async (): Promise<void> => {
-      const book: Book = await Book.create({
+      const book: IBook = await db.Book.create({
         title,
         publisher,
         isbn_10,
@@ -32,7 +35,7 @@ describe('Database', (): void => {
 
   describe('Author', (): void => {
     it('should have a field for name (string)', async (): Promise<void> => {
-      const author: Author = await Author.create({ name: authorName });
+      const author: IAuthor = await db.Author.create({ name: authorName });
 
       assert.strictEqual(author.name, authorName);
     });
@@ -40,12 +43,12 @@ describe('Database', (): void => {
 
   describe('AuthorBook', (): void => {
     it('should have a field for author_id and book_id', async (): Promise<void> => {
-      const author: Author[] = await Author.findAll({
+      const author: IAuthor[] = await db.Author.findAll({
         where: { name: authorName }
       });
       const author_id: string = author[0].dataValues.id;
 
-      const book: Book[] = await Book.findAll({
+      const book: IBook[] = await db.Book.findAll({
         where: {
           title,
           publisher,
@@ -53,7 +56,7 @@ describe('Database', (): void => {
       });
       const book_id: string = book[0].dataValues.id;
 
-      const authorBook: AuthorBook = await AuthorBook.create({
+      const authorBook: IAuthorBook = await db.AuthorBook.create({
         author_id: author_id,
         book_id: book_id,
       });
@@ -63,15 +66,16 @@ describe('Database', (): void => {
     });
 
     it('should associate author and book in many to many relationship', async (): Promise<void> => {
-      const author: Author[] = await Author.findAll({
+      const author: IAuthor[] = await db.Author.findAll({
         where: { name: authorName }
       });
 
-      const books: Book[] = await author[0].getBooks();
-      const book = await books[0].toJSON();
+      const books: IBook[] = await author[0].getBooks();
+      const newTitle = books[0].getDataValue('title');
+      const newPublisher = books[0].getDataValue('publisher');
 
-      assert.strictEqual(book.title, title);
-      assert.strictEqual(book.publisher, publisher);
+      assert.strictEqual(newTitle, title);
+      assert.strictEqual(newPublisher, publisher);
     });
   });
 });

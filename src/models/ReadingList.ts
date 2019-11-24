@@ -1,6 +1,7 @@
-import { Sequelize, Author, AuthorBook, Book as DBBook, User as DBUser } from '../sequelize/models';
-import User from './User';
+import db from '../sequelize/models';
 import Book from './Book';
+import { Book as IBook } from '../sequelize/models/book';
+import { User as IUser } from '../sequelize/models/user';
 
 interface ITitleAndPublisher {
   title?: string;
@@ -15,6 +16,8 @@ export default class ReadingList {
     try{
       const userInDB = await DBUser.findByPk(user.id);
 
+  static async addBook(book: Book, user: IUser){
+    try{
       const { isbn_10, isbn_13, issn, other_identifier, title, publisher, authors } = book;
 
       // Check if this book already exists in database
@@ -22,7 +25,7 @@ export default class ReadingList {
       let where: {};
       if (isbn_10 || isbn_13) {
         where = {
-          [Sequelize.Op.or]: {
+          [db.Sequelize.Op.or]: {
             isbn_10,
             isbn_13,
           }
@@ -42,18 +45,18 @@ export default class ReadingList {
         and.publisher = publisher || null;
 
         where = {
-          [Sequelize.Op.and]: and,
+          [db.Sequelize.Op.and]: and,
           // TODO: add author
         };
       }
 
-      const books = await DBBook.findAll({ where });
+      const books = await db.Book.findAll({ where });
       let newBook = books[0];
 
       if (!newBook) {
         const authorsAttributes = authors.map(name => ({ name }));
 
-        newBook = await DBBook.create({
+        newBook = await db.Book.create({
           title,
           publisher,
           authors: authorsAttributes,
@@ -63,14 +66,14 @@ export default class ReadingList {
           other_identifier,
         }, {
           include: [{
-            model: Author,
-            through: AuthorBook,
+            model: db.Author,
+            through: db.AuthorBook,
             as: 'authors',
           }],
         });
       }
 
-      await userInDB.addBook(newBook);
+      await user.addBook(newBook);
 
       return newBook;
     } catch(err) {
@@ -82,8 +85,8 @@ export default class ReadingList {
     const userInDB = await DBUser.findByPk(user.id);
     let books = await userInDB.getBooks();
 
-    return await Promise.all(
-      books.map(book => book.toJSON())
-    );
+  static async getList(user: IUser){
+    let books: IBook[] = await user.getBooks();
+    return books;
   }
 }

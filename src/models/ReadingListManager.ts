@@ -5,6 +5,8 @@ import User from './User';
 import clear from 'clear';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
+import { User as IUser } from '../sequelize/models/user';
+import { Book as IBook } from '../sequelize/models/book';
 
 const prompt = inquirer.createPromptModule();
 const NUMBERS = ['one', 'two', 'three', 'four', 'five'];
@@ -21,6 +23,7 @@ const defaultChoices: inquirer.ChoiceCollection = [{
 
 export default class ReadingListManager {
   googleResults: Book[];
+  user: IUser;
   constructor(user) {
     if(!user || !user.id){
       throw new Error("No user passed in");

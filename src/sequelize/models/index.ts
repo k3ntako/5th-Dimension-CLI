@@ -31,7 +31,7 @@ let sequelize = new Sequelize(config.database, config.username, config.password,
 fs
   .readdirSync(__dirname)
   .filter(file => {
-    return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.ts');
+    return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js' || file.slice(-3) === '.ts');
   })
   .forEach(file => {
     const model = sequelize['import'](path.join(__dirname, file));
@@ -47,4 +47,4 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-module.exports = db;
+export default db;

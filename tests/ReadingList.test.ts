@@ -1,9 +1,10 @@
 import { assert } from 'chai';
 import ReadingList from '../src/models/ReadingList';
 import User from '../src/models/User';
-
-import { Book as DBBook, User as DBUser, UserBook } from '../src/sequelize/models';
 import Book from '../src/models/Book';
+
+import db from '../src/sequelize/models';
+import { IBook } from '../src/sequelize/models/book';
 
 const params = {
   title: "Test-driven Development",
@@ -26,12 +27,11 @@ const params2 = {
 }
 
 const bookInstance = new Book (params);
-let defaultUser, defaultDBUser;
+let defaultUser;
 
 describe('ReadingList', (): void => {
   before(async () => {
     defaultUser = await User.loginAsDefault();
-    defaultDBUser = await DBUser.findByPk(defaultUser.id)
   });
 
   describe('.addBook', (): void => {
@@ -39,7 +39,7 @@ describe('ReadingList', (): void => {
       await ReadingList.addBook(bookInstance, defaultUser);
 
       // Find the book above
-      const books = await DBBook.findAll({
+      const books = await db.Book.findAll({
         where: {
           isbn_13: bookInstance.isbn_13,
         },
@@ -112,7 +112,7 @@ describe('ReadingList', (): void => {
       const createdBook = await ReadingList.addBook(params2, defaultUser);
 
       // get books associated with defaultUser with the same ISBN
-      const books = await defaultDBUser.getBooks({
+      const books = await defaultUser.getBooks({
         where: { isbn_13: params2.isbn_13 },
       });
 
@@ -125,7 +125,7 @@ describe('ReadingList', (): void => {
   describe('.getList', (): void => {
     before(async (): Promise<void> => {
       // Delete all the books added above
-      await UserBook.destroy({ where: {} });
+      await db.UserBook.destroy({ where: {} });
       await ReadingList.addBook(bookInstance, defaultUser);
     });
 
