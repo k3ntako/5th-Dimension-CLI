@@ -16,11 +16,11 @@ describe('User', (): void => {
         firstName, lastName, email,
       });
 
-      assert.hasAllKeys(user, ['id', 'firstName', 'lastName', 'email']);
+      assert.containsAllKeys(user.dataValues, ['id', 'first_name', 'last_name', 'email']);
 
       assert.match(user.id, uuidRegex)
-      assert.strictEqual(user.firstName, firstName);
-      assert.strictEqual(user.lastName, lastName);
+      assert.strictEqual(user.first_name, firstName);
+      assert.strictEqual(user.last_name, lastName);
       assert.strictEqual(user.email, email);
     });
   });
@@ -29,8 +29,8 @@ describe('User', (): void => {
     it('should create default user', async (): Promise<void> => {
       const user = await User.loginAsDefault();
 
-      assert.strictEqual(user.firstName, "Default");
-      assert.strictEqual(user.lastName, "User");
+      assert.strictEqual(user.first_name, "Default");
+      assert.strictEqual(user.last_name, "User");
       assert.strictEqual(user.email, "default@example.com");
     });
 
@@ -39,8 +39,8 @@ describe('User', (): void => {
       const user2 = await User.loginAsDefault();
 
       assert.strictEqual(user1.id, user2.id);
-      assert.strictEqual(user2.firstName, "Default");
-      assert.strictEqual(user2.lastName, "User");
+      assert.strictEqual(user2.first_name, "Default");
+      assert.strictEqual(user2.last_name, "User");
       assert.strictEqual(user2.email, "default@example.com");2
     });
   });

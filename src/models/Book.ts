@@ -1,4 +1,5 @@
 export default class Book {
+  id?: string;
   title: string;
   publisher?: string;
   authors: string[] |  any;
@@ -8,7 +9,7 @@ export default class Book {
   other_identifier?: string;
 
   constructor(params) {
-    ["title", "publisher", "authors", "isbn_10", "isbn_13", "issn", "other_identifier"].forEach(key => {
+    ["id","title", "publisher", "authors", "isbn_10", "isbn_13", "issn", "other_identifier"].forEach(key => {
       this[key] = params[key] || null;
     });
   }
