@@ -26,6 +26,10 @@ exports.default = (sequelize, DataTypes) => {
             foreignKey: 'user_id',
             as: "books",
         });
+        User.hasMany(models.UserBook, {
+            foreignKey: 'user_id',
+            as: 'userBooks',
+        });
     };
     return User;
 };

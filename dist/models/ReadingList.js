@@ -92,9 +92,18 @@ class ReadingList {
             });
         });
     }
-    static getList(user) {
+    static getList(user, page = 1) {
         return __awaiter(this, void 0, void 0, function* () {
-            let books = yield user.getBooks();
+            const offset = (page - 1) * 10;
+            let books = yield user.getBooks({
+                include: [{
+                        model: models_1.default.sequelize.models.UserBook,
+                        as: 'userBooks',
+                    }],
+                order: [['userBooks', 'created_at', 'DESC']],
+                limit: 10,
+                offset,
+            });
             return books;
         });
     }

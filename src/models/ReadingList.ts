@@ -92,6 +92,13 @@ export default class ReadingList {
 
   static async getList(user: IUser){
     let books: IBook[] = await user.getBooks();
+    let books: IBook[] = await user.getBooks({
+      include: [{
+        model: db.sequelize.models.UserBook,
+        as: 'userBooks',
+      }],
+      order: [[ 'userBooks', 'created_at', 'DESC']],
+    });
     return books;
   }
 }

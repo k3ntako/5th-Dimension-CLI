@@ -26,7 +26,6 @@ const params2 = {
   other_identifier: null,
 }
 
-const bookInstance = new Book (params);
 let defaultUser;
 
 describe('ReadingList', (): void => {
@@ -36,12 +35,12 @@ describe('ReadingList', (): void => {
 
   describe('.addBook', (): void => {
     it('should add a book to the database', async (): Promise<void> => {
-      await ReadingList.addBook(bookInstance, defaultUser);
+      await ReadingList.addBook(params, defaultUser);
 
       // Find the book above
       const books = await db.Book.findAll({
         where: {
-          isbn_13: bookInstance.isbn_13,
+          isbn_13: params.isbn_13,
         },
       });
 
@@ -61,8 +60,8 @@ describe('ReadingList', (): void => {
 
     it('should not add a book twice (ISBN)', async (): Promise<void> => {
       // Add the same book twice
-      const book1 = await ReadingList.addBook(bookInstance, defaultUser);
-      const book2 = await ReadingList.addBook(bookInstance, defaultUser);
+      const book1 = await ReadingList.addBook(params, defaultUser);
+      const book2 = await ReadingList.addBook(params, defaultUser);
 
       assert.strictEqual(book1.id, book2.id);
     });
@@ -135,7 +134,7 @@ describe('ReadingList', (): void => {
     });
 
     it('should remove book from database', async (): Promise<void> => {
-      const book = await ReadingList.addBook(bookInstance, defaultUser);
+      const book = await ReadingList.addBook(params, defaultUser);
 
       await ReadingList.removeBook(book.id, defaultUser.id);
       const books = await db.UserBook.findAll({
@@ -150,10 +149,10 @@ describe('ReadingList', (): void => {
   });
 
   describe('.getList', (): void => {
-    before(async (): Promise<void> => {
+    beforeEach(async (): Promise<void> => {
       // Delete all the books added above
       await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(bookInstance, defaultUser);
+      await ReadingList.addBook(params, defaultUser);
     });
 
     it('should return reading list', async (): Promise<void> => {
@@ -167,6 +166,21 @@ describe('ReadingList', (): void => {
       delete paramsWithoutAuthors.authors;
 
       assert.include(books[0], paramsWithoutAuthors);
+    });
+
+    it('should return newest additions to the reading list first', async (): Promise<void> => {
+      await ReadingList.addBook(params2, defaultUser);
+
+      const book1Results = await db.Book.findAll({where: {title: params.title}});
+      const book1 = await book1Results[0].toJSON();
+
+      await ReadingList.removeBook(book1.id, defaultUser.id);
+      await ReadingList.addBook(params, defaultUser);
+
+      const books = await ReadingList.getList(defaultUser);
+
+      assert.strictEqual(books[0].title, params.title);
+      assert.strictEqual(books[1].title, params2.title);
     });
   });
 
