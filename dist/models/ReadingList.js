@@ -92,7 +92,7 @@ class ReadingList {
             });
         });
     }
-    static getList(user, page = 1) {
+    static getList(user, page) {
         return __awaiter(this, void 0, void 0, function* () {
             const offset = (page - 1) * 10;
             let books = yield user.getBooks({

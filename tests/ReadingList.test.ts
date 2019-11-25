@@ -156,7 +156,7 @@ describe('ReadingList', (): void => {
     });
 
     it('should return reading list', async (): Promise<void> => {
-      const books = await ReadingList.getList(defaultUser);
+      const books = await ReadingList.getList(defaultUser, 1);
       assert.lengthOf(books, 1);
 
       // The book should have all the fields provided.
@@ -177,7 +177,7 @@ describe('ReadingList', (): void => {
       await ReadingList.removeBook(book1.id, defaultUser.id);
       await ReadingList.addBook(params, defaultUser);
 
-      const books = await ReadingList.getList(defaultUser);
+      const books = await ReadingList.getList(defaultUser, 1);
 
       assert.strictEqual(books[0].title, params.title);
       assert.strictEqual(books[1].title, params2.title);

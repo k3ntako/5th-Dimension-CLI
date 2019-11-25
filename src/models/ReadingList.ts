@@ -90,7 +90,7 @@ export default class ReadingList {
     });
   }
 
-  static async getList(user: IUser, page: number = 1){
+  static async getList(user: IUser, page: number){
     const offset = (page - 1) * 10;
     let books: IBook[] = await user.getBooks({
       include: [{
