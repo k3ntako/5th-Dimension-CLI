@@ -114,14 +114,16 @@ class ReadingListManager {
                 this.readingListPage--;
                 yield this.viewList();
             }
-            else if (action === "exit") {
+            else {
+                warn('Command was not found: ' + action);
+            }
+            if (action === "exit") {
                 clear_1.default();
                 yield ReadingListManager.exit();
             }
             else {
-                return;
+                setTimeout(this.question, 300); // Delay before prompting them again
             }
-            setTimeout(this.question, 300); // Delay before prompting them again
         });
         if (!user || !user.id) {
             throw new Error("No user passed in");

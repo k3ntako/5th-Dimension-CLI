@@ -204,7 +204,7 @@ describe('ReadingListManager', (): void => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       await readingListManager.promptSearch();
 
-      const arg = consoleWarnFake.lastCall.lastArg;
+      const arg = consoleWarnFake.getCall(0).lastArg;
       assert.include(arg, 'No search term entered');
       assert.include(arg, emoji.get('warning'));
     });

@@ -153,14 +153,16 @@ export default class ReadingListManager {
       clear();
       this.readingListPage--;
       await this.viewList();
-    } else if (action === "exit") {
-      clear();
-      await ReadingListManager.exit();
     } else {
-      return;
+      warn('Command was not found: ' + action);
     }
 
-    setTimeout(this.question, 300); // Delay before prompting them again
+    if (action === "exit") {
+      clear();
+      await ReadingListManager.exit();
+    }else{
+      setTimeout(this.question, 300); // Delay before prompting them again
+    }
   }
 
   static logBook(book, idx?: number){
