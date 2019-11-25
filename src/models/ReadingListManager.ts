@@ -11,6 +11,7 @@ import { User as IUser } from '../sequelize/models/user';
 import { Book as IBook } from '../sequelize/models/book';
 
 const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk.keyword('orange')(message)}`);
+const error = (message: string) => console.error(`${emoji.get('warning')}  ${chalk.keyword('red')(message)}`);
 
 const prompt = inquirer.createPromptModule();
 const NUMBERS = [
@@ -203,13 +204,21 @@ export default class ReadingListManager {
       return await this.promptSearch();
     }
 
-    this.loading.start();
-    this.googleResults = await BookSearch.search(search);
-    this.loading.stop();
+    try{
+      this.loading.start();
+      this.googleResults = await BookSearch.search(search);
+      this.loading.stop();
+    } catch(err) {
+      this.loading.stop();
+      error(err);
+    }
 
-    console.log(`${chalk.bold("Search results for:")} "${search}"\n`);
-
-    this.googleResults.forEach(ReadingListManager.logBook);
+    if (!this.googleResults.length){
+      warn(`No books found for: "${search}"`);
+    }else{
+      console.log(`${chalk.bold("Search results for:")} "${search}"\n`);
+      this.googleResults.forEach(ReadingListManager.logBook);
+    }
 
     this.readingListPage = null;
   }
@@ -277,7 +286,9 @@ export default class ReadingListManager {
   async viewList(){
     clear();
 
-    this.readingListPage = this.readingListPage || 1;
+    if (this.readingListPage < 1){
+      this.readingListPage = 1;
+    }
 
     const books = await ReadingList.getList(this.user, this.readingListPage);
     if(books.length){

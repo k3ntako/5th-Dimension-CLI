@@ -15,6 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const Book_1 = __importDefault(require("./Book"));
+const chalk_1 = __importDefault(require("chalk"));
+const node_emoji_1 = __importDefault(require("node-emoji"));
+const warn = (message) => console.warn(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('orange')(message)}`);
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
 const FIELDS = "&fields=items(volumeInfo(title,authors,publisher,industryIdentifiers))";
@@ -30,13 +33,20 @@ class BookSearch {
     }
     static fetchBooks(searchStr) {
         return __awaiter(this, void 0, void 0, function* () {
-            const searchURL = searchStr.split(" ").join("+");
+            // Format searchStr into what Google expects
+            const searchURL = searchStr
+                .split(" ")
+                .map(search => encodeURIComponent(search))
+                .join("+");
             const url = BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
             const response = yield node_fetch_1.default(url);
             if (!response.ok) {
                 throw new Error(`${response.status} - ${response.statusText}`);
             }
             const json = yield response.json();
+            if (!json.items) {
+                return [];
+            }
             const books = [];
             json.items.forEach(bookInfo => {
                 const book = Book_1.default.create(bookInfo.volumeInfo);

@@ -1,7 +1,10 @@
 require('dotenv').config();
 import fetch, { Response } from 'node-fetch';
-import { IGoogleResponse } from '../utilities/interfaces';
+import { IGoogleResponse } from '../types/interfaces';
 import Book from './Book';
+import chalk from 'chalk';
+import emoji from 'node-emoji';
+const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk.keyword('orange')(message)}`);
 
 const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
@@ -19,15 +22,24 @@ export default class BookSearch{
   }
 
   static async fetchBooks(searchStr: string) {
-    const searchURL: string = searchStr.split(" ").join("+");
+    // Format searchStr into what Google expects
+    const searchURL: string = searchStr
+      .split(" ")
+      .map(search => encodeURIComponent(search))
+      .join("+");
+
     const url: string = BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
 
     const response: Response = await fetch(url);
-    if(!response.ok){
+    if (!response.ok) {
       throw new Error(`${response.status} - ${response.statusText}`)
     }
 
     const json: IGoogleResponse = await response.json();
+
+    if(!json.items){
+      return [];
+    }
 
     const books = [];
     json.items.forEach(bookInfo => {

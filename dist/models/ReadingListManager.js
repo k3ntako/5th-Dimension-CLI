@@ -20,6 +20,7 @@ const clear_1 = __importDefault(require("clear"));
 const node_emoji_1 = __importDefault(require("node-emoji"));
 const chalk_1 = __importDefault(require("chalk"));
 const warn = (message) => console.warn(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('orange')(message)}`);
+const error = (message) => console.error(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('red')(message)}`);
 const prompt = inquirer_1.default.createPromptModule();
 const NUMBERS = [
     node_emoji_1.default.get('one'),
@@ -170,18 +171,29 @@ class ReadingListManager {
                 warn("No search term entered");
                 return yield this.promptSearch();
             }
-            this.loading.start();
-            this.googleResults = yield BookSearch_1.default.search(search);
-            this.loading.stop();
-            console.log(`${chalk_1.default.bold("Search results for:")} "${search}"\n`);
-            this.googleResults.forEach(ReadingListManager.logBook);
+            try {
+                this.loading.start();
+                this.googleResults = yield BookSearch_1.default.search(search);
+                this.loading.stop();
+            }
+            catch (err) {
+                this.loading.stop();
+                error(err);
+            }
+            if (!this.googleResults.length) {
+                warn(`No books found for: "${search}"`);
+            }
+            else {
+                console.log(`${chalk_1.default.bold("Search results for:")} "${search}"\n`);
+                this.googleResults.forEach(ReadingListManager.logBook);
+            }
             this.readingListPage = null;
         });
     }
     promptAddBook() {
         return __awaiter(this, void 0, void 0, function* () {
             const promptChoices = this.googleResults.map((book, idx) => ({
-                name: `${NUMBERS[idx]}  ${book.title}`,
+                name: `${NUMBERS[idx + 1]}  ${book.title}`,
                 value: idx,
             }));
             const { bookIndices } = yield ReadingListManager.prompt({
@@ -230,7 +242,9 @@ class ReadingListManager {
     viewList() {
         return __awaiter(this, void 0, void 0, function* () {
             clear_1.default();
-            this.readingListPage = this.readingListPage || 1;
+            if (this.readingListPage < 1) {
+                this.readingListPage = 1;
+            }
             const books = yield ReadingList_1.default.getList(this.user, this.readingListPage);
             if (books.length) {
                 console.log(chalk_1.default.bold("Your Reading List:"));
