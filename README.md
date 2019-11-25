@@ -47,10 +47,10 @@ All interactions will involve your keyboard. Often, your will be asked to choose
 If you want to change the font size, please look at the settings in your Terminal application.
 
 ### Adding features
-Because the source code is written in Typescript, you need to compile the files to vanilla Javascript. Run `npm tsc` and it will compile your Typescript in the background. Open a new Terminal window to run tests and run the program.
+Because the source code is written in Typescript, you need to compile the files to vanilla Javascript. Run `npm tsc` and it will compile your Typescript in the background. Open a new Terminal window to run tests and run the program. Edit the Typescript files in `/src` or `/tests`. Do not touch `/dist` as they are the compiled version (plain Javascript) of `/src`.
 
 ## Testing
-This program was built using test-driven development. Mocha, Chai, and Sinon were used to write the tests.
+This program was built using test-driven development. Mocha, Chai, and Sinon were used to write the tests. The tests will run against the code in the `/src` folder, because the tests are also written in Typescript. The files in `/dist` are plain Javascript, that is what will be used when you run the program.
 
 Run tests:
 ```
