@@ -57,6 +57,11 @@ Run tests:
   $ npm test
 ```
 
+### Issues
+- Exiting the program occurs when `process.exit` is called. However, if that is called during a test, Mocha will be exited and the test would stop running. As a result, any session of this program will remain open until the end of the test. Not only is this a waste of resources, but this also results in unwanted `console.log`. Solving this issue would likely require use of the `child_process` module in Node.js. Given the time constraints, this was not implemented.
+
+- A minor issue is that the `clear` module is called throughout the test, which scrolls the page to the top of the window. `clear` does not erase the  content, but instead hides it.
+
 ## Built With
   - [Google Books API Family](https://developers.google.com/books/docs/overview) - provides the search results and the information about each book.
   - [Node.js](https://nodejs.org/) - offers Javascript outside of the browser including the command-line.
