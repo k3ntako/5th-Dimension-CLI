@@ -56,6 +56,7 @@ class ReadingList {
                 }
                 const books = yield models_1.default.Book.findAll({ where });
                 let newBook = books[0];
+                // If book does not exist in database, add it
                 if (!newBook) {
                     const authorsAttributes = authors.map(name => ({ name }));
                     newBook = yield models_1.default.Book.create({
@@ -74,6 +75,7 @@ class ReadingList {
                             }],
                     });
                 }
+                // make association (aka add to reading list)
                 yield user.addBook(newBook);
                 return newBook;
             }

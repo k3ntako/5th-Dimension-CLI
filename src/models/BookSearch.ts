@@ -37,6 +37,7 @@ export default class BookSearch{
 
     const json: IGoogleResponse = await response.json();
 
+    // no books returned
     if(!json.items){
       return [];
     }

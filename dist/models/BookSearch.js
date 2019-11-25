@@ -44,6 +44,7 @@ class BookSearch {
                 throw new Error(`${response.status} - ${response.statusText}`);
             }
             const json = yield response.json();
+            // no books returned
             if (!json.items) {
                 return [];
             }

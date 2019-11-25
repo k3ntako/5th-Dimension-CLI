@@ -46,6 +46,8 @@ class ReadingListManager {
             this.listCount = yield ReadingList_1.default.getCount(this.user);
             console.log("");
             let promptChoices = defaultChoices.concat();
+            // Add choices given on the prompt
+            // if user has books in reading list, add view_list and remove_book as options
             if (this.listCount) {
                 const bookPlurality = this.listCount === 1 ? "" : "s";
                 promptChoices.push({
@@ -56,12 +58,14 @@ class ReadingListManager {
                     value: "remove_book",
                 });
             }
+            // if there are results from a Google Books search, add add_book as an option
             if (this.googleResults.length) {
                 promptChoices.splice(2, 0, {
                     name: node_emoji_1.default.get('star') + " Add book(s) above to your reading list",
                     value: "add_book",
                 });
             }
+            // add next page and previous page as options if appropriate
             const count = yield ReadingList_1.default.getCount(this.user);
             const hasNextPage = this.readingListPage && count > this.readingListPage * 10;
             const hasPreviousPage = this.readingListPage && this.readingListPage > 1;
@@ -80,17 +84,21 @@ class ReadingListManager {
                     value: "previous",
                 });
             }
+            // add exit as an option
             promptChoices.push(new inquirer_1.default.Separator(), {
                 name: node_emoji_1.default.get('closed_lock_with_key') + "  Exit",
                 value: "exit",
             }, new inquirer_1.default.Separator());
+            // Prompt options
             const promptOptions = {
                 message: "What would you like to do?",
                 name: "action",
                 choices: promptChoices,
                 type: "list",
             };
+            // prompt
             const { action } = yield ReadingListManager.prompt(promptOptions);
+            // calls appropriate actionn based on input
             switch (action) {
                 case "search":
                     clear_1.default();

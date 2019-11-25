@@ -53,6 +53,7 @@ export default class ReadingList {
       const books = await db.Book.findAll({ where });
       let newBook = books[0];
 
+      // If book does not exist in database, add it
       if (!newBook) {
         const authorsAttributes = authors.map(name => ({ name }));
 
@@ -73,6 +74,7 @@ export default class ReadingList {
         });
       }
 
+      // make association (aka add to reading list)
       await user.addBook(newBook);
 
       return newBook;

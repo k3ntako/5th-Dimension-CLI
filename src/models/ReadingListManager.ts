@@ -80,6 +80,8 @@ export default class ReadingListManager {
 
     let promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
 
+    // Add choices given on the prompt
+    // if user has books in reading list, add view_list and remove_book as options
     if (this.listCount) {
       const bookPlurality = this.listCount === 1 ? "" : "s";
 
@@ -92,6 +94,7 @@ export default class ReadingListManager {
       });
     }
 
+    // if there are results from a Google Books search, add add_book as an option
     if (this.googleResults.length){
       promptChoices.splice(2, 0, {
         name: emoji.get('star') + " Add book(s) above to your reading list",
@@ -99,6 +102,7 @@ export default class ReadingListManager {
       })
     }
 
+    // add next page and previous page as options if appropriate
     const count = await ReadingList.getCount(this.user);
     const hasNextPage = this.readingListPage && count > this.readingListPage * 10;
     const hasPreviousPage = this.readingListPage && this.readingListPage > 1;
@@ -118,6 +122,7 @@ export default class ReadingListManager {
       });
     }
 
+    // add exit as an option
     promptChoices.push(
       new inquirer.Separator(),
       {
@@ -127,6 +132,7 @@ export default class ReadingListManager {
       new inquirer.Separator(),
     );
 
+    // Prompt options
     const promptOptions: inquirer.ListQuestion = {
       message: "What would you like to do?",
       name: "action",
@@ -134,8 +140,10 @@ export default class ReadingListManager {
       type: "list",
     };
 
+    // prompt
     const { action } = await ReadingListManager.prompt(promptOptions);
 
+    // calls appropriate actionn based on input
     switch (action) {
       case "search":
         clear();
