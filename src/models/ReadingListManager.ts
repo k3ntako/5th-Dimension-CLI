@@ -134,35 +134,49 @@ export default class ReadingListManager {
 
     const { action } = await ReadingListManager.prompt(promptOptions);
 
-    if(action === "search"){
-      clear();
-      await this.promptSearch();
-    } else if (action === "view_list") {
-      clear();
-      await this.viewList();
-    } else if (action === "add_book") {
-      await this.promptAddBook();
-    } else if (action === "remove_book") {
-      clear();
-      await this.promptRemoveBook();
-    } else if (action === "next") {
-      clear();
-      this.readingListPage++;
-      await this.viewList();
-    } else if (action === "previous") {
-      clear();
-      this.readingListPage--;
-      await this.viewList();
-    } else {
-      warn('Command was not found: ' + action);
+    switch (action) {
+      case "search":
+        clear();
+        await this.promptSearch();
+        break;
+
+      case "view_list":
+        clear();
+        await this.viewList();
+        break;
+
+      case "add_book":
+        await this.promptAddBook();
+        break;
+
+      case "remove_book":
+        clear();
+        await this.promptRemoveBook();
+        break;
+
+      case "next":
+        clear();
+        this.readingListPage++;
+        await this.viewList();
+        break;
+
+      case "previous":
+        clear();
+        this.readingListPage--;
+        await this.viewList();
+        break;
+
+      case "exit":
+        clear();
+        await ReadingListManager.exit();
+        break;
+
+      default:
+        warn('Command was not found: ' + action);
+        break;
     }
 
-    if (action === "exit") {
-      clear();
-      await ReadingListManager.exit();
-    }else{
-      setTimeout(this.question, 300); // Delay before prompting them again
-    }
+    setTimeout(this.question, 300); // Delay before prompting them again
   }
 
   static logBook(book, idx?: number){

@@ -89,41 +89,41 @@ class ReadingListManager {
                 type: "list",
             };
             const { action } = yield ReadingListManager.prompt(promptOptions);
-            if (action === "search") {
-                clear_1.default();
-                yield this.promptSearch();
+            switch (action) {
+                case "search":
+                    clear_1.default();
+                    yield this.promptSearch();
+                    break;
+                case "view_list":
+                    clear_1.default();
+                    yield this.viewList();
+                    break;
+                case "add_book":
+                    yield this.promptAddBook();
+                    break;
+                case "remove_book":
+                    clear_1.default();
+                    yield this.promptRemoveBook();
+                    break;
+                case "next":
+                    clear_1.default();
+                    this.readingListPage++;
+                    yield this.viewList();
+                    break;
+                case "previous":
+                    clear_1.default();
+                    this.readingListPage--;
+                    yield this.viewList();
+                    break;
+                case "exit":
+                    clear_1.default();
+                    yield ReadingListManager.exit();
+                    break;
+                default:
+                    warn('Command was not found: ' + action);
+                    break;
             }
-            else if (action === "view_list") {
-                clear_1.default();
-                yield this.viewList();
-            }
-            else if (action === "add_book") {
-                yield this.promptAddBook();
-            }
-            else if (action === "remove_book") {
-                clear_1.default();
-                yield this.promptRemoveBook();
-            }
-            else if (action === "next") {
-                clear_1.default();
-                this.readingListPage++;
-                yield this.viewList();
-            }
-            else if (action === "previous") {
-                clear_1.default();
-                this.readingListPage--;
-                yield this.viewList();
-            }
-            else {
-                warn('Command was not found: ' + action);
-            }
-            if (action === "exit") {
-                clear_1.default();
-                yield ReadingListManager.exit();
-            }
-            else {
-                setTimeout(this.question, 300); // Delay before prompting them again
-            }
+            setTimeout(this.question, 300); // Delay before prompting them again
         });
         if (!user || !user.id) {
             throw new Error("No user passed in");
