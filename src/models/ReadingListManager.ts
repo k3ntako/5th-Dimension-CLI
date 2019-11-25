@@ -15,6 +15,7 @@ const error = (message: string) => console.error(`${emoji.get('warning')}  ${cha
 
 const prompt = inquirer.createPromptModule();
 const NUMBERS = [
+  emoji.get('zero'), // never used, but index matches the number
   emoji.get('one'),
   emoji.get('two'),
   emoji.get('three'),
@@ -181,7 +182,7 @@ export default class ReadingListManager {
   }
 
   static logBook(book, idx?: number){
-    const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx]}  ` : "";
+    const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx + 1]}  ` : "";
     const authors = book.authors && book.authors.join(", ");
 
     console.log(emojiNum + chalk.bold(book.title));
@@ -225,7 +226,7 @@ export default class ReadingListManager {
 
   async promptAddBook(){
     const promptChoices: inquirer.ChoiceCollection = this.googleResults.map((book, idx) => ({
-      name: `${NUMBERS[idx]}  ${book.title}`,
+      name: `${NUMBERS[idx + 1]}  ${book.title}`,
       value: idx,
     }));
 
@@ -256,7 +257,7 @@ export default class ReadingListManager {
     const books: IBook[] = await this.viewList();
 
     const promptChoices: inquirer.ChoiceCollection = books.map((book, idx) => ({
-      name: `${NUMBERS[idx]}  ${book.title}`,
+      name: `${NUMBERS[idx + 1]}  ${book.title}`,
       value: idx,
     }));
 

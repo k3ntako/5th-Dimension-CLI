@@ -23,6 +23,7 @@ const warn = (message) => console.warn(`${node_emoji_1.default.get('warning')}  
 const error = (message) => console.error(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('red')(message)}`);
 const prompt = inquirer_1.default.createPromptModule();
 const NUMBERS = [
+    node_emoji_1.default.get('zero'),
     node_emoji_1.default.get('one'),
     node_emoji_1.default.get('two'),
     node_emoji_1.default.get('three'),
@@ -152,7 +153,7 @@ class ReadingListManager {
         process.exit();
     }
     static logBook(book, idx) {
-        const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx]}  ` : "";
+        const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx + 1]}  ` : "";
         const authors = book.authors && book.authors.join(", ");
         console.log(emojiNum + chalk_1.default.bold(book.title));
         console.log("Author(s): " + (authors || "N/A"));
@@ -218,7 +219,7 @@ class ReadingListManager {
         return __awaiter(this, void 0, void 0, function* () {
             const books = yield this.viewList();
             const promptChoices = books.map((book, idx) => ({
-                name: `${NUMBERS[idx]}  ${book.title}`,
+                name: `${NUMBERS[idx + 1]}  ${book.title}`,
                 value: idx,
             }));
             const { bookIndices } = yield ReadingListManager.prompt({
