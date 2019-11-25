@@ -39,9 +39,9 @@ This is a node CLI program that allows a user to search the Google Books API and
 ```
 
 ### Using the program
-All interactions will involve your keyboard. Often, your will be asked to choose one or more options from a list of options. Move up and down with your arrow keys. If you are able to choose more than one option, use the `Space button` to select the options and hit `Return`/`Enter` to submit. Just use `Return`/`Enter` if you are only able to select one option.
+All interactions will involve your keyboard. Often, your will be asked to choose one or more options from a list of options. Move up and down with your arrow keys. If you are able to choose more than one option, use the `Space button` to select the options and hit `Return`/`Enter` to submit. Just use `Return`/`Enter` if you are only able to select one option.If you are asked for a text input, type your input and hit `Return`/`Enter`.
 
-If you are asked for a text input, type your input and hit `Return`/`Enter`.
+If you want to change the font size, please look at the settings in your Terminal application.
 
 ## Testing
 This program was built using test-driven development to ensure maximal test coverage. Mocha, Chai, and Sinon were used to write the tests.
@@ -68,6 +68,12 @@ Run tests:
 - Multiple user support, and password protect the data.
 - Online back-up of user data.
 - Importing/exporting data from/to CSV and/or JSON.
+- Multiple reading lists.
+- Customization options:
+  - Font-color
+  - Number of responses per search
+  - Number of books per page while viewing reading list
+  - Choose what fields (i.e., title, author, publisher, ISBN, and/or etc.) are displayed in a search
 
 ## Contributing
 Currently, this project is not accepting any contributions, however, feel free to fork the project!
