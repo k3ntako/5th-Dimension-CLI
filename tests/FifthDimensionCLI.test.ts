@@ -20,10 +20,6 @@ describe('index.ts', (): void => {
       const startFake: sinon.SinonSpy<any> = sinon.fake.throws(new Error('No user passed in'));
       sinon.replace(ReadingListManager.prototype, 'start', startFake);
 
-      // Fake console.error
-      const consoleErrorFake: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(console, 'error', consoleErrorFake);
-
       // Fake process.exit
       const processExitStub: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(process, 'exit', processExitStub);
@@ -31,7 +27,7 @@ describe('index.ts', (): void => {
 
       await start();
 
-      assert.strictEqual(consoleErrorFake.callCount, 3);
+      assert.strictEqual(fdCLI.fakes.consoleErrorFake.callCount, 3);
       assert.strictEqual(processExitStub.callCount, 1);
     });
   });

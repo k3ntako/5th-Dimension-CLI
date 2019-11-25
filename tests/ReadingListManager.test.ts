@@ -198,13 +198,10 @@ describe('ReadingListManager', (): void => {
       promptStub.resolves({ search: "Hello" }); // returns on every call after first
       sinon.replace(ReadingListManager, 'prompt', promptStub);
 
-      const consoleWarnFake: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(console, 'warn', consoleWarnFake);
-
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       await readingListManager.promptSearch();
 
-      const arg = consoleWarnFake.getCall(0).lastArg;
+      const arg = fdCLI.fakes.consoleWarnFake.getCall(0).lastArg;
       assert.include(arg, 'No search term entered');
       assert.include(arg, emoji.get('warning'));
     });
