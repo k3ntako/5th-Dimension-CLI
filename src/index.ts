@@ -11,9 +11,9 @@ const start = async () => {
     const readingListManager = new ReadingListManager(user);
     readingListManager.start();
   } catch (err) {
-    console.error("Sorry, there was an unexpected error with the program.");
-    console.error("If the issue persists, please contact the developer.\n");
-    console.error(err);
+    error("Sorry, there was an unexpected error with the program.");
+    error("If the issue persists, please contact the developer.\n");
+    error(err);
     process.exit();
   }
 }
