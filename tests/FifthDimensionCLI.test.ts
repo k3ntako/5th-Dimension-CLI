@@ -1,16 +1,16 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
-import FifthDimensionCLI from '../src/index';
+import start from '../src/index';
 import ReadingListManager from '../src/models/ReadingListManager';
 
 
-describe('FifthDimensionCLI', (): void => {
-  describe('.start()', (): void => {
-    it('should called ReadingListManager#start()', async (): Promise<void> => {
+describe('index.ts', (): void => {
+  describe('start()', (): void => {
+    it('should call ReadingListManager#start()', async (): Promise<void> => {
       const startFake: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(ReadingListManager.prototype, 'start', startFake);
 
-      await FifthDimensionCLI.start();
+      await start();
 
       assert.strictEqual(startFake.callCount, 1);
     });
@@ -29,7 +29,7 @@ describe('FifthDimensionCLI', (): void => {
       sinon.replace(process, 'exit', processExitStub);
 
 
-      await FifthDimensionCLI.start();
+      await start();
 
       assert.strictEqual(consoleErrorFake.callCount, 3);
       assert.strictEqual(processExitStub.callCount, 1);

@@ -14,24 +14,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ReadingListManager_1 = __importDefault(require("./models/ReadingListManager"));
 const User_1 = __importDefault(require("./models/User"));
-class FifthDimensionCLI {
-    constructor() { }
-    static start() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const user = yield User_1.default.loginAsDefault();
-                const readingListManager = new ReadingListManager_1.default(user);
-                readingListManager.start();
-            }
-            catch (err) {
-                // TODO: Make this red
-                console.error("Sorry there was an unexpected error with the program.");
-                console.error("If the issue persists, please contact the developer.\n");
-                console.error(err);
-                process.exit();
-            }
-        });
+const chalk_1 = __importDefault(require("chalk"));
+const node_emoji_1 = __importDefault(require("node-emoji"));
+const error = (message) => console.error(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('red')(message)}`);
+const start = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = yield User_1.default.loginAsDefault();
+        const readingListManager = new ReadingListManager_1.default(user);
+        readingListManager.start();
     }
-}
-exports.default = FifthDimensionCLI;
-FifthDimensionCLI.start();
+    catch (err) {
+        console.error("Sorry, there was an unexpected error with the program.");
+        console.error("If the issue persists, please contact the developer.\n");
+        console.error(err);
+        process.exit();
+    }
+});
+start();
+exports.default = start;
