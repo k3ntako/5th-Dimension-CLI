@@ -90,14 +90,16 @@ export default class ReadingList {
     });
   }
 
-  static async getList(user: IUser){
-    let books: IBook[] = await user.getBooks();
+  static async getList(user: IUser, page: number = 1){
+    const offset = (page - 1) * 10;
     let books: IBook[] = await user.getBooks({
       include: [{
         model: db.sequelize.models.UserBook,
         as: 'userBooks',
       }],
       order: [[ 'userBooks', 'created_at', 'DESC']],
+      offset,
+      limit: 10,
     });
     return books;
   }

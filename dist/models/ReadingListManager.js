@@ -60,13 +60,28 @@ class ReadingListManager {
                     value: "add_book",
                 });
             }
-            promptChoices = promptChoices.concat([
-                new inquirer_1.default.Separator(),
-                {
-                    name: node_emoji_1.default.get('closed_lock_with_key') + "  Exit",
-                    value: "exit",
-                },
-            ]);
+            const count = yield ReadingList_1.default.getCount(this.user);
+            const hasNextPage = this.readingListPage && count > this.readingListPage * 10;
+            const hasPreviousPage = this.readingListPage && this.readingListPage > 1;
+            if (hasNextPage || hasPreviousPage) {
+                promptChoices.push(new inquirer_1.default.Separator());
+            }
+            if (hasNextPage) {
+                promptChoices.push({
+                    name: node_emoji_1.default.get('arrow_forward') + "  Next page",
+                    value: "next",
+                });
+            }
+            if (hasPreviousPage) {
+                promptChoices.push({
+                    name: node_emoji_1.default.get('arrow_backward') + "  Previous page",
+                    value: "previous",
+                });
+            }
+            promptChoices.push(new inquirer_1.default.Separator(), {
+                name: node_emoji_1.default.get('closed_lock_with_key') + "  Exit",
+                value: "exit",
+            }, new inquirer_1.default.Separator());
             const promptOptions = {
                 message: "What would you like to do?",
                 name: "action",
@@ -89,6 +104,16 @@ class ReadingListManager {
                 clear_1.default();
                 yield this.promptRemoveBook();
             }
+            else if (action === "next") {
+                clear_1.default();
+                this.readingListPage++;
+                yield this.viewList();
+            }
+            else if (action === "previous") {
+                clear_1.default();
+                this.readingListPage--;
+                yield this.viewList();
+            }
             else if (action === "exit") {
                 clear_1.default();
                 yield ReadingListManager.exit();
@@ -105,6 +130,7 @@ class ReadingListManager {
         this.loading = new Loading_1.default();
         this.listCount = 0;
         this.googleResults = [];
+        this.readingListPage = 0; // 0 means reading list not shown
     }
     static prompt(question) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -131,6 +157,7 @@ class ReadingListManager {
     }
     promptSearch() {
         return __awaiter(this, void 0, void 0, function* () {
+            this.readingListPage = null;
             const { search } = yield ReadingListManager.prompt({
                 message: "Please enter your search term...",
                 name: "search",
@@ -146,6 +173,7 @@ class ReadingListManager {
             this.loading.stop();
             console.log(`${chalk_1.default.bold("Search results for:")} "${search}"\n`);
             this.googleResults.forEach(ReadingListManager.logBook);
+            this.readingListPage = null;
         });
     }
     promptAddBook() {
@@ -200,7 +228,8 @@ class ReadingListManager {
     viewList() {
         return __awaiter(this, void 0, void 0, function* () {
             clear_1.default();
-            const books = yield ReadingList_1.default.getList(this.user);
+            this.readingListPage = this.readingListPage || 1;
+            const books = yield ReadingList_1.default.getList(this.user, this.readingListPage);
             if (books.length) {
                 console.log(chalk_1.default.bold("Your Reading List:"));
                 books.forEach(ReadingListManager.logBook);

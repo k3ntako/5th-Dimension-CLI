@@ -9,6 +9,7 @@ import emoji from 'node-emoji';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { UserBook } from '../src/sequelize/models/user_book';
+import book from '../src/sequelize/models/book';
 
 
 let defaultUser;
@@ -96,7 +97,8 @@ describe('ReadingListManager', (): void => {
         {
           name: emoji.get('closed_lock_with_key') + "  Exit",
           value: "exit",
-        }
+        },
+        new inquirer.Separator(),
       ]);
     });
 
@@ -415,4 +417,123 @@ describe('ReadingListManager', (): void => {
     });
   });
 
+  describe('.next()', (): void => {
+    it('should prompt user to go to next page if there are more than 10 books', async (): Promise<void> => {
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
+      sinon.replace(ReadingList, 'getCount', getCountFake);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingListPage = 1;
+      await readingListManager.question();
+
+      const args = JSON.stringify(fakePrompt.args[0][0]);
+
+      assert.include(args, JSON.stringify({
+        name: emoji.get('arrow_forward') + "  Next page",
+        value: 'next',
+      }));
+    });
+
+    it('should not prompt user to go to next page if they are on the last page', async (): Promise<void> => {
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
+      sinon.replace(ReadingList, 'getCount', getCountFake);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingListPage = 2;
+      await readingListManager.question();
+
+      const args = JSON.stringify(fakePrompt.args[0][0]);
+
+      assert.notInclude(args, JSON.stringify({
+        name: emoji.get('arrow_forward') + "  Next page",
+        value: 'next',
+      }));
+    });
+
+    it('selecting next should increase page', async (): Promise<void> => {
+      // destroy all books
+      await db.Book.destroy({ where: {} });
+
+      // Add 12 books to reading list
+      const promises = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'].map(title => {
+        return db.Book.create({ title }).then(book => defaultUser.addBook(book));
+      });
+
+      await Promise.all(promises);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "next" });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingListPage = 1;
+      await readingListManager.question();
+
+      assert.strictEqual(readingListManager.readingListPage, 2);
+    });
+
+    it('should prompt user to go to back page if they are past the first page', async (): Promise<void> => {
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
+      sinon.replace(ReadingList, 'getCount', getCountFake);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingListPage = 2;
+      await readingListManager.question();
+
+      const args = JSON.stringify(fakePrompt.args[0][0]);
+
+      assert.include(args, JSON.stringify({
+        name: emoji.get('arrow_backward') + "  Previous page",
+        value: "previous",
+      }));
+    });
+
+    it('should not prompt user to go to back page if they are on the first page', async (): Promise<void> => {
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
+      sinon.replace(ReadingList, 'getCount', getCountFake);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingListPage = 1;
+      await readingListManager.question();
+
+      const args = JSON.stringify(fakePrompt.args[0][0]);
+
+      assert.notInclude(args, JSON.stringify({
+        name: emoji.get('arrow_backward') + "  Previous page",
+        value: "previous",
+      }));
+    });
+
+    it('selecting back should decrease page', async (): Promise<void> => {
+      // destroy all books
+      await db.Book.destroy({ where: {} });
+
+      // Add 12 books to reading list
+      const promises = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'].map(title => {
+        return db.Book.create({ title }).then(book => defaultUser.addBook(book));
+      });
+
+      await Promise.all(promises);
+
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "previous" });
+      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingListPage = 2;
+      await readingListManager.question();
+
+      assert.strictEqual(readingListManager.readingListPage, 1);
+    });
+  });
 });

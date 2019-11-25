@@ -192,7 +192,7 @@ describe('ReadingList', (): void => {
       await ReadingList.addBook(params2, defaultUser);
     });
 
-    it('should return reading list', async (): Promise<void> => {
+    it('should return reading list length', async (): Promise<void> => {
       const count = await ReadingList.getCount(defaultUser);
       assert.strictEqual(count, 2);
     });

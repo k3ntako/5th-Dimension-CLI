@@ -101,8 +101,8 @@ class ReadingList {
                         as: 'userBooks',
                     }],
                 order: [['userBooks', 'created_at', 'DESC']],
-                limit: 10,
                 offset,
+                limit: 10,
             });
             return books;
         });

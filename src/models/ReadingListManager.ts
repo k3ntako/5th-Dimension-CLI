@@ -40,6 +40,7 @@ export default class ReadingListManager {
   user: IUser;
   loading: Loading;
   listCount: number;
+  readingListPage: number;
   constructor(user) {
     if(!user || !user.id){
       throw new Error("No user passed in");
@@ -49,6 +50,7 @@ export default class ReadingListManager {
     this.loading = new Loading();
     this.listCount = 0;
     this.googleResults = [];
+    this.readingListPage = 0; // 0 means reading list not shown
   }
 
   static async prompt(question: inquirer.QuestionCollection): Promise<inquirer.Answers> {
@@ -95,13 +97,33 @@ export default class ReadingListManager {
       })
     }
 
-    promptChoices = promptChoices.concat([
+    const count = await ReadingList.getCount(this.user);
+    const hasNextPage = this.readingListPage && count > this.readingListPage * 10;
+    const hasPreviousPage = this.readingListPage && this.readingListPage > 1;
+    if (hasNextPage || hasPreviousPage) {
+      promptChoices.push(new inquirer.Separator());
+    }
+    if (hasNextPage) {
+      promptChoices.push({
+        name: emoji.get('arrow_forward') + "  Next page",
+        value: "next",
+      });
+    }
+    if (hasPreviousPage) {
+      promptChoices.push({
+        name: emoji.get('arrow_backward') + "  Previous page",
+        value: "previous",
+      });
+    }
+
+    promptChoices.push(
       new inquirer.Separator(),
       {
         name: emoji.get('closed_lock_with_key') + "  Exit",
         value: "exit",
       },
-    ]);
+      new inquirer.Separator(),
+    );
 
     const promptOptions: inquirer.ListQuestion = {
       message: "What would you like to do?",
@@ -123,6 +145,14 @@ export default class ReadingListManager {
     } else if (action === "remove_book") {
       clear();
       await this.promptRemoveBook();
+    } else if (action === "next") {
+      clear();
+      this.readingListPage++;
+      await this.viewList();
+    } else if (action === "previous") {
+      clear();
+      this.readingListPage--;
+      await this.viewList();
     } else if (action === "exit") {
       clear();
       await ReadingListManager.exit();
@@ -143,6 +173,8 @@ export default class ReadingListManager {
   }
 
   async promptSearch() {
+    this.readingListPage = null ;
+
     const { search } = await ReadingListManager.prompt({
       message: "Please enter your search term...",
       name: "search",
@@ -162,6 +194,8 @@ export default class ReadingListManager {
     console.log(`${chalk.bold("Search results for:")} "${search}"\n`);
 
     this.googleResults.forEach(ReadingListManager.logBook);
+
+    this.readingListPage = null;
   }
 
   async promptAddBook(){
@@ -227,7 +261,9 @@ export default class ReadingListManager {
   async viewList(){
     clear();
 
-    const books = await ReadingList.getList(this.user);
+    this.readingListPage = this.readingListPage || 1;
+
+    const books = await ReadingList.getList(this.user, this.readingListPage);
     if(books.length){
       console.log(chalk.bold("Your Reading List:"));
       books.forEach(ReadingListManager.logBook);
