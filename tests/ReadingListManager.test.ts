@@ -95,6 +95,10 @@ describe('ReadingListManager', (): void => {
         },
         new inquirer.Separator(),
         {
+          name: emoji.get('arrow_double_down') + "  Export to JSON",
+          value: "export_json",
+        },
+        {
           name: emoji.get('closed_lock_with_key') + "  Exit",
           value: "exit",
         },

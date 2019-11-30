@@ -12,6 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const models_1 = __importDefault(require("../sequelize/models"));
 class ReadingList {
     constructor() { }
@@ -107,6 +109,38 @@ class ReadingList {
                 limit: 10,
             });
             return books;
+        });
+    }
+    static exportToJSON(user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userBooks = yield user.getBooks({
+                // raw: true,
+                attributes: [
+                    'id', 'title', 'publisher', 'isbn_10', 'isbn_13',
+                    'issn', 'other_identifier', 'created_at', 'updated_at',
+                ],
+                include: [{
+                        model: models_1.default.Author,
+                        as: 'authors',
+                        attributes: ["id", "name"],
+                        through: {
+                            attributes: [] // remove join table
+                        }
+                    }, {
+                        // the include with no attributes makes sure that the UserBook join table is not included
+                        model: models_1.default.UserBook,
+                        attributes: [],
+                        as: 'UserBook',
+                    }]
+            });
+            const userBookJSON = JSON.stringify(userBooks);
+            const dataFolderDir = path_1.default.join(__dirname, '../data');
+            // if folder does not exist, create it
+            if (!fs_1.default.existsSync(dataFolderDir)) {
+                fs_1.default.mkdirSync(dataFolderDir);
+            }
+            const dataDir = path_1.default.join(dataFolderDir, '/data.json');
+            fs_1.default.writeFileSync(dataDir, userBookJSON);
         });
     }
 }

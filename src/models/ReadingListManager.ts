@@ -126,6 +126,10 @@ export default class ReadingListManager {
     promptChoices.push(
       new inquirer.Separator(),
       {
+        name: emoji.get('arrow_double_down') + "  Export to JSON",
+        value: "export_json",
+      },
+      {
         name: emoji.get('closed_lock_with_key') + "  Exit",
         value: "exit",
       },
@@ -174,6 +178,10 @@ export default class ReadingListManager {
         clear();
         this.readingListPage--;
         await this.viewList();
+        break;
+
+      case "export_json":
+        ReadingList.exportToJSON(this.user);
         break;
 
       case "exit":

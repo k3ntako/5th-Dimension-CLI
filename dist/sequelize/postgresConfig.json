@@ -4,7 +4,11 @@
         "password": null,
         "database": "fifth_dimension_cli",
         "host": "127.0.0.1",
-        "dialect": "postgres"
+        "dialect": "postgres",
+        "define": {
+            "createdAt": "created_at",
+            "updatedAt": "updated_at"
+        }
     },
     "test": {
         "username": null,
@@ -12,7 +16,11 @@
         "database": "fifth_dimension_cli_test",
         "host": "127.0.0.1",
         "dialect": "postgres",
-        "logging": false
+        "logging": false,
+        "define": {
+            "createdAt": "created_at",
+            "updatedAt": "updated_at"
+        }
     },
     "production": {
         "username": null,
@@ -20,6 +28,10 @@
         "database": "fifth_dimension_cli",
         "host": "127.0.0.1",
         "dialect": "postgres",
-        "logging": false
+        "logging": false,
+        "define": {
+            "createdAt": "created_at",
+            "updatedAt": "updated_at"
+        }
     }
 }

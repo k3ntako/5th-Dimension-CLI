@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import db from '../sequelize/models';
 import Book from './Book';
 import { Book as IBook } from '../sequelize/models/book';
@@ -104,5 +106,41 @@ export default class ReadingList {
       limit: 10,
     });
     return books;
+  }
+
+  static async exportToJSON(user){
+    const userBooks = await user.getBooks({
+      // raw: true,
+      attributes: [
+        'id', 'title', 'publisher', 'isbn_10', 'isbn_13',
+        'issn', 'other_identifier', 'created_at', 'updated_at',
+      ],
+      include: [{
+        model: db.Author,
+        as: 'authors',
+        attributes: ["id", "name"],
+        through: {
+          attributes: [] // remove join table
+        }
+
+      }, {
+        // the include with no attributes makes sure that the UserBook join table is not included
+        model: db.UserBook,
+        attributes: [],
+        as: 'UserBook',
+      }]
+    });
+
+    const userBookJSON = JSON.stringify(userBooks);
+
+    const dataFolderDir = path.join(__dirname, '../data');
+    // if folder does not exist, create it
+    if (!fs.existsSync(dataFolderDir)) {
+      fs.mkdirSync(dataFolderDir);
+    }
+
+    const dataDir = path.join(dataFolderDir, '/data.json')
+
+    fs.writeFileSync(dataDir, userBookJSON);
   }
 }

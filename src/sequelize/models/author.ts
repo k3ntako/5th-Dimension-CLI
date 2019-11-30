@@ -51,6 +51,8 @@ export default (sequelize, DataTypes) => {
   });
 
   Author.associate = function (models) {
+    Author.hasMany(models.AuthorBook);
+
     Author.belongsToMany(models.Book, {
       through: models.AuthorBook,
       as: "books",

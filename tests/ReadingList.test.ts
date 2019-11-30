@@ -2,6 +2,8 @@ import { assert } from 'chai';
 import ReadingList from '../src/models/ReadingList';
 import User from '../src/models/User';
 import Book from '../src/models/Book';
+import fs from 'fs';
+import path from 'path';
 
 import db from '../src/sequelize/models';
 import { IBook } from '../src/sequelize/models/book';
@@ -195,6 +197,50 @@ describe('ReadingList', (): void => {
     it('should return reading list length', async (): Promise<void> => {
       const count = await ReadingList.getCount(defaultUser);
       assert.strictEqual(count, 2);
+    });
+  });
+
+  describe('.exportToJSON', (): void => {
+    before(async (): Promise<void> => {
+      // Delete all the books added above
+      await db.UserBook.destroy({ where: {} });
+      await ReadingList.addBook(params, defaultUser);
+      await ReadingList.addBook(params2, defaultUser);
+    });
+
+    it('should write JSON to file', async (): Promise<void> => {
+      await ReadingList.exportToJSON(defaultUser);
+
+      const dataDir = path.join(__dirname, '../src/data/data.json');
+
+      const userBooksStr = fs.readFileSync(dataDir, 'utf8');
+      const userBooks = JSON.parse(userBooksStr);
+
+      // The book should have all the fields provided.
+      // Remove the "authors" field because it's a bit more complicated to test.
+      // and it is tested below.
+      const paramsWithoutAuthors = Object.assign({}, params);
+      delete paramsWithoutAuthors.authors;
+
+      const params2WithoutAuthors = Object.assign({}, params2);
+      delete params2WithoutAuthors.authors;
+
+
+      assert.lengthOf(userBooks, 2);
+      assert.include(userBooks[0], paramsWithoutAuthors);
+      assert.include(userBooks[1], params2WithoutAuthors);
+
+      // should have same number of authors
+      assert.lengthOf(userBooks[0].authors, params.authors.length);
+      assert.lengthOf(userBooks[1].authors, params.authors.length);
+
+      // author object should have name and id fields
+      assert.hasAllKeys(userBooks[0].authors[0], ['id', 'name']);
+      assert.hasAllKeys(userBooks[1].authors[0], ['id', 'name']);
+
+      // assert author name is correct
+      assert.strictEqual(userBooks[0].authors[0].name, params.authors[0]);
+      assert.strictEqual(userBooks[1].authors[0].name, params2.authors[0]);
     });
   });
 });

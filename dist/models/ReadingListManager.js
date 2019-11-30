@@ -86,6 +86,9 @@ class ReadingListManager {
             }
             // add exit as an option
             promptChoices.push(new inquirer_1.default.Separator(), {
+                name: node_emoji_1.default.get('arrow_double_down') + "  Export to JSON",
+                value: "export_json",
+            }, {
                 name: node_emoji_1.default.get('closed_lock_with_key') + "  Exit",
                 value: "exit",
             }, new inquirer_1.default.Separator());
@@ -124,6 +127,9 @@ class ReadingListManager {
                     clear_1.default();
                     this.readingListPage--;
                     yield this.viewList();
+                    break;
+                case "export_json":
+                    ReadingList_1.default.exportToJSON(this.user);
                     break;
                 case "exit":
                     clear_1.default();
