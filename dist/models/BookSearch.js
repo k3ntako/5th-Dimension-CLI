@@ -20,7 +20,8 @@ const node_emoji_1 = __importDefault(require("node-emoji"));
 const warn = (message) => console.warn(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('orange')(message)}`);
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
-const FIELDS = "&fields=items(volumeInfo(title,authors,publisher,industryIdentifiers))";
+const FIELDS = "&fields=items(id,volumeInfo(title,authors,publisher,industryIdentifiers))";
+const FIELDS_BY_ID = "&fields=id,volumeInfo(title,authors,publisher,industryIdentifiers)";
 const LIMIT = '&maxResults=5';
 class BookSearch {
     constructor() { }
@@ -44,6 +45,7 @@ class BookSearch {
                 throw new Error(`${response.status} - ${response.statusText}`);
             }
             const json = yield response.json();
+            console.log(json);
             // no books returned
             if (!json.items) {
                 return [];

@@ -243,4 +243,24 @@ describe('ReadingList', (): void => {
       assert.strictEqual(userBooks[1].authors[0].name, params2.authors[0]);
     });
   });
+
+  describe('.importFromJSON', (): void => {
+    // before(async (): Promise<void> => {
+    //   // Delete all the books added above
+    //   await db.UserBook.destroy({ where: {} });
+    //   await ReadingList.addBook(params, defaultUser);
+    //   await ReadingList.addBook(params2, defaultUser);
+    // });
+
+    it('should read JSON from file', async (): Promise<void> => {
+      const userBooksRL = await ReadingList.importFromJSON(defaultUser);
+
+      const dataDir = path.join(__dirname, '../src/data/data.json');
+
+      const userBooksStr = fs.readFileSync(dataDir, 'utf8');
+      const userBooksTesting = JSON.parse(userBooksStr);
+
+      assert.deepEqual(userBooksRL, userBooksTesting);
+    });
+  });
 });

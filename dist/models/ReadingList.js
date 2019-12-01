@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const models_1 = __importDefault(require("../sequelize/models"));
+const dataFolderDir = path_1.default.join(__dirname, '../data');
+const dataFileDir = path_1.default.join(dataFolderDir, '/data.json');
 class ReadingList {
     constructor() { }
     static getCount(user) {
@@ -134,13 +136,26 @@ class ReadingList {
                     }]
             });
             const userBookJSON = JSON.stringify(userBooks);
-            const dataFolderDir = path_1.default.join(__dirname, '../data');
             // if folder does not exist, create it
             if (!fs_1.default.existsSync(dataFolderDir)) {
                 fs_1.default.mkdirSync(dataFolderDir);
             }
-            const dataDir = path_1.default.join(dataFolderDir, '/data.json');
-            fs_1.default.writeFileSync(dataDir, userBookJSON);
+            fs_1.default.writeFileSync(dataFileDir, userBookJSON);
+        });
+    }
+    static importFromJSON(user, dir = dataFileDir) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userBooksStr = fs_1.default.readFileSync(dataFileDir, 'utf8');
+                const userBooks = JSON.parse(userBooksStr);
+                if (!Array.isArray(userBooks)) {
+                    throw new Error(`Expected file to be an array but got ${typeof userBooks}`);
+                }
+                return userBooks;
+            }
+            catch (err) {
+                console.log("Cannot find file");
+            }
         });
     }
 }

@@ -5,6 +5,10 @@ import Book from './Book';
 import { Book as IBook } from '../sequelize/models/book';
 import { User as IUser } from '../sequelize/models/user';
 
+const dataFolderDir: string = path.join(__dirname, '../data');
+const dataFileDir: string = path.join(dataFolderDir, '/data.json');
+
+
 interface ITitleAndPublisher {
   title?: string;
   publisher?: string;
@@ -133,14 +137,26 @@ export default class ReadingList {
 
     const userBookJSON = JSON.stringify(userBooks);
 
-    const dataFolderDir = path.join(__dirname, '../data');
     // if folder does not exist, create it
     if (!fs.existsSync(dataFolderDir)) {
       fs.mkdirSync(dataFolderDir);
     }
 
-    const dataDir = path.join(dataFolderDir, '/data.json')
+    fs.writeFileSync(dataFileDir, userBookJSON);
+  }
 
-    fs.writeFileSync(dataDir, userBookJSON);
+  static async importFromJSON(user, dir = dataFileDir) {
+    try {
+      const userBooksStr = fs.readFileSync(dataFileDir, 'utf8');
+      const userBooks = JSON.parse(userBooksStr);
+
+      if (!Array.isArray(userBooks)){
+        throw new Error(`Expected file to be an array but got ${typeof userBooks}`);
+      }
+
+      return userBooks;
+    } catch(err) {
+      console.log("Cannot find file");
+    }
   }
 }
