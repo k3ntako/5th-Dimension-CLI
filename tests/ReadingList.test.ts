@@ -6,7 +6,10 @@ import fs from 'fs';
 import path from 'path';
 
 import db from '../src/sequelize/models';
-import { IBook } from '../src/sequelize/models/book';
+import { Book as IBook } from '../src/sequelize/models/book';
+
+const dataFolderDir: string = path.join(__dirname, '/data');
+const fileName: string = '/test_data.json';
 
 const params = {
   title: "Test-driven Development",
@@ -209,9 +212,31 @@ describe('ReadingList', (): void => {
     });
 
     it('should write JSON to file', async (): Promise<void> => {
-      await ReadingList.exportToJSON(defaultUser);
+      const userBooksJSON = await defaultUser.getBooks({
+        // raw: true,
+        attributes: [
+          'id', 'title', 'publisher', 'isbn_10', 'isbn_13',
+          'issn', 'other_identifier', 'created_at', 'updated_at',
+        ],
+        include: [{
+          model: db.Author,
+          as: 'authors',
+          attributes: ["id", "name"],
+          through: {
+            attributes: [] // remove join table
+          }
 
-      const dataDir = path.join(__dirname, '../src/data/data.json');
+        }, {
+          // the include with no attributes makes sure that the UserBook join table is not included
+          model: db.UserBook,
+          attributes: [],
+          as: 'UserBook',
+        }]
+      });
+
+      await ReadingList.exportToJSON(userBooksJSON, dataFolderDir, fileName);
+
+      const dataDir = path.join(dataFolderDir, fileName);
 
       const userBooksStr = fs.readFileSync(dataDir, 'utf8');
       const userBooks = JSON.parse(userBooksStr);
@@ -241,26 +266,6 @@ describe('ReadingList', (): void => {
       // assert author name is correct
       assert.strictEqual(userBooks[0].authors[0].name, params.authors[0]);
       assert.strictEqual(userBooks[1].authors[0].name, params2.authors[0]);
-    });
-  });
-
-  describe('.importFromJSON', (): void => {
-    // before(async (): Promise<void> => {
-    //   // Delete all the books added above
-    //   await db.UserBook.destroy({ where: {} });
-    //   await ReadingList.addBook(params, defaultUser);
-    //   await ReadingList.addBook(params2, defaultUser);
-    // });
-
-    it('should read JSON from file', async (): Promise<void> => {
-      const userBooksRL = await ReadingList.importFromJSON(defaultUser);
-
-      const dataDir = path.join(__dirname, '../src/data/data.json');
-
-      const userBooksStr = fs.readFileSync(dataDir, 'utf8');
-      const userBooksTesting = JSON.parse(userBooksStr);
-
-      assert.deepEqual(userBooksRL, userBooksTesting);
     });
   });
 });

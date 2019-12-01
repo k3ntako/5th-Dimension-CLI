@@ -113,34 +113,15 @@ class ReadingList {
             return books;
         });
     }
-    static exportToJSON(user) {
+    static exportToJSON(userBooks, folderDir = dataFolderDir, fileName = '/data.json') {
         return __awaiter(this, void 0, void 0, function* () {
-            const userBooks = yield user.getBooks({
-                // raw: true,
-                attributes: [
-                    'id', 'title', 'publisher', 'isbn_10', 'isbn_13',
-                    'issn', 'other_identifier', 'created_at', 'updated_at',
-                ],
-                include: [{
-                        model: models_1.default.Author,
-                        as: 'authors',
-                        attributes: ["id", "name"],
-                        through: {
-                            attributes: [] // remove join table
-                        }
-                    }, {
-                        // the include with no attributes makes sure that the UserBook join table is not included
-                        model: models_1.default.UserBook,
-                        attributes: [],
-                        as: 'UserBook',
-                    }]
-            });
             const userBookJSON = JSON.stringify(userBooks);
             // if folder does not exist, create it
-            if (!fs_1.default.existsSync(dataFolderDir)) {
-                fs_1.default.mkdirSync(dataFolderDir);
+            if (!fs_1.default.existsSync(folderDir)) {
+                fs_1.default.mkdirSync(folderDir);
             }
-            fs_1.default.writeFileSync(dataFileDir, userBookJSON);
+            const fileDir = path_1.default.join(folderDir, fileName);
+            fs_1.default.writeFileSync(fileDir, userBookJSON);
         });
     }
     static importFromJSON(user, dir = dataFileDir) {

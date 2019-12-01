@@ -18,6 +18,7 @@ const DEFAULT_USER = {
     last_name: "User",
     email: "default@example.com",
 };
+exports.DEFAULT_USER = DEFAULT_USER;
 class User {
     constructor(params) { }
     static create(params) {

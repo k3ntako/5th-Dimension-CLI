@@ -112,37 +112,16 @@ export default class ReadingList {
     return books;
   }
 
-  static async exportToJSON(user){
-    const userBooks = await user.getBooks({
-      // raw: true,
-      attributes: [
-        'id', 'title', 'publisher', 'isbn_10', 'isbn_13',
-        'issn', 'other_identifier', 'created_at', 'updated_at',
-      ],
-      include: [{
-        model: db.Author,
-        as: 'authors',
-        attributes: ["id", "name"],
-        through: {
-          attributes: [] // remove join table
-        }
-
-      }, {
-        // the include with no attributes makes sure that the UserBook join table is not included
-        model: db.UserBook,
-        attributes: [],
-        as: 'UserBook',
-      }]
-    });
-
+  static async exportToJSON(userBooks, folderDir = dataFolderDir, fileName = '/data.json'){
     const userBookJSON = JSON.stringify(userBooks);
 
     // if folder does not exist, create it
-    if (!fs.existsSync(dataFolderDir)) {
-      fs.mkdirSync(dataFolderDir);
+    if (!fs.existsSync(folderDir)) {
+      fs.mkdirSync(folderDir);
     }
 
-    fs.writeFileSync(dataFileDir, userBookJSON);
+    const fileDir = path.join(folderDir, fileName);
+    fs.writeFileSync(fileDir, userBookJSON);
   }
 
   static async importFromJSON(user, dir = dataFileDir) {

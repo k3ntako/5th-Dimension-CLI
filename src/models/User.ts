@@ -5,6 +5,7 @@ const DEFAULT_USER = {
   email: "default@example.com",
 }
 
+export { DEFAULT_USER };
 
 export default class User {
   constructor(params) {}
