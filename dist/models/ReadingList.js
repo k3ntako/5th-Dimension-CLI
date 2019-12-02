@@ -1,143 +1,84 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-const models_1 = __importDefault(require("../sequelize/models"));
 const dataFolderDir = path_1.default.join(__dirname, '../data');
 const dataFileDir = path_1.default.join(dataFolderDir, '/data.json');
 class ReadingList {
-    constructor() { }
-    static getCount(user) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield user.countBooks();
-        });
-    }
-    static addBook(book, user) {
-        return __awaiter(this, void 0, void 0, function* () {
+    constructor() {
+        this.getCount = () => {
+            return this.list.length;
+        };
+        this.addBook = (book) => {
             try {
-                const { isbn_10, isbn_13, issn, other_identifier, title, publisher, authors } = book;
-                // Check if this book already exists in database
-                // Prioritize ISBN, ISSN, Other Identifier, Title/Publisher/Author, in that order
-                let where;
-                if (isbn_10 || isbn_13) {
-                    where = {
-                        [models_1.default.Sequelize.Op.or]: {
-                            isbn_10,
-                            isbn_13,
-                        }
-                    };
+                const { id, title, publisher, authors } = book;
+                if (!id) {
+                    console.warn("This book does not have a valid ID and cannot be added to your list");
+                    return;
                 }
-                else if (issn) {
-                    where = {
-                        issn,
-                    };
+                console.log(this.list);
+                const exists = this.list.some(book => book.id === id);
+                if (exists) {
+                    console.warn("This book is already in your reading list");
+                    return;
                 }
-                else if (other_identifier) {
-                    where = {
-                        other_identifier,
-                    };
-                }
-                else {
-                    let and = {
-                        title
-                    };
-                    and.publisher = publisher || null;
-                    where = {
-                        [models_1.default.Sequelize.Op.and]: and,
-                    };
-                }
-                const books = yield models_1.default.Book.findAll({ where });
-                let newBook = books[0];
-                // If book does not exist in database, add it
-                if (!newBook) {
-                    const authorsAttributes = authors.map(name => ({ name }));
-                    newBook = yield models_1.default.Book.create({
-                        title,
-                        publisher,
-                        authors: authorsAttributes,
-                        isbn_10,
-                        isbn_13,
-                        issn,
-                        other_identifier,
-                    }, {
-                        include: [{
-                                model: models_1.default.Author,
-                                through: models_1.default.AuthorBook,
-                                as: 'authors',
-                            }],
-                    });
-                }
-                // make association (aka add to reading list)
-                yield user.addBook(newBook);
-                return newBook;
+                this.list.push({ id, title, publisher, authors });
             }
             catch (err) {
                 console.error(err);
             }
-        });
-    }
-    static removeBook(id, userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield models_1.default.UserBook.destroy({
-                where: {
-                    book_id: id,
-                    user_id: userId,
-                },
-            });
-        });
-    }
-    static getList(user, page) {
-        return __awaiter(this, void 0, void 0, function* () {
+        };
+        this.removeBook = (id) => {
+            this.list = this.list.filter(book => book.id !== id);
+        };
+        this.getList = (page = 1) => {
             const offset = (page - 1) * 10;
-            let books = yield user.getBooks({
-                include: [{
-                        model: models_1.default.sequelize.models.UserBook,
-                        as: 'userBooks',
-                    }],
-                order: [['userBooks', 'created_at', 'DESC']],
-                offset,
-                limit: 10,
-            });
-            return books;
-        });
+            return this.list.slice(offset, offset + 10);
+        };
+        this.saveToFile = (folderDir = dataFolderDir, dataFileName = '/data.json') => {
+            ReadingList.exportToJSON(this.list, folderDir, dataFileName);
+        };
+        this.list = [];
     }
-    static exportToJSON(userBooks, folderDir = dataFolderDir, fileName = '/data.json') {
-        return __awaiter(this, void 0, void 0, function* () {
-            const userBookJSON = JSON.stringify(userBooks);
-            // if folder does not exist, create it
-            if (!fs_1.default.existsSync(folderDir)) {
-                fs_1.default.mkdirSync(folderDir);
-            }
-            const fileDir = path_1.default.join(folderDir, fileName);
-            fs_1.default.writeFileSync(fileDir, userBookJSON);
-        });
+    static start() {
+        const readingList = new ReadingList();
+        readingList.list = ReadingList.importFromJSON();
+        return readingList;
     }
-    static importFromJSON(user, dir = dataFileDir) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const userBooksStr = fs_1.default.readFileSync(dataFileDir, 'utf8');
-                const userBooks = JSON.parse(userBooksStr);
-                if (!Array.isArray(userBooks)) {
-                    throw new Error(`Expected file to be an array but got ${typeof userBooks}`);
-                }
-                return userBooks;
+    static exportToJSON(userBooks, folderDir = dataFolderDir, dataFileName = '/data.json') {
+        if (!Array.isArray(userBooks)) {
+            throw new Error(`Expected userBooks to be an array but got ${typeof userBooks}`);
+        }
+        const userBookJSON = JSON.stringify(userBooks);
+        // if folder does not exist, create it
+        if (!fs_1.default.existsSync(folderDir)) {
+            fs_1.default.mkdirSync(folderDir);
+        }
+        const fileDir = path_1.default.join(folderDir, dataFileName);
+        fs_1.default.writeFileSync(fileDir, userBookJSON);
+    }
+    static importFromJSON(dir = dataFileDir, logging = false) {
+        try {
+            if (!fs_1.default.existsSync(dir)) {
+                logging && console.warn("Could not find file. Returning empty array");
+                return [];
             }
-            catch (err) {
-                console.log("Cannot find file");
+            const userBooksStr = fs_1.default.readFileSync(dir, 'utf8');
+            const userBooks = JSON.parse(userBooksStr);
+            if (!Array.isArray(userBooks)) {
+                console.warn(`Expected userBooks to be an array but got ${typeof userBooks}`);
+                console.warn('Returning an empty array...');
+                return [];
             }
-        });
+            return userBooks;
+        }
+        catch (err) {
+            console.warn("Could not find file");
+            return [];
+        }
     }
 }
 exports.default = ReadingList;

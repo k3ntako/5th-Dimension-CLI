@@ -2,13 +2,10 @@ import BookSearch from './BookSearch';
 import ReadingList from './ReadingList';
 import inquirer from 'inquirer';
 import Book from './Book';
-import User from './User';
 import Loading from './Loading';
 import clear from 'clear';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
-import { User as IUser } from '../sequelize/models/user';
-import { Book as IBook } from '../sequelize/models/book';
 
 const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk.keyword('orange')(message)}`);
 const error = (message: string) => console.error(`${emoji.get('warning')}  ${chalk.keyword('red')(message)}`);
@@ -39,20 +36,14 @@ const defaultChoices: inquirer.ChoiceCollection = [{
 
 export default class ReadingListManager {
   googleResults: Book[];
-  user: IUser;
   loading: Loading;
-  listCount: number;
   readingListPage: number;
-  constructor(user) {
-    if(!user || !user.id){
-      throw new Error("No user passed in");
-    }
-
-    this.user = user;
+  readingList: ReadingList;
+  constructor() {
     this.loading = new Loading();
-    this.listCount = 0;
     this.googleResults = [];
     this.readingListPage = 0; // 0 means reading list not shown
+    this.readingList = ReadingList.start();
   }
 
   static async prompt(question: inquirer.QuestionCollection): Promise<inquirer.Answers> {
@@ -67,7 +58,6 @@ export default class ReadingListManager {
   }
 
   static exit(){
-
     console.log(`Thank you for using ${APP_NAME}!`)
     console.log("Hope to see you soon!");
 
@@ -75,18 +65,18 @@ export default class ReadingListManager {
   }
 
   question = async (): Promise<void> => {
-    this.listCount = await ReadingList.getCount(this.user);
+    const listCount = this.readingList.getCount();
     console.log("");
 
     let promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
 
     // Add choices given on the prompt
     // if user has books in reading list, add view_list and remove_book as options
-    if (this.listCount) {
-      const bookPlurality = this.listCount === 1 ? "" : "s";
+    if (listCount > 0) {
+      const bookPlurality = listCount === 1 ? "" : "s";
 
       promptChoices.push({
-        name: emoji.get('books') + ` View your reading list (${this.listCount} book${bookPlurality})`,
+        name: emoji.get('books') + ` View your reading list (${listCount} book${bookPlurality})`,
         value: "view_list",
       }, {
         name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
@@ -103,8 +93,7 @@ export default class ReadingListManager {
     }
 
     // add next page and previous page as options if appropriate
-    const count = await ReadingList.getCount(this.user);
-    const hasNextPage = this.readingListPage && count > this.readingListPage * 10;
+    const hasNextPage = this.readingListPage && listCount > this.readingListPage * 10;
     const hasPreviousPage = this.readingListPage && this.readingListPage > 1;
     if (hasNextPage || hasPreviousPage) {
       promptChoices.push(new inquirer.Separator());
@@ -125,10 +114,6 @@ export default class ReadingListManager {
     // add exit as an option
     promptChoices.push(
       new inquirer.Separator(),
-      {
-        name: emoji.get('arrow_double_down') + "  Export to JSON",
-        value: "export_json",
-      },
       {
         name: emoji.get('closed_lock_with_key') + "  Exit",
         value: "exit",
@@ -180,10 +165,6 @@ export default class ReadingListManager {
         await this.viewList();
         break;
 
-      case "export_json":
-        ReadingList.exportToJSON(this.user);
-        break;
-
       case "exit":
         clear();
         await ReadingListManager.exit();
@@ -199,7 +180,7 @@ export default class ReadingListManager {
 
   static logBook(book, idx?: number){
     const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx + 1]}  ` : "";
-    const authors = book.authors && book.authors.join(", ");
+    const authors = book.authors && book.authors.length && book.authors.join(", ");
 
     console.log(emojiNum + chalk.bold(book.title));
     console.log("Author(s): " + (authors || "N/A"));
@@ -207,7 +188,7 @@ export default class ReadingListManager {
   }
 
   async promptSearch() {
-    this.readingListPage = null ;
+    this.readingListPage = 0;
 
     const { search } = await ReadingListManager.prompt({
       message: "Please enter your search term...",
@@ -260,10 +241,10 @@ export default class ReadingListManager {
     }
 
     const books = this.googleResults.filter((_, idx) => bookIndices.includes(idx));
-    const titles = books.map(book => chalk.greenBright(book.title)).join('\n')
+    const titles = books.map(book => chalk.greenBright(book.title)).join('\n');
 
-    const promises = books.map(book => ReadingList.addBook(book, this.user));
-    await Promise.all(promises);
+    books.map(book => this.readingList.addBook(book));
+    this.readingList.saveToFile();
 
     console.log(chalk.bold("Book(s) added:"));
     console.log(titles);
@@ -293,7 +274,7 @@ export default class ReadingListManager {
     const booksToRemove = books.filter((_, idx) => bookIndices.includes(idx));
 
     const titles = booksToRemove.map(book => chalk.redBright(book.title)).join('\n')
-    const promises = booksToRemove.map(book => ReadingList.removeBook(book.id, this.user.id));
+    const promises = booksToRemove.map(book => this.readingList.removeBook(book.id));
     await Promise.all(promises);
 
     console.log(chalk.bold("Books removed:"))
@@ -307,7 +288,7 @@ export default class ReadingListManager {
       this.readingListPage = 1;
     }
 
-    const books = await ReadingList.getList(this.user, this.readingListPage);
+    const books = await this.readingList.getList(this.readingListPage);
     if(books.length){
       console.log(chalk.bold("Your Reading List:"));
       books.forEach(ReadingListManager.logBook);

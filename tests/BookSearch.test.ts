@@ -46,7 +46,8 @@ describe('BookSearch', (): void => {
 
     it('each item should have appropriate keys', (): void => {
       results.forEach(book => {
-        assert.hasAllKeys(book, ['id', 'title', 'authors', 'publisher', 'isbn_10', 'isbn_13', 'issn', 'other_identifier']);
+        assert.instanceOf(book, Book);
+        assert.hasAllKeys(book, ['id', 'title', 'authors', 'publisher']);
         assert.doesNotHaveAnyKeys(book, ['industryIdentifiers', 'volumeInfo', 'items']);
       });
     });

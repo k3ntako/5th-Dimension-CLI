@@ -20,7 +20,7 @@ const node_emoji_1 = __importDefault(require("node-emoji"));
 const warn = (message) => console.warn(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('orange')(message)}`);
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
-const FIELDS = "&fields=items(id,volumeInfo(title,authors,publisher,industryIdentifiers))";
+const FIELDS = "&fields=items(id,volumeInfo(title,authors,publisher))";
 const LIMIT = '&maxResults=5';
 class BookSearch {
     constructor() { }
@@ -50,7 +50,8 @@ class BookSearch {
             }
             const books = [];
             json.items.forEach(bookInfo => {
-                const book = Book_1.default.create(bookInfo.volumeInfo);
+                const params = Object.assign({ id: bookInfo.id }, bookInfo.volumeInfo);
+                const book = Book_1.default.create(params);
                 if (book)
                     books.push(book);
             });

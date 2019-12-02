@@ -1,118 +1,77 @@
 import fs from 'fs';
 import path from 'path';
-import db from '../sequelize/models';
 import Book from './Book';
-import { Book as IBook } from '../sequelize/models/book';
-import { User as IUser } from '../sequelize/models/user';
 
-const dataFolderDir: string = path.join(__dirname, '../data');
-const dataFileDir: string = path.join(dataFolderDir, '/data.json');
+const environment = process.env.NODE_ENV;
+const config = require('../../config')[environment || "production"];
+const dataFolderDir: string = config.dataFolderDir;
+const dataFileDir: string = config.dataFileDir;
+const dataFileName: string = config.dataFileName;
 
 
-interface ITitleAndPublisher {
+
+interface IBook {
+  id: string;
   title?: string;
+  authors: string[];
   publisher?: string;
 }
 
 export default class ReadingList {
-  searchStr: string;
-  constructor() {}
-
-  static async getCount(user){
-    return await user.countBooks();
+  list: IBook[];
+  constructor() {
+    this.list = [];
   }
 
-  static async addBook(book: Book, user: IUser){
+  static start(): ReadingList{
+    const readingList: ReadingList = new ReadingList();
+    readingList.list = ReadingList.importFromJSON();
+    return readingList;
+  }
+
+  getCount = (): number => {
+    return this.list.length;
+  }
+
+  addBook = (book: Book): void => {
     try{
-      const { isbn_10, isbn_13, issn, other_identifier, title, publisher, authors } = book;
+      const { id, title, publisher, authors } = book;
 
-      // Check if this book already exists in database
-      // Prioritize ISBN, ISSN, Other Identifier, Title/Publisher/Author, in that order
-      let where: {};
-      if (isbn_10 || isbn_13) {
-        where = {
-          [db.Sequelize.Op.or]: {
-            isbn_10,
-            isbn_13,
-          }
-        };
-      } else if (issn) {
-        where = {
-          issn,
-        };
-      } else if (other_identifier) {
-        where = {
-          other_identifier,
-        };
-      } else {
-        let and: ITitleAndPublisher = {
-          title
-        };
-        and.publisher = publisher || null;
-
-        where = {
-          [db.Sequelize.Op.and]: and,
-          // TODO: add author
-        };
+      if (!id) {
+        console.warn("This book does not have a valid ID and cannot be added to your list");
+        return;
       }
 
-      const books = await db.Book.findAll({ where });
-      let newBook = books[0];
-
-      // If book does not exist in database, add it
-      if (!newBook) {
-        const authorsAttributes = authors.map(name => ({ name }));
-
-        newBook = await db.Book.create({
-          title,
-          publisher,
-          authors: authorsAttributes,
-          isbn_10,
-          isbn_13,
-          issn,
-          other_identifier,
-        }, {
-          include: [{
-            model: db.Author,
-            through: db.AuthorBook,
-            as: 'authors',
-          }],
-        });
+      const exists = this.list.some(book => book.id === id);
+      if (exists) {
+        console.warn("This book is already in your reading list");
+        return;
       }
 
-      // make association (aka add to reading list)
-      await user.addBook(newBook);
-
-      return newBook;
+      this.list.push({ id, title, publisher, authors });
     } catch(err) {
       console.error(err);
     }
   }
 
-  static async removeBook(id: string, userId: string){
-    return await db.UserBook.destroy({
-      where: {
-        book_id: id,
-        user_id: userId,
-      },
-    });
+  removeBook = (id: string) => {
+    this.list = this.list.filter(book => book.id !== id);
   }
 
-  static async getList(user: IUser, page: number){
+  getList = (page: number = 1) => {
     const offset = (page - 1) * 10;
-    let books: IBook[] = await user.getBooks({
-      include: [{
-        model: db.sequelize.models.UserBook,
-        as: 'userBooks',
-      }],
-      order: [[ 'userBooks', 'created_at', 'DESC']],
-      offset,
-      limit: 10,
-    });
-    return books;
+    return this.list.slice(offset, offset + 10);
   }
 
-  static async exportToJSON(userBooks, folderDir = dataFolderDir, fileName = '/data.json'){
+  saveToFile = (folderDir = dataFolderDir, fileName = dataFileName) => {
+    ReadingList.exportToJSON(this.list, folderDir, fileName);
+  }
+
+  static exportToJSON(userBooks, folderDir = dataFolderDir, fileName = dataFileName){
+    if (!Array.isArray(userBooks)) {
+      throw new Error(`Expected userBooks to be an array but got ${typeof userBooks}`);
+    }
+
     const userBookJSON = JSON.stringify(userBooks);
 
     // if folder does not exist, create it
@@ -124,18 +83,26 @@ export default class ReadingList {
     fs.writeFileSync(fileDir, userBookJSON);
   }
 
-  static async importFromJSON(user, dir = dataFileDir) {
+  static importFromJSON (dir: string = dataFileDir, logging: Boolean = false ): IBook[] {
     try {
-      const userBooksStr = fs.readFileSync(dataFileDir, 'utf8');
+      if (!fs.existsSync(dir)) {
+        logging && console.warn("Could not find file. Returning empty array");
+        return [];
+      }
+
+      const userBooksStr = fs.readFileSync(dir, 'utf8');
       const userBooks = JSON.parse(userBooksStr);
 
       if (!Array.isArray(userBooks)){
-        throw new Error(`Expected file to be an array but got ${typeof userBooks}`);
+        console.warn(`Expected userBooks to be an array but got ${typeof userBooks}`);
+        console.warn('Returning an empty array...');
+        return [];
       }
 
       return userBooks;
     } catch(err) {
-      console.log("Cannot find file");
+      console.warn("Could not find file");
+      return [];
     }
   }
 }

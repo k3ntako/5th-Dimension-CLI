@@ -17,13 +17,12 @@ describe('index.ts', (): void => {
 
     it('should catch errors and close the app', async (): Promise<void> => {
       // Simulate ReadingListManager#start throwing an error
-      const startFake: sinon.SinonSpy<any> = sinon.fake.throws(new Error('No user passed in'));
+      const startFake: sinon.SinonSpy<any> = sinon.fake.throws(new Error('Something went wrong'));
       sinon.replace(ReadingListManager.prototype, 'start', startFake);
 
       // Fake process.exit
       const processExitStub: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(process, 'exit', processExitStub);
-
 
       await start();
 

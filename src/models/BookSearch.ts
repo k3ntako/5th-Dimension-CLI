@@ -8,7 +8,7 @@ const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk
 
 const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
-const FIELDS: string = "&fields=items(volumeInfo(title,authors,publisher,industryIdentifiers))";
+const FIELDS: string = "&fields=items(id,volumeInfo(title,authors,publisher))";
 const LIMIT: string = '&maxResults=5';
 
 export default class BookSearch{
@@ -44,7 +44,11 @@ export default class BookSearch{
 
     const books = [];
     json.items.forEach(bookInfo => {
-      const book = Book.create(bookInfo.volumeInfo);
+      const params = Object.assign(
+        { id: bookInfo.id },
+        bookInfo.volumeInfo
+      );
+      const book = Book.create(params);
 
       if (book) books.push(book);
     });

@@ -18,7 +18,6 @@ const path_1 = __importDefault(require("path"));
 const ReadingList_1 = __importDefault(require("../models/ReadingList"));
 const Loading_1 = __importDefault(require("../models/Loading"));
 const models_1 = __importDefault(require("../sequelize/models"));
-const User_1 = require("../models/User");
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
@@ -33,7 +32,7 @@ const exportDBToJSON = () => __awaiter(void 0, void 0, void 0, function* () {
         const loading = new Loading_1.default();
         loading.start();
         // Find the default user
-        const email = User_1.DEFAULT_USER.email;
+        const email = "default@example.com";
         const users = yield models_1.default.User.findAll({
             where: { email }
         });
@@ -83,7 +82,7 @@ const exportDBToJSON = () => __awaiter(void 0, void 0, void 0, function* () {
             }
             const volumeInfo = json.items[0].volumeInfo;
             successfulBooks.push({
-                googleID: json.items[0].id,
+                id: json.items[0].id,
                 title: volumeInfo.title,
                 authors: volumeInfo.authors,
                 publisher: volumeInfo.publisher || null,

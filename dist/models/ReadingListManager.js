@@ -41,17 +41,17 @@ const defaultChoices = [{
         value: "search",
     }];
 class ReadingListManager {
-    constructor(user) {
+    constructor() {
         this.question = () => __awaiter(this, void 0, void 0, function* () {
-            this.listCount = yield ReadingList_1.default.getCount(this.user);
+            const listCount = this.readingList.getCount();
             console.log("");
             let promptChoices = defaultChoices.concat();
             // Add choices given on the prompt
             // if user has books in reading list, add view_list and remove_book as options
-            if (this.listCount) {
-                const bookPlurality = this.listCount === 1 ? "" : "s";
+            if (listCount) {
+                const bookPlurality = listCount === 1 ? "" : "s";
                 promptChoices.push({
-                    name: node_emoji_1.default.get('books') + ` View your reading list (${this.listCount} book${bookPlurality})`,
+                    name: node_emoji_1.default.get('books') + ` View your reading list (${listCount} book${bookPlurality})`,
                     value: "view_list",
                 }, {
                     name: node_emoji_1.default.get('no_entry_sign') + ` Remove book(s) from your reading list`,
@@ -66,8 +66,7 @@ class ReadingListManager {
                 });
             }
             // add next page and previous page as options if appropriate
-            const count = yield ReadingList_1.default.getCount(this.user);
-            const hasNextPage = this.readingListPage && count > this.readingListPage * 10;
+            const hasNextPage = this.readingListPage && listCount > this.readingListPage * 10;
             const hasPreviousPage = this.readingListPage && this.readingListPage > 1;
             if (hasNextPage || hasPreviousPage) {
                 promptChoices.push(new inquirer_1.default.Separator());
@@ -86,9 +85,6 @@ class ReadingListManager {
             }
             // add exit as an option
             promptChoices.push(new inquirer_1.default.Separator(), {
-                name: node_emoji_1.default.get('arrow_double_down') + "  Export to JSON",
-                value: "export_json",
-            }, {
                 name: node_emoji_1.default.get('closed_lock_with_key') + "  Exit",
                 value: "exit",
             }, new inquirer_1.default.Separator());
@@ -128,9 +124,6 @@ class ReadingListManager {
                     this.readingListPage--;
                     yield this.viewList();
                     break;
-                case "export_json":
-                    ReadingList_1.default.exportToJSON(this.user);
-                    break;
                 case "exit":
                     clear_1.default();
                     yield ReadingListManager.exit();
@@ -141,14 +134,10 @@ class ReadingListManager {
             }
             setTimeout(this.question, 300); // Delay before prompting them again
         });
-        if (!user || !user.id) {
-            throw new Error("No user passed in");
-        }
-        this.user = user;
         this.loading = new Loading_1.default();
-        this.listCount = 0;
         this.googleResults = [];
         this.readingListPage = 0; // 0 means reading list not shown
+        this.readingList = ReadingList_1.default.start();
     }
     static prompt(question) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -168,14 +157,14 @@ class ReadingListManager {
     }
     static logBook(book, idx) {
         const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx + 1]}  ` : "";
-        const authors = book.authors && book.authors.join(", ");
+        const authors = book.authors && book.authors.length && book.authors.join(", ");
         console.log(emojiNum + chalk_1.default.bold(book.title));
         console.log("Author(s): " + (authors || "N/A"));
         console.log("Publisher: " + (book.publisher || "N/A") + "\n");
     }
     promptSearch() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.readingListPage = null;
+            this.readingListPage = 0;
             const { search } = yield ReadingListManager.prompt({
                 message: "Please enter your search term...",
                 name: "search",
@@ -223,8 +212,8 @@ class ReadingListManager {
             }
             const books = this.googleResults.filter((_, idx) => bookIndices.includes(idx));
             const titles = books.map(book => chalk_1.default.greenBright(book.title)).join('\n');
-            const promises = books.map(book => ReadingList_1.default.addBook(book, this.user));
-            yield Promise.all(promises);
+            books.map(book => this.readingList.addBook(book));
+            this.readingList.saveToFile();
             console.log(chalk_1.default.bold("Book(s) added:"));
             console.log(titles);
         });
@@ -248,7 +237,7 @@ class ReadingListManager {
             }
             const booksToRemove = books.filter((_, idx) => bookIndices.includes(idx));
             const titles = booksToRemove.map(book => chalk_1.default.redBright(book.title)).join('\n');
-            const promises = booksToRemove.map(book => ReadingList_1.default.removeBook(book.id, this.user.id));
+            const promises = booksToRemove.map(book => this.readingList.removeBook(book.id));
             yield Promise.all(promises);
             console.log(chalk_1.default.bold("Books removed:"));
             console.log(titles);
@@ -260,7 +249,7 @@ class ReadingListManager {
             if (this.readingListPage < 1) {
                 this.readingListPage = 1;
             }
-            const books = yield ReadingList_1.default.getList(this.user, this.readingListPage);
+            const books = yield this.readingList.getList(this.readingListPage);
             if (books.length) {
                 console.log(chalk_1.default.bold("Your Reading List:"));
                 books.forEach(ReadingListManager.logBook);

@@ -1,33 +1,30 @@
+// This file is used for migrating from Postgres to JSON
+// This will take all the books with ISBN and gets the Google ID for them
+// Then the book info (Google ID, title, authors, and publishers) are saved to JSON
+// The newly created JSON file will act as the reading list moving forward
 
 require('dotenv').config();
 
 import fs from 'fs';
-import path from 'path';
 import ReadingList from '../models/ReadingList';
 import Loading from '../models/Loading';
 import db from '../sequelize/models';
 import { User as IUser } from '../sequelize/models/user';
 import { Book as IBook } from '../sequelize/models/book';
-import { DEFAULT_USER } from '../models/User';
 import fetch from 'node-fetch';
+
+const environment = process.env.NODE_ENV;
+const config = require('../../config')[environment || "production"];
 
 const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
 const FIELDS: string = "&fields=items(id,volumeInfo(title,authors,publisher))";
 const LIMIT_ONE: string = '&maxResults=1';
 
-interface INewBook {
-  title: string,
-  authors: string[],
-  publisher?: string,
-  googleID?: string,
-}
 
-const dataFileDir: string = path.join(__dirname, '../data/data.json');
-
-const exportDBToJSON = async () => {
+module.exports = async () => {
   try{
-    if (fs.existsSync(dataFileDir)) {
+    if (fs.existsSync(config.dataFileDir)) {
       throw new Error('JSON file already exists.')
     }
 
@@ -35,7 +32,7 @@ const exportDBToJSON = async () => {
     loading.start();
 
     // Find the default user
-    const email: string = DEFAULT_USER.email;
+    const email: string = "default@example.com";
     const users: IUser[] = await db.User.findAll({
       where: { email }
     });
@@ -100,14 +97,14 @@ const exportDBToJSON = async () => {
       const volumeInfo = json.items[0].volumeInfo;
 
       successfulBooks.push({
-        googleID: json.items[0].id,
+        id: json.items[0].id,
         title: volumeInfo.title,
         authors: volumeInfo.authors,
         publisher: volumeInfo.publisher || null,
       });
     };
 
-    await ReadingList.exportToJSON(successfulBooks);
+    ReadingList.exportToJSON(successfulBooks);
 
     loading.stop();
 
@@ -117,8 +114,6 @@ const exportDBToJSON = async () => {
 
     process.exit();
   } catch (err){
-    console.log(err.message);
+    console.error(err.message);
   }
 }
-
-exportDBToJSON();

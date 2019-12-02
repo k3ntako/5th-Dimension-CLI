@@ -13,14 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ReadingListManager_1 = __importDefault(require("./models/ReadingListManager"));
-const User_1 = __importDefault(require("./models/User"));
 const chalk_1 = __importDefault(require("chalk"));
 const node_emoji_1 = __importDefault(require("node-emoji"));
 const error = (message) => console.error(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('red')(message)}`);
 const start = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield User_1.default.loginAsDefault();
-        const readingListManager = new ReadingListManager_1.default(user);
+        const readingListManager = new ReadingListManager_1.default();
         readingListManager.start();
     }
     catch (err) {

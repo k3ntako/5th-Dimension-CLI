@@ -1,271 +1,147 @@
 import { assert } from 'chai';
 import ReadingList from '../src/models/ReadingList';
-import User from '../src/models/User';
-import Book from '../src/models/Book';
 import fs from 'fs';
 import path from 'path';
-
-import db from '../src/sequelize/models';
-import { Book as IBook } from '../src/sequelize/models/book';
+import sinon from 'sinon';
 
 const dataFolderDir: string = path.join(__dirname, '/data');
-const fileName: string = '/test_data.json';
+const dataFileName: string = '/test_data.json';
+const dataFileDir = path.join(dataFolderDir, dataFileName);
 
 const params = {
+  id: "TASKSCJSD",
   title: "Test-driven Development",
   publisher: "Addison-Wesley Professional",
   authors: ["Kent Beck"],
-  isbn_10: "0321146530",
-  isbn_13: "9780321146533",
-  issn: null,
-  other_identifier: null,
 }
 
 const params2 = {
+  id: "UISNCSSL",
   title: "Eloquent JavaScript",
   publisher: "No Starch Press",
   authors: ["Marijn Haverbeke"],
-  isbn_10: "1593272820",
-  isbn_13: "9781593272821",
-  issn: null,
-  other_identifier: null,
 }
 
-let defaultUser;
-
 describe('ReadingList', (): void => {
-  before(async () => {
-    defaultUser = await User.loginAsDefault();
+  describe('.start', (): void => {
+    it('should return a new instance of ReadingList', (): void => {
+      const readingList = new ReadingList();
+      assert.instanceOf(readingList, ReadingList);
+    });
+
+    it('should import readingList from JSON', (): void => {
+      const importFromJSONFake: sinon.SinonSpy<any> = sinon.fake.returns([params]);
+      sinon.replace(ReadingList, 'importFromJSON', importFromJSONFake);
+
+      const readingList = ReadingList.start();
+      sinon.assert.calledOnce(importFromJSONFake);
+      assert.lengthOf(readingList.list, 1);
+      assert.deepEqual(readingList.list[0], params);
+    });
   });
 
-  describe('.addBook', (): void => {
-    it('should add a book to the database', async (): Promise<void> => {
-      await ReadingList.addBook(params, defaultUser);
 
-      // Find the book above
-      const books = await db.Book.findAll({
-        where: {
-          isbn_13: params.isbn_13,
-        },
-      });
+  describe('#addBook', (): void => {
+    it('should add a book to list', (): void => {
+      const readingList = new ReadingList();
+      readingList.addBook(params);
+
+      assert.lengthOf(readingList.list, 1);
+      assert.deepEqual(readingList.list[0], params);
+    });
+  });
+
+  describe('#saveToFile', (): void => {
+    it('should save file with contents in list', (): void => {
+      const readingList = new ReadingList();
+      readingList.addBook(params);
+      readingList.saveToFile(dataFolderDir, dataFileName);
+
+      const booksStr: string = fs.readFileSync(dataFileDir, 'utf8');
+      const books = JSON.parse(booksStr);
 
       assert.lengthOf(books, 1);
-
-      // The book should have all the fields provided.
-      // Remove the "authors" field because it's a bit more complicated to test,
-      // and the AuthorBook relationship is already tested elsewhere.
-      let paramsWithoutAuthors = Object.assign({}, params);
-      delete paramsWithoutAuthors.authors;
-
-      const book = await books[0].toJSON();
-
-      assert.include(book, paramsWithoutAuthors);
+      assert.deepEqual(books[0], params);
     });
 
+    it('should not add books with the same Google ID twice', (): void => {
+      const readingList = new ReadingList();
 
-    it('should not add a book twice (ISBN)', async (): Promise<void> => {
-      // Add the same book twice
-      const book1 = await ReadingList.addBook(params, defaultUser);
-      const book2 = await ReadingList.addBook(params, defaultUser);
+      assert.lengthOf(readingList.list, 0);
 
-      assert.strictEqual(book1.id, book2.id);
-    });
+      readingList.addBook(params);
+      assert.lengthOf(readingList.list, 1);
 
-    it('should not add a book twice (ISSN)', async (): Promise<void> => {
-      const paramsISSN = Object.assign({}, params, {
-        isbn_10: null,
-        isbn_13: null,
-        issn: "3129873221231",
-      });
-
-      // Add the same book twice
-      const book1 = await ReadingList.addBook(paramsISSN, defaultUser);
-      const book2 = await ReadingList.addBook(paramsISSN, defaultUser);
-
-      assert.strictEqual(book1.id, book2.id);
-    });
-
-    it('should not add a book twice (other identifiers)', async (): Promise<void> => {
-      const paramsOtherIdentifier = Object.assign({}, params, {
-        isbn_10: null,
-        isbn_13: null,
-        other_identifier: "Harvard:3129873221231",
-      });
-
-      // Add the same book twice
-      const book1 = await ReadingList.addBook(paramsOtherIdentifier, defaultUser);
-      const book2 = await ReadingList.addBook(paramsOtherIdentifier, defaultUser);
-
-      assert.strictEqual(book1.id, book2.id);
-    });
-
-    it('should not add a book twice (no identifiers)', async (): Promise<void> => {
-      const paramsWithoutIdentifiers = Object.assign({}, params, {
-        isbn_10: null,
-        isbn_13: null,
-      });
-
-      // Add the same book twice
-      const book1 = await ReadingList.addBook(paramsWithoutIdentifiers, defaultUser);
-      const book2 = await ReadingList.addBook(paramsWithoutIdentifiers, defaultUser);
-
-      assert.strictEqual(book1.id, book2.id);
-    });
-
-    it('should add book to ReadingList', async (): Promise<void> => {
-      const createdBook = await ReadingList.addBook(params2, defaultUser);
-
-      // get books associated with defaultUser with the same ISBN
-      const books = await defaultUser.getBooks({
-        where: { isbn_13: params2.isbn_13 },
-      });
-
-      const associatedBook = await books[0].toJSON();
-
-      assert.strictEqual(createdBook.id, associatedBook.id);
+      readingList.addBook(params);
+      assert.lengthOf(readingList.list, 1)
     });
   });
 
-  describe('.removeBook', (): void => {
-    before(async (): Promise<void> => {
-      // Delete all the books added above
-      await db.Book.destroy({ where: {} });
+  describe('#removeBook', (): void => {
+    it('should remove book from database', (): void => {
+      const readingList = new ReadingList();
+      readingList.addBook(params);
+      readingList.removeBook(params.id);
 
-      // Make sure there are on books in the books table
-      const books = db.Book.findAll({ where: {} });
-      if (books.length){
-        throw new Error('There should be no books in the database');
-      }
-    });
-
-    it('should remove book from database', async (): Promise<void> => {
-      const book = await ReadingList.addBook(params, defaultUser);
-
-      await ReadingList.removeBook(book.id, defaultUser.id);
-      const books = await db.UserBook.findAll({
-        where: {
-          book_id: book.id,
-          user_id: defaultUser.id,
-        },
-      });
-
-      assert.lengthOf(books, 0);
+      assert.lengthOf(readingList.list, 0);
     });
   });
 
-  describe('.getList', (): void => {
-    beforeEach(async (): Promise<void> => {
-      // Delete all the books added above
-      await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(params, defaultUser);
-    });
+  describe('#getList', (): void => {
+    it('should return reading list in ordered added (oldest first)',  (): void => {
+      const readingList = new ReadingList();
+      readingList.addBook(params);
+      readingList.addBook(params2);
 
-    it('should return reading list', async (): Promise<void> => {
-      const books = await ReadingList.getList(defaultUser, 1);
-      assert.lengthOf(books, 1);
+      const books = readingList.getList();
 
-      // The book should have all the fields provided.
-      // Remove the "authors" field because it's a bit more complicated to test,
-      // and the AuthorBook relationship is already tested elsewhere.
-      let paramsWithoutAuthors = Object.assign({}, params);
-      delete paramsWithoutAuthors.authors;
+      assert.lengthOf(books, 2);
 
-      assert.include(books[0], paramsWithoutAuthors);
-    });
-
-    it('should return newest additions to the reading list first', async (): Promise<void> => {
-      await ReadingList.addBook(params2, defaultUser);
-
-      const book1Results = await db.Book.findAll({where: {title: params.title}});
-      const book1 = await book1Results[0].toJSON();
-
-      await ReadingList.removeBook(book1.id, defaultUser.id);
-      await ReadingList.addBook(params, defaultUser);
-
-      const books = await ReadingList.getList(defaultUser, 1);
-
-      assert.strictEqual(books[0].title, params.title);
-      assert.strictEqual(books[1].title, params2.title);
+      assert.deepEqual(books[0], params);
+      assert.deepEqual(books[1], params2);
     });
   });
 
-  describe('.getCount', (): void => {
-    before(async (): Promise<void> => {
-      // Delete all the books added above
-      await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(params, defaultUser);
-      await ReadingList.addBook(params2, defaultUser);
-    });
+  describe('#getCount', (): void => {
+    it('should return reading list length',  (): void => {
+      const readingList = new ReadingList();
+      readingList.addBook(params);
+      readingList.addBook(params2);
 
-    it('should return reading list length', async (): Promise<void> => {
-      const count = await ReadingList.getCount(defaultUser);
+      const count = readingList.getCount();
       assert.strictEqual(count, 2);
     });
   });
 
   describe('.exportToJSON', (): void => {
-    before(async (): Promise<void> => {
-      // Delete all the books added above
-      await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(params, defaultUser);
-      await ReadingList.addBook(params2, defaultUser);
+    it('should write JSON to file',  (): void => {
+      const readingList = new ReadingList();
+      readingList.addBook(params);
+      readingList.addBook(params2);
+
+      ReadingList.exportToJSON(readingList.list, dataFolderDir, dataFileName);
+
+      const booksStr = fs.readFileSync(dataFileDir, 'utf8');
+      const books = JSON.parse(booksStr);
+
+      assert.lengthOf(books, 2);
+      assert.deepInclude(books[0], params);
+      assert.deepInclude(books[1], params2);
     });
+  });
 
-    it('should write JSON to file', async (): Promise<void> => {
-      const userBooksJSON = await defaultUser.getBooks({
-        // raw: true,
-        attributes: [
-          'id', 'title', 'publisher', 'isbn_10', 'isbn_13',
-          'issn', 'other_identifier', 'created_at', 'updated_at',
-        ],
-        include: [{
-          model: db.Author,
-          as: 'authors',
-          attributes: ["id", "name"],
-          through: {
-            attributes: [] // remove join table
-          }
+  describe('.importFromJSON', (): void => {
+    it('should read from JSON file', (): void => {
+      const readingList = new ReadingList();
+      readingList.addBook(params);
+      readingList.addBook(params2);
 
-        }, {
-          // the include with no attributes makes sure that the UserBook join table is not included
-          model: db.UserBook,
-          attributes: [],
-          as: 'UserBook',
-        }]
-      });
+      ReadingList.exportToJSON(readingList.list, dataFolderDir, dataFileName);
+      const books = ReadingList.importFromJSON(dataFileDir);
 
-      await ReadingList.exportToJSON(userBooksJSON, dataFolderDir, fileName);
-
-      const dataDir = path.join(dataFolderDir, fileName);
-
-      const userBooksStr = fs.readFileSync(dataDir, 'utf8');
-      const userBooks = JSON.parse(userBooksStr);
-
-      // The book should have all the fields provided.
-      // Remove the "authors" field because it's a bit more complicated to test.
-      // and it is tested below.
-      const paramsWithoutAuthors = Object.assign({}, params);
-      delete paramsWithoutAuthors.authors;
-
-      const params2WithoutAuthors = Object.assign({}, params2);
-      delete params2WithoutAuthors.authors;
-
-
-      assert.lengthOf(userBooks, 2);
-      assert.include(userBooks[0], paramsWithoutAuthors);
-      assert.include(userBooks[1], params2WithoutAuthors);
-
-      // should have same number of authors
-      assert.lengthOf(userBooks[0].authors, params.authors.length);
-      assert.lengthOf(userBooks[1].authors, params.authors.length);
-
-      // author object should have name and id fields
-      assert.hasAllKeys(userBooks[0].authors[0], ['id', 'name']);
-      assert.hasAllKeys(userBooks[1].authors[0], ['id', 'name']);
-
-      // assert author name is correct
-      assert.strictEqual(userBooks[0].authors[0].name, params.authors[0]);
-      assert.strictEqual(userBooks[1].authors[0].name, params2.authors[0]);
+      assert.lengthOf(books, 2);
+      assert.deepInclude(books[0], params);
+      assert.deepInclude(books[1], params2);
     });
   });
 });

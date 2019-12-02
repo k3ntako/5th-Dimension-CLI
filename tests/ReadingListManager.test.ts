@@ -3,59 +3,63 @@ import sinon from 'sinon';
 import ReadingListManager from '../src/models/ReadingListManager';
 import ReadingList from '../src/models/ReadingList';
 import Book from '../src/models/Book';
-import User from  '../src/models/User';
-import db from '../src/sequelize/models';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { UserBook } from '../src/sequelize/models/user_book';
-import book from '../src/sequelize/models/book';
+import fs from 'fs';
+
+const config = require('../config').test;
+
+//deletes test_data.json
+const deleteDataFile = () => {
+  try {
+    fs.unlinkSync(config.dataFileDir);
+  } catch (error) {
+    console.warn(error);
+  }
+}
 
 
-let defaultUser;
-
-const title: string = 'Born a Crime';
-const authors: string[] = ['Trevor Noah'];
-const publisher: string = 'Spiegel & Grau';
-const isbn_10: string = '0399588183';
-const isbn_13: string = '9780399588181';
+const bookInfo0 = {
+  id: "BORNACRIME",
+  title: 'Born a Crime',
+  authors: ['Trevor Noah'],
+  publisher: 'Spiegel & Grau',
+}
 
 const bookInfo1 = {
+  id: "MAKEWAYFOR",
   title: "Make Way for Ducklings",
   authors: ["Robert McCloskey"],
   publisher: "Puffin Books",
-  isbn_10: "0140501711",
-  isbn_13: "9780140501711",
 };
 
 const bookInfo2 = {
+  id: "WHERETHE",
   title: "Where the Crawdads Sing",
   authors: ["Delia Owens"],
   publisher: "Penguin",
-  isbn_10: "0735219117",
-  isbn_13: "9780735219113",
 };
 
 describe('ReadingListManager', (): void => {
-  before(async () => {
-    defaultUser = await User.loginAsDefault();
-  });
-
-  describe('new ReadingListManager()', (): void => {
-    it('should throw an error if no user is passed in', (): void => {
-      assert.throws(() => new ReadingListManager(), "No user passed in");
-    });
-  })
-
   describe('#start()', (): void => {
     it('should console log welcome message', (): void => {
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+
+      const fakeQuestion: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
+      sinon.replace(readingListManager, 'question', fakeQuestion);
+
       readingListManager.start();
       assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 2);
+
+      const arg1: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
+      assert.strictEqual(arg1, `Welcome to ${chalk.cyanBright.bold("5th Dimension CLI")}!`);
+      const arg2: string = fdCLI.fakes.consoleLogFake.getCall(1).lastArg;
+      assert.strictEqual(arg2, "It's place to discover new books and save them for later!");
     });
 
     it('should call on readingListManager#question', (): void => {
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
 
       const questionFake: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(readingListManager, 'question', questionFake);
@@ -66,16 +70,15 @@ describe('ReadingListManager', (): void => {
   });
 
   describe('#question()', async (): Promise<void> => {
-    before(async (): Promise<void> => {
-      await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(bookInfo1, defaultUser);
-    });
-
     it('should call ReadingListManager.prompt with appropriate arguments', async (): Promise<void> => {
+      deleteDataFile();
+
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+      readingListManager.readingList.addBook(bookInfo0);
+
       await readingListManager.question();
 
       const args = fakePrompt.lastArg;
@@ -95,10 +98,6 @@ describe('ReadingListManager', (): void => {
         },
         new inquirer.Separator(),
         {
-          name: emoji.get('arrow_double_down') + "  Export to JSON",
-          value: "export_json",
-        },
-        {
           name: emoji.get('closed_lock_with_key') + "  Exit",
           value: "exit",
         },
@@ -110,7 +109,7 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "search" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
       const fakePromptSearch: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(readingListManager, 'promptSearch', fakePromptSearch);
       await readingListManager.question();
@@ -118,12 +117,12 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should ask if user would like to add books to reading list if there are search results', async (): Promise<void> => {
-      const book: Book = new Book({ title, authors, publisher, isbn_10, isbn_13 });
+      const book: Book = new Book(bookInfo0);
 
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
       readingListManager.googleResults = [book];
       await readingListManager.question();
 
@@ -141,7 +140,7 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "view_list" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
       const fakeViewList: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(readingListManager, 'viewList', fakeViewList);
       await readingListManager.question();
@@ -151,48 +150,42 @@ describe('ReadingListManager', (): void => {
 
   describe('.logBook', (): void => {
     it('should console log information about the book', async (): Promise<void> => {
-      ReadingListManager.logBook({
-        title,
-        authors,
-        publisher: null,
-      });
+      const bookInfo0WithoutPublisher = Object.assign({}, bookInfo0, { publisher: null });
+
+      ReadingListManager.logBook(bookInfo0WithoutPublisher);
 
       assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 3);
 
       const arg1: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.strictEqual(arg1, chalk.bold(title));
+      assert.strictEqual(arg1, chalk.bold(bookInfo0.title));
       const arg2: string = fdCLI.fakes.consoleLogFake.getCall(1).lastArg;
-      assert.strictEqual(arg2, "Author(s): " + authors[0]);
+      assert.strictEqual(arg2, "Author(s): " + bookInfo0.authors[0]);
       const arg3: string = fdCLI.fakes.consoleLogFake.getCall(2).lastArg;
       assert.strictEqual(arg3, "Publisher: N/A\n");
     });
 
     it('should console log the title with emoji if provided a number', async (): Promise<void> => {
-      ReadingListManager.logBook({
-        title,
-        authors,
-        publisher: null,
-      }, 0);
+      ReadingListManager.logBook(bookInfo0, 0);
 
       const arg: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.strictEqual(arg, `${emoji.get('one')}  ${chalk.bold(title)}`);
+      assert.strictEqual(arg, `${emoji.get('one')}  ${chalk.bold(bookInfo0.title)}`);
     });
   });
 
   describe('#promptSearch()', (): void => {
     it('should fetch a books from Google Books based on search query and console log the results', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ search: title });
+      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ search: bookInfo0.title });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
       const fakeLogBook: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(ReadingListManager, 'logBook', fakeLogBook);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
       await readingListManager.promptSearch();
 
       const arg: string = fdCLI.fakes.consoleLogFake.lastArg;
 
-      assert.strictEqual(arg, `${chalk.bold("Search results for:")} "${title}"\n`);
+      assert.strictEqual(arg, `${chalk.bold("Search results for:")} "${bookInfo0.title}"\n`);
       assert.strictEqual(fakeLogBook.callCount, 5);
     });
 
@@ -202,7 +195,7 @@ describe('ReadingListManager', (): void => {
       promptStub.resolves({ search: "Hello" }); // returns on every call after first
       sinon.replace(ReadingListManager, 'prompt', promptStub);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
       await readingListManager.promptSearch();
 
       const arg = fdCLI.fakes.consoleWarnFake.getCall(0).lastArg;
@@ -216,15 +209,17 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0,2] });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'addBook', fakeAddBook);
+      const readingListManager: ReadingListManager = new ReadingListManager();
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(readingListManager.readingList, 'addBook', fakeAddBook);
+
       readingListManager.googleResults = [
-        new Book({ title, authors, publisher, isbn_10, isbn_13 }),
+        new Book(bookInfo0),
         new Book(bookInfo1),
         new Book(bookInfo2),
       ];
+
       await readingListManager.promptAddBook();
 
       assert.strictEqual(fakeAddBook.callCount, 2)
@@ -232,41 +227,39 @@ describe('ReadingListManager', (): void => {
       const args0 = fakeAddBook.getCall(0).args[0];
       const args1 = fakeAddBook.getCall(1).args[0];
 
-      assert.include({
-        title: args0.title,
-        authors: args0.authors,
-        publisher: args0.publisher,
-        isbn_10: args0.isbn_10,
-        isbn_13: args0.isbn_13
-      }, {
-        title, authors, publisher, isbn_10, isbn_13
-      });
+      assert.include(
+        {
+          id: args0.id,
+          title: args0.title,
+          authors: args0.authors,
+          publisher: args0.publisher,
+        },
+        bookInfo0
+      );
 
       assert.include({
+        id: args1.id,
         title: args1.title,
         authors: args1.authors,
         publisher: args1.publisher,
-        isbn_10: args1.isbn_10,
-        isbn_13: args1.isbn_13
       }, {
         title: bookInfo2.title,
         authors: bookInfo2.authors,
         publisher: bookInfo2.publisher,
-        isbn_10: bookInfo2.isbn_10,
-        isbn_13: bookInfo2.isbn_13
       });
     });
 
-    it('should console log titles of deleted books', async (): Promise<void> => {
+    it('should console log titles of added books', async (): Promise<void> => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0, 2] });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'addBook', fakeAddBook);
+      const readingListManager: ReadingListManager = new ReadingListManager();
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(readingListManager.readingList, 'addBook', fakeAddBook);
+
       readingListManager.googleResults = [
-        new Book({ title, authors, publisher, isbn_10, isbn_13 }),
+        new Book(bookInfo0),
         new Book(bookInfo1),
         new Book(bookInfo2),
       ];
@@ -277,7 +270,7 @@ describe('ReadingListManager', (): void => {
       const secondToLastArg = args[args.length - 2][0];
       const lastArg = args[args.length - 1][0];
       assert.strictEqual(secondToLastArg, chalk.bold("Book(s) added:"))
-      assert.include(lastArg, chalk.greenBright(title))
+      assert.include(lastArg, chalk.greenBright(bookInfo0.title))
       assert.include(lastArg, chalk.greenBright(bookInfo2.title))
     });
 
@@ -285,12 +278,13 @@ describe('ReadingListManager', (): void => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [] });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'addBook', fakeAddBook);
+      const readingListManager: ReadingListManager = new ReadingListManager();
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(readingListManager.readingList, 'addBook', fakeAddBook);
+
       readingListManager.googleResults = [
-        new Book({ title, authors, publisher, isbn_10, isbn_13 }),
+        new Book(bookInfo0),
         new Book(bookInfo1),
         new Book(bookInfo2),
       ];
@@ -304,42 +298,40 @@ describe('ReadingListManager', (): void => {
   });
 
   describe('#promptRemoveBook()', (): void => {
-    beforeEach(async (): Promise<void> => {
-      // remove all books from reading list
-      await UserBook.destroy({where: {}});
-    })
     it('should call ReadingList.removeBook with books selected', async (): Promise<void> => {
-      const book = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
+      deleteDataFile();
 
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0] });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'removeBook', fakeRemoveBook);
+      const readingListManager: ReadingListManager = new ReadingListManager();
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingList.addBook(bookInfo0);
+
+      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(readingListManager.readingList, 'removeBook', fakeRemoveBook);
+
       await readingListManager.promptRemoveBook();
 
       assert.strictEqual(fakeRemoveBook.callCount, 1);
 
       const bookId: string = fakeRemoveBook.getCall(0).args[0];
-      const userId: string = fakeRemoveBook.getCall(0).args[1];
 
-      assert.strictEqual(bookId, book.id);
-      assert.strictEqual(userId, defaultUser.id);
+      assert.strictEqual(bookId, bookInfo0.id);
     });
 
     it('should console log titles of deleted books', async (): Promise<void> => {
-      const book1 = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
-      const book2 = await ReadingList.addBook(bookInfo1, defaultUser);
-
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0, 1] });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'removeBook', fakeRemoveBook);
+      const readingListManager: ReadingListManager = new ReadingListManager();
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingList.addBook(bookInfo0);
+      readingListManager.readingList.addBook(bookInfo1);
+
+      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(readingListManager.readingList, 'removeBook', fakeRemoveBook);
+
       await readingListManager.promptRemoveBook();
 
       const args = fdCLI.fakes.consoleLogFake.args;
@@ -347,20 +339,20 @@ describe('ReadingListManager', (): void => {
       const secondToLastArg = args[args.length - 2][0];
       const lastArg = args[args.length - 1][0];
       assert.strictEqual(secondToLastArg, chalk.bold("Books removed:"))
-      assert.include(lastArg, chalk.redBright(book1.title))
-      assert.include(lastArg, chalk.redBright(book2.title))
+      assert.include(lastArg, chalk.redBright(bookInfo0.title))
+      assert.include(lastArg, chalk.redBright(bookInfo1.title))
     });
 
     it('should inform user that no books were removed if no books were removed', async (): Promise<void> => {
-      const book = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
-
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [] });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'removeBook', fakeRemoveBook);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+      readingListManager.readingList.addBook(bookInfo0);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const fakeRemoveBook: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(readingListManager.readingList, 'removeBook', fakeRemoveBook);
+
       await readingListManager.promptRemoveBook();
 
       // fakePrompt.arg
@@ -372,16 +364,13 @@ describe('ReadingListManager', (): void => {
   });
 
   describe('#viewList()', (): void => {
-    before(async (): Promise<void> => {
-      // Delete all the books added above
-      await db.UserBook.destroy({ where: {} });
-    });
-
     it('should not console log books if user has no books in their reading list', async (): Promise<void> => {
+      deleteDataFile();
+
       const fakeLogBook: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(ReadingListManager, 'logBook', fakeLogBook);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
       await readingListManager.viewList();
 
       assert.strictEqual(fakeLogBook.callCount, 0, "logBook should not be called");
@@ -392,12 +381,12 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should console log reading list', async (): Promise<void> => {
-      await ReadingList.addBook(bookInfo1, defaultUser);
-
-      const fakeLogBook: sinon.SinonSpy<any> = sinon.fake();
+      const fakeLogBook: sinon.SinonSpy < any > = sinon.fake();
       sinon.replace(ReadingListManager, 'logBook', fakeLogBook);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+      readingListManager.readingList.addBook(bookInfo1);
+
       await readingListManager.viewList();
 
       assert.strictEqual(fakeLogBook.callCount, 1, "logBook should be called once");
@@ -420,13 +409,14 @@ describe('ReadingListManager', (): void => {
 
   describe('.next()', (): void => {
     it('should prompt user to go to next page if there are more than 10 books', async (): Promise<void> => {
-      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
-      sinon.replace(ReadingList, 'getCount', getCountFake);
-
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.returns(11);
+      sinon.replace(readingListManager.readingList, 'getCount', getCountFake);
+
       readingListManager.readingListPage = 1;
       await readingListManager.question();
 
@@ -439,13 +429,14 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should not prompt user to go to next page if they are on the last page', async (): Promise<void> => {
-      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
-      sinon.replace(ReadingList, 'getCount', getCountFake);
-
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.returns(11);
+      sinon.replace(readingListManager.readingList, 'getCount', getCountFake);
+
       readingListManager.readingListPage = 2;
       await readingListManager.question();
 
@@ -458,20 +449,15 @@ describe('ReadingListManager', (): void => {
     });
 
     it('selecting next should increase page', async (): Promise<void> => {
-      // destroy all books
-      await db.Book.destroy({ where: {} });
-
-      // Add 12 books to reading list
-      const promises = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'].map(title => {
-        return db.Book.create({ title }).then(book => defaultUser.addBook(book));
-      });
-
-      await Promise.all(promises);
+      deleteDataFile();
 
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "next" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.returns(15);
+      sinon.replace(readingListManager.readingList, 'getCount', getCountFake);
+
       readingListManager.readingListPage = 1;
       await readingListManager.question();
 
@@ -479,13 +465,14 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should prompt user to go to back page if they are past the first page', async (): Promise<void> => {
-      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
-      sinon.replace(ReadingList, 'getCount', getCountFake);
-
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.returns(11);
+      sinon.replace(readingListManager.readingList, 'getCount', getCountFake);
+
       readingListManager.readingListPage = 2;
       await readingListManager.question();
 
@@ -498,13 +485,14 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should not prompt user to go to back page if they are on the first page', async (): Promise<void> => {
-      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
-      sinon.replace(ReadingList, 'getCount', getCountFake);
-
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.returns(11);
+      sinon.replace(readingListManager.readingList, 'getCount', getCountFake);
+
       readingListManager.readingListPage = 1;
       await readingListManager.question();
 
@@ -517,20 +505,16 @@ describe('ReadingListManager', (): void => {
     });
 
     it('selecting back should decrease page', async (): Promise<void> => {
-      // destroy all books
-      await db.Book.destroy({ where: {} });
-
-      // Add 12 books to reading list
-      const promises = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'].map(title => {
-        return db.Book.create({ title }).then(book => defaultUser.addBook(book));
-      });
-
-      await Promise.all(promises);
+      deleteDataFile();
 
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "previous" });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      const readingListManager: ReadingListManager = new ReadingListManager();
+
+      const getCountFake: sinon.SinonSpy<any> = sinon.fake.returns(17);
+      sinon.replace(readingListManager.readingList, 'getCount', getCountFake);
+
       readingListManager.readingListPage = 2;
       await readingListManager.question();
 
