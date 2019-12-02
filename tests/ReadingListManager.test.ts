@@ -211,7 +211,7 @@ describe('ReadingListManager', (): void => {
 
       const readingListManager: ReadingListManager = new ReadingListManager();
 
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
+      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake.returns(true);
       sinon.replace(readingListManager.readingList, 'addBook', fakeAddBook);
 
       readingListManager.googleResults = [
@@ -250,12 +250,14 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should console log titles of added books', async (): Promise<void> => {
+      deleteDataFile();
+
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0, 2] });
       sinon.replace(ReadingListManager, 'prompt', fakePrompt);
 
       const readingListManager: ReadingListManager = new ReadingListManager();
 
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
+      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake.returns(true);
       sinon.replace(readingListManager.readingList, 'addBook', fakeAddBook);
 
       readingListManager.googleResults = [
@@ -280,7 +282,7 @@ describe('ReadingListManager', (): void => {
 
       const readingListManager: ReadingListManager = new ReadingListManager();
 
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
+      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake.returns(false);
       sinon.replace(readingListManager.readingList, 'addBook', fakeAddBook);
 
       readingListManager.googleResults = [

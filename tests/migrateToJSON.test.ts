@@ -1,10 +1,9 @@
 import { assert } from 'chai';
 import db from '../src/sequelize/models';
-import migrateToJSON from '../src/tasks/migrateToJSON';
 import ReadingList from '../src/models/ReadingList';
 import sinon from 'sinon';
 import fs from 'fs';
-import { Book } from '../src/sequelize/models/book';
+const migrateToJSON = require('../src/tasks/migrateToJSON').migrateToJSON;
 
 const environment = process.env.NODE_ENV;
 const config = require('../config')[environment || "production"];
@@ -33,7 +32,7 @@ const params2 = [
 ];
 
 describe('migrateToJSON', (): void => {
-  it('should call ReadingListManager#start()', async (): Promise<void> => {
+  it('should create JSON file with content from database', async (): Promise<void> => {
     try {
       fs.unlinkSync(config.dataFileDir); // delete test_data.json file
     } catch (error) {
@@ -75,12 +74,14 @@ describe('migrateToJSON', (): void => {
       assert.exists(book.authors);
     });
 
+    const call0args0 = fdCLI.fakes.consoleLogFake.getCall(0).args[0];
+    assert.strictEqual(call0args0, '3 book(s) transferred!');
 
-    const args0 = fdCLI.fakes.consoleLogFake.getCall(0).args[0];
-    const args1 = fdCLI.fakes.consoleLogFake.getCall(0).args[1];
+    const call1args0 = fdCLI.fakes.consoleLogFake.getCall(1).args[0];
+    const call1args1 = fdCLI.fakes.consoleLogFake.getCall(1).args[1];
 
-    assert(args0.startsWith('Following books were not added: '));
-    assert.deepInclude(args1[0], {
+    assert.isTrue(call1args0.startsWith('Following books were not added: '));
+    assert.deepInclude(call1args1[0], {
       title: params[3].title,
       authors: [params[3].authors[0].name],
       publisher: params[3].publisher,
