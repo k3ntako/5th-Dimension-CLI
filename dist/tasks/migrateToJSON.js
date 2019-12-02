@@ -1,8 +1,9 @@
 "use strict";
 // This file is used for migrating from Postgres to JSON
 // This will take all the books with ISBN and gets the Google ID for them
-// Then the book info (Google ID, title, authors, and publishers) are saved to JSON
+// Then the book info (Google ID, title, authors, and publishers) is saved to JSON
 // The newly created JSON file will act as the reading list moving forward
+// This will make a request to Google Books API for every book with an ISBN
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -28,7 +29,7 @@ const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
 const FIELDS = "&fields=items(id,volumeInfo(title,authors,publisher))";
 const LIMIT_ONE = '&maxResults=1';
-module.exports = () => __awaiter(void 0, void 0, void 0, function* () {
+module.exports.migrateToJSON = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let existingBooks = [], existingBookIDs = [];
         if (fs_1.default.existsSync(config.dataFileDir)) {
@@ -101,6 +102,12 @@ module.exports = () => __awaiter(void 0, void 0, void 0, function* () {
         ;
         ReadingList_1.default.exportToJSON(existingBooks.concat(successfulBooks));
         loading.stop();
+        if (successfulBooks.length > 0) {
+            console.log(`${successfulBooks.length} book(s) transferred!`);
+        }
+        else {
+            console.log("No books transferred");
+        }
         if (failedBooks.length) {
             console.log('Following books were not added: ', failedBooks);
         }

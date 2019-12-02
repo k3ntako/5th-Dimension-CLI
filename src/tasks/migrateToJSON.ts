@@ -1,7 +1,8 @@
 // This file is used for migrating from Postgres to JSON
 // This will take all the books with ISBN and gets the Google ID for them
-// Then the book info (Google ID, title, authors, and publishers) are saved to JSON
+// Then the book info (Google ID, title, authors, and publishers) is saved to JSON
 // The newly created JSON file will act as the reading list moving forward
+// This will make a request to Google Books API for every book with an ISBN
 
 require('dotenv').config();
 
@@ -22,7 +23,7 @@ const FIELDS: string = "&fields=items(id,volumeInfo(title,authors,publisher))";
 const LIMIT_ONE: string = '&maxResults=1';
 
 
-module.exports = async () => {
+module.exports.migrateToJSON = async () => {
   try{
     let existingBooks = [], existingBookIDs = [];
     if (fs.existsSync(config.dataFileDir)) {
@@ -113,6 +114,12 @@ module.exports = async () => {
     ReadingList.exportToJSON(existingBooks.concat(successfulBooks));
 
     loading.stop();
+
+    if (successfulBooks.length > 0) {
+      console.log(`${successfulBooks.length} book(s) transferred!`)
+    } else {
+      console.log("No books transferred");
+    }
 
     if (failedBooks.length) {
       console.log('Following books were not added: ', failedBooks);
