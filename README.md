@@ -49,6 +49,15 @@ If you want to change the font size, please look at the settings in your Termina
 ### Adding features
 Because the source code is written in Typescript, you need to compile the files to vanilla Javascript. Run `npm tsc` and it will compile your Typescript in the background. Open a new Terminal window to run tests and run the program. Edit the Typescript files in `/src` or `/tests`. Do not touch `/dist` as they are the compiled version (plain Javascript) of `/src`.
 
+### PR with JSON instead of Postgres
+As I example below, I have come to realize that Postgres was not necessary for this project. I have created a new branch (`json`) and opened a [PR](https://github.com/k3ntako/5th-Dimension-CLI/pull/1). This new branch utilizes a JSON file instead of Postgres, and it offers an `npm` command that will create a JSON file with the books in the Postgres database. For instructions on migrating, please read the *Migrating from Postgres* section in the ReadMe on the `json` branch. This was completed after the deadline, and thus it was not merged.
+
+When I first developed this program, I had scalability in mind. I had hoped to allow multiple users and planned to add features that would require more complex queries. Querying a large JSON file is much slower, especially for complex queries such as finding all users with a certain book. Additionally, Postgres would help assure a better data integrity.
+
+However, the scope of this project did not require multiple users, nor did it require complex queries. Postgres proved to be unnecessary and even problematic. For example, a user may not have Postgres already installed and may find it complicated or troublesome to install. JSON does not require any extra steps by the user, and Postgres was an unnecessary barrier to entry.
+
+Looking back, I have learned to start projects simple and migrate to heavier dependencies as the project requires it. I was excited to start the project and I was slightly too ambitious. The features I was hoping to add were not all feasible in the time frame. Postgres would have made more sense for a website, because the user does not have to interact with the database.
+
 ## Testing
 This program was built using test-driven development. Mocha, Chai, and Sinon were used to write the tests. The tests will run against the code in the `/src` folder, because the tests are also written in Typescript. The files in `/dist` are plain Javascript, that is what will be used when you run the program.
 
