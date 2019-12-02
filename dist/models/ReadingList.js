@@ -5,8 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-const dataFolderDir = path_1.default.join(__dirname, '../data');
-const dataFileDir = path_1.default.join(dataFolderDir, '/data.json');
+const logging_1 = require("../utilities/logging");
+const environment = process.env.NODE_ENV;
+const config = require('../../config')[environment || "production"];
+const dataFolderDir = config.dataFolderDir;
+const dataFileDir = config.dataFileDir;
+const dataFileName = config.dataFileName;
 class ReadingList {
     constructor() {
         this.getCount = () => {
@@ -16,19 +20,19 @@ class ReadingList {
             try {
                 const { id, title, publisher, authors } = book;
                 if (!id) {
-                    console.warn("This book does not have a valid ID and cannot be added to your list");
-                    return;
+                    logging_1.warn(`This book (${title}) does not have a valid ID and cannot be added to your list`);
+                    return false;
                 }
-                console.log(this.list);
-                const exists = this.list.some(book => book.id === id);
+                const exists = this.list.some(bookInList => bookInList.id === id);
                 if (exists) {
-                    console.warn("This book is already in your reading list");
-                    return;
+                    logging_1.warn("This book is already in your reading list");
+                    return false;
                 }
                 this.list.push({ id, title, publisher, authors });
+                return true;
             }
             catch (err) {
-                console.error(err);
+                logging_1.error(err);
             }
         };
         this.removeBook = (id) => {
@@ -38,8 +42,8 @@ class ReadingList {
             const offset = (page - 1) * 10;
             return this.list.slice(offset, offset + 10);
         };
-        this.saveToFile = (folderDir = dataFolderDir, dataFileName = '/data.json') => {
-            ReadingList.exportToJSON(this.list, folderDir, dataFileName);
+        this.saveToFile = (folderDir = dataFolderDir, fileName = dataFileName) => {
+            ReadingList.exportToJSON(this.list, folderDir, fileName);
         };
         this.list = [];
     }
@@ -48,7 +52,7 @@ class ReadingList {
         readingList.list = ReadingList.importFromJSON();
         return readingList;
     }
-    static exportToJSON(userBooks, folderDir = dataFolderDir, dataFileName = '/data.json') {
+    static exportToJSON(userBooks, folderDir = dataFolderDir, fileName = dataFileName) {
         if (!Array.isArray(userBooks)) {
             throw new Error(`Expected userBooks to be an array but got ${typeof userBooks}`);
         }
@@ -57,7 +61,7 @@ class ReadingList {
         if (!fs_1.default.existsSync(folderDir)) {
             fs_1.default.mkdirSync(folderDir);
         }
-        const fileDir = path_1.default.join(folderDir, dataFileName);
+        const fileDir = path_1.default.join(folderDir, fileName);
         fs_1.default.writeFileSync(fileDir, userBookJSON);
     }
     static importFromJSON(dir = dataFileDir, logging = false) {

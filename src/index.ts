@@ -1,9 +1,6 @@
 import ReadingListManager from './models/ReadingListManager';
 
-import chalk from 'chalk';
-import emoji from 'node-emoji';
-const error = (message: string) => console.error(`${emoji.get('warning')}  ${chalk.keyword('red')(message)}`);
-
+import { warn, error } from './utilities/logging';
 
 const start = async () => {
   try {

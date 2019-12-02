@@ -1,4 +1,8 @@
 "use strict";
+// This file is used for migrating from Postgres to JSON
+// This will take all the books with ISBN and gets the Google ID for them
+// Then the book info (Google ID, title, authors, and publishers) are saved to JSON
+// The newly created JSON file will act as the reading list moving forward
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14,20 +18,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
 const ReadingList_1 = __importDefault(require("../models/ReadingList"));
 const Loading_1 = __importDefault(require("../models/Loading"));
 const models_1 = __importDefault(require("../sequelize/models"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
+const environment = process.env.NODE_ENV;
+const config = require('../../config')[environment || "production"];
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
 const FIELDS = "&fields=items(id,volumeInfo(title,authors,publisher))";
 const LIMIT_ONE = '&maxResults=1';
-const dataFileDir = path_1.default.join(__dirname, '../data/data.json');
-const exportDBToJSON = () => __awaiter(void 0, void 0, void 0, function* () {
+module.exports = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (fs_1.default.existsSync(dataFileDir)) {
-            throw new Error('JSON file already exists.');
+        let existingBooks = [], existingBookIDs = [];
+        if (fs_1.default.existsSync(config.dataFileDir)) {
+            existingBooks = ReadingList_1.default.importFromJSON(config.dataFileDir);
+            existingBookIDs = existingBooks.map(book => book.id);
         }
         const loading = new Loading_1.default();
         loading.start();
@@ -62,6 +68,8 @@ const exportDBToJSON = () => __awaiter(void 0, void 0, void 0, function* () {
                 title,
                 publisher,
                 authors: authorsArr,
+                isbn_10,
+                isbn_13,
                 issn,
                 other_identifier,
             };
@@ -81,15 +89,17 @@ const exportDBToJSON = () => __awaiter(void 0, void 0, void 0, function* () {
                 continue;
             }
             const volumeInfo = json.items[0].volumeInfo;
-            successfulBooks.push({
-                id: json.items[0].id,
-                title: volumeInfo.title,
-                authors: volumeInfo.authors,
-                publisher: volumeInfo.publisher || null,
-            });
+            if (!existingBookIDs.includes(json.items[0].id)) {
+                successfulBooks.push({
+                    id: json.items[0].id,
+                    title: volumeInfo.title,
+                    authors: volumeInfo.authors,
+                    publisher: volumeInfo.publisher || null,
+                });
+            }
         }
         ;
-        yield ReadingList_1.default.exportToJSON(successfulBooks);
+        ReadingList_1.default.exportToJSON(existingBooks.concat(successfulBooks));
         loading.stop();
         if (failedBooks.length) {
             console.log('Following books were not added: ', failedBooks);
@@ -97,7 +107,6 @@ const exportDBToJSON = () => __awaiter(void 0, void 0, void 0, function* () {
         process.exit();
     }
     catch (err) {
-        console.log(err.message);
+        console.error(err.message);
     }
 });
-exportDBToJSON();

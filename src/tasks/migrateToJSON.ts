@@ -68,6 +68,8 @@ module.exports = async () => {
         title,
         publisher,
         authors: authorsArr,
+        isbn_10,
+        isbn_13,
         issn,
         other_identifier,
       };

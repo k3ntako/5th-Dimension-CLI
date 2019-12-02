@@ -19,8 +19,7 @@ const Loading_1 = __importDefault(require("./Loading"));
 const clear_1 = __importDefault(require("clear"));
 const node_emoji_1 = __importDefault(require("node-emoji"));
 const chalk_1 = __importDefault(require("chalk"));
-const warn = (message) => console.warn(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('orange')(message)}`);
-const error = (message) => console.error(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('red')(message)}`);
+const logging_1 = require("../utilities/logging");
 const prompt = inquirer_1.default.createPromptModule();
 const NUMBERS = [
     node_emoji_1.default.get('zero'),
@@ -48,7 +47,7 @@ class ReadingListManager {
             let promptChoices = defaultChoices.concat();
             // Add choices given on the prompt
             // if user has books in reading list, add view_list and remove_book as options
-            if (listCount) {
+            if (listCount > 0) {
                 const bookPlurality = listCount === 1 ? "" : "s";
                 promptChoices.push({
                     name: node_emoji_1.default.get('books') + ` View your reading list (${listCount} book${bookPlurality})`,
@@ -129,7 +128,7 @@ class ReadingListManager {
                     yield ReadingListManager.exit();
                     break;
                 default:
-                    warn('Command was not found: ' + action);
+                    logging_1.warn('Command was not found: ' + action);
                     break;
             }
             setTimeout(this.question, 300); // Delay before prompting them again
@@ -172,7 +171,7 @@ class ReadingListManager {
             });
             if (!search || !search.trim()) {
                 clear_1.default();
-                warn("No search term entered");
+                logging_1.warn("No search term entered");
                 return yield this.promptSearch();
             }
             try {
@@ -182,10 +181,10 @@ class ReadingListManager {
             }
             catch (err) {
                 this.loading.stop();
-                error(err);
+                logging_1.error(err);
             }
             if (!this.googleResults.length) {
-                warn(`No books found for: "${search}"`);
+                logging_1.warn(`No books found for: "${search}"`);
             }
             else {
                 console.log(`${chalk_1.default.bold("Search results for:")} "${search}"\n`);
@@ -210,12 +209,21 @@ class ReadingListManager {
             if (!bookIndices.length) {
                 return console.log('No books added');
             }
+            // filter out the books user selected
             const books = this.googleResults.filter((_, idx) => bookIndices.includes(idx));
-            const titles = books.map(book => chalk_1.default.greenBright(book.title)).join('\n');
-            books.map(book => this.readingList.addBook(book));
+            const titles = [];
+            // add the  books to this.readingList.list
+            books.forEach(book => {
+                const added = this.readingList.addBook(book);
+                added && titles.push(chalk_1.default.greenBright(book.title));
+            });
+            // save this.readingList.list to JSON file
             this.readingList.saveToFile();
+            if (!titles.length) {
+                return console.log('No new books added');
+            }
             console.log(chalk_1.default.bold("Book(s) added:"));
-            console.log(titles);
+            console.log(titles.join('\n'));
         });
     }
     promptRemoveBook() {

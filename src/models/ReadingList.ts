@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import Book from './Book';
+import { warn, error } from '../utilities/logging';
 
 const environment = process.env.NODE_ENV;
 const config = require('../../config')[environment || "production"];
@@ -33,24 +34,25 @@ export default class ReadingList {
     return this.list.length;
   }
 
-  addBook = (book: Book): void => {
+  addBook = (book: Book): boolean => {
     try{
       const { id, title, publisher, authors } = book;
 
       if (!id) {
-        console.warn("This book does not have a valid ID and cannot be added to your list");
-        return;
+        warn(`This book (${title}) does not have a valid ID and cannot be added to your list`);
+        return false;
       }
 
-      const exists = this.list.some(book => book.id === id);
+      const exists = this.list.some(bookInList => bookInList.id === id);
       if (exists) {
-        console.warn("This book is already in your reading list");
-        return;
+        warn("This book is already in your reading list");
+        return false;
       }
 
       this.list.push({ id, title, publisher, authors });
+      return true;
     } catch(err) {
-      console.error(err);
+      error(err);
     }
   }
 

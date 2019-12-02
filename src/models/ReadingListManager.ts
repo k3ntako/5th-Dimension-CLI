@@ -6,9 +6,7 @@ import Loading from './Loading';
 import clear from 'clear';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
-
-const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk.keyword('orange')(message)}`);
-const error = (message: string) => console.error(`${emoji.get('warning')}  ${chalk.keyword('red')(message)}`);
+import { warn, error } from '../utilities/logging';
 
 const prompt = inquirer.createPromptModule();
 const NUMBERS = [
@@ -50,14 +48,14 @@ export default class ReadingListManager {
     return await prompt(question);
   }
 
-  start() {
+  start(): void {
     clear();
     console.log(`Welcome to ${APP_NAME}!`);
     console.log("It's place to discover new books and save them for later!");
     this.question();
   }
 
-  static exit(){
+  static exit(): void{
     console.log(`Thank you for using ${APP_NAME}!`)
     console.log("Hope to see you soon!");
 
@@ -178,7 +176,7 @@ export default class ReadingListManager {
     setTimeout(this.question, 300); // Delay before prompting them again
   }
 
-  static logBook(book, idx?: number){
+  static logBook(book, idx?: number): void{
     const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx + 1]}  ` : "";
     const authors = book.authors && book.authors.length && book.authors.join(", ");
 
@@ -187,7 +185,7 @@ export default class ReadingListManager {
     console.log("Publisher: " + (book.publisher || "N/A") + "\n");
   }
 
-  async promptSearch() {
+  async promptSearch(): Promise<void> {
     this.readingListPage = 0;
 
     const { search } = await ReadingListManager.prompt({
@@ -221,7 +219,7 @@ export default class ReadingListManager {
     this.readingListPage = null;
   }
 
-  async promptAddBook(){
+  async promptAddBook(): Promise<void>{
     const promptChoices: inquirer.ChoiceCollection = this.googleResults.map((book, idx) => ({
       name: `${NUMBERS[idx + 1]}  ${book.title}`,
       value: idx,
@@ -240,17 +238,28 @@ export default class ReadingListManager {
       return console.log('No books added');
     }
 
+    // filter out the books user selected
     const books = this.googleResults.filter((_, idx) => bookIndices.includes(idx));
-    const titles = books.map(book => chalk.greenBright(book.title)).join('\n');
 
-    books.map(book => this.readingList.addBook(book));
+    const titles: string[] = [];
+    // add the  books to this.readingList.list
+    books.forEach(book => {
+      const added = this.readingList.addBook(book);
+      added && titles.push(chalk.greenBright(book.title));
+    });
+
+    // save this.readingList.list to JSON file
     this.readingList.saveToFile();
 
+    if (!titles.length) {
+      return console.log('No new books added');
+    }
+
     console.log(chalk.bold("Book(s) added:"));
-    console.log(titles);
+    console.log(titles.join('\n'));
   }
 
-  async promptRemoveBook() {
+  async promptRemoveBook(): Promise<void> {
     const books: IBook[] = await this.viewList();
 
     const promptChoices: inquirer.ChoiceCollection = books.map((book, idx) => ({
@@ -281,7 +290,7 @@ export default class ReadingListManager {
     console.log(titles);
   }
 
-  async viewList(){
+  async viewList(): Promise<void>{
     clear();
 
     if (this.readingListPage < 1){
