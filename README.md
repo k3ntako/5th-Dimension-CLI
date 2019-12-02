@@ -23,7 +23,7 @@ This program is built using test-driven development and Typescript. Test-driven 
 6. Create database and run migrations:
 ```
   $ npx sequelize-cli db:create
-  $ npm migrate
+  $ npm run migrate
 ```
 7. Get a Google Developer API Key
   - Follow the instructions [here](https://developers.google.com/books/docs/v1/using#APIKey);
