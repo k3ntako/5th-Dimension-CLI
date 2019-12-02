@@ -6,8 +6,8 @@
   "scripts": {
     "toJSON": "node ./dist/tasks/migrateToJSON.js",
     "migrate": "npx sequelize-cli db:migrate",
-    "drop-test-db": "node ./tests/_setup.ts",
-    "test": "npm run drop-test-db && NODE_ENV=test npm run migrate && NODE_ENV=test ts-mocha ./tests/**/*.test.ts --exit",
+    "drop-and-create-test-db": "node ./tests/_setup.ts",
+    "test": "npm run drop-and-create-test-db && NODE_ENV=test npm run migrate && NODE_ENV=test ts-mocha ./tests/**/*.test.ts --exit",
     "tsc": "tsc --watch"
   },
   "keywords": [],

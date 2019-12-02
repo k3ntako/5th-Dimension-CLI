@@ -1,6 +1,6 @@
 # Testing
 ## Dropping and Creating a new database
-Prior to each test, `npm rum drop-test-db` is run to drop and create the test database. This was not done using the CLI commands (i.e., `npx sequelize-cli db:drop && npx sequelize-cli db:create`), because `sequelize-cli` does not seem to support checks for `EXISTS` and `NOT EXISTS` for PostgreSQL. As a result, `sequelize-cli` will throw an error if a user tries to drop a database that does not exist or create a database that already exists.
+Prior to each test, `npm rum drop-and-create-test-db` is run to drop and create the test database. This was not done using the CLI commands (i.e., `npx sequelize-cli db:drop && npx sequelize-cli db:create`), because `sequelize-cli` does not seem to support checks for `EXISTS` and `NOT EXISTS` for PostgreSQL. As a result, `sequelize-cli` will throw an error if a user tries to drop a database that does not exist or create a database that already exists.
 
 Due to these obstacles, `_setup.ts` is used to provide a clean database prior to testing.
 

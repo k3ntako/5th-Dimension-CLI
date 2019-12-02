@@ -17,15 +17,7 @@ This program is built using test-driven development and Typescript. Test-driven 
 ```
   $ npm i
 ```
-5. Install PostgreSQL:
-- Follow the [directions](https://www.postgresql.org/download/) for your operating system.
-- For macOS, it is easier to download the [Postgres.app](https://postgresapp.com/) instead of following the instructions above.
-6. Create database and run migrations:
-```
-  $ npx sequelize-cli db:create
-  $ npm migrate
-```
-7. Get a Google Developer API Key
+5. Get a Google Developer API Key
   - Follow the instructions [here](https://developers.google.com/books/docs/v1/using#APIKey);
   - Create a `.env` in the root directory of your project by running
   ```
@@ -36,7 +28,7 @@ This program is built using test-driven development and Typescript. Test-driven 
   GOOGLE_BOOKS_API_KEY=YOUR_API_KEY
   ```
 
-8. Start the program:
+6. Start the program:
 ```
   $ node .
 ```
@@ -48,6 +40,24 @@ If you want to change the font size, please look at the settings in your Termina
 
 ### Adding features
 Because the source code is written in Typescript, you need to compile the files to vanilla Javascript. Run `npm tsc` and it will compile your Typescript in the background. Open a new Terminal window to run tests and run the program. Edit the Typescript files in `/src` or `/tests`. Do not touch `/dist` as they are the compiled version (plain Javascript) of `/src`.
+
+## Migrating from Postgres
+This program initially used Postgres, but we will be using JSON instead moving forward. If you have books saved to your database that you would like to transfer, please run `npm run toJSON` in Terminal. **This will make an API call for each book that has an ISBN saved in your database (in other words it can make a call for every book you have saved)**. At the  end of the run, it will console.log any books it was not able to transfer to JSON.
+
+Do not edit or move the JSON file that is created. Start the program and check the reading list to confirm that all the books have transferred.
+
+Optionally, delete the production and test databases by running the following. This will delete all the books you have saved! Do this AFTER you have confirmed
+```
+$ npx sequelize-cli db:drop
+$ NODE_ENV=test npx sequelize-cli db:drop
+```
+
+### Why I chose Postgres and then moved to JSON
+When I first developed this program, I had scalability in mind. I had hoped to allow multiple users and planned to add features that would require more complex queries. Querying a large JSON file is much slower, especially for complex queries such as finding all users with a certain book. Additionally, Postgres would help assure a better data integrity.
+
+However, the scope of this project did not require multiple users, nor did it require complex queries. Postgres proved to be unnecessary and even problematic. For example, a user may not have Postgres already installed and may find it complicated or troublesome to install. JSON does not require any extra steps by the user, and Postgres was an unnecessary barrier to entry.
+
+Looking back, I have learned to start projects simple and migrate to heavier dependencies as the project requires it. I was excited to start the project and I was slightly too ambitious. The features I was hoping to add were not all feasible in the time frame. Postgres would have made more sense for a website, because the user does not have to interact with the database.
 
 ## Testing
 This program was built using test-driven development. Mocha, Chai, and Sinon were used to write the tests. The tests will run against the code in the `/src` folder, because the tests are also written in Typescript. The files in `/dist` are plain Javascript, that is what will be used when you run the program.
@@ -79,7 +89,6 @@ Run tests:
 - Search by different fields (i.e., title, author, or etc.).
 - Multiple user support, and password protect the data.
 - Online back-up of user data.
-- Importing/exporting data from/to CSV and/or JSON.
 - Multiple reading lists.
 - Customization options:
   - Font-color
