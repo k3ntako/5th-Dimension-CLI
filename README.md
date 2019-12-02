@@ -95,6 +95,8 @@ Run tests:
   - Number of responses per search
   - Number of books per page while viewing reading list
   - Choose what fields (i.e., title, author, publisher, ISBN, and/or etc.) are displayed in a search
+- Better error handling (no internet connection)
+- Search reading list
 
 ## Contributing
 Currently, this project is not accepting any contributions, however, feel free to fork the project!
