@@ -25,6 +25,13 @@ const params = [
   },
 ];
 
+const params2 = [
+  {
+    title: 'Why We Sleep', authors: [{ name: 'Matthew Walker' }], publisher: 'Simon and Schuster',
+    isbn_10: '1501144316', isbn_13: '9781501144318',
+  }
+];
+
 describe('migrateToJSON', (): void => {
   it('should call ReadingListManager#start()', async (): Promise<void> => {
     try {
@@ -78,6 +85,37 @@ describe('migrateToJSON', (): void => {
       authors: [params[3].authors[0].name],
       publisher: params[3].publisher,
     });
+  });
+
+  it('should add to data file if file already exists', async (): Promise<void> => {
+    // fake process.exit
+    const processExitFake: sinon.SinonSpy<any> = sinon.fake();
+    sinon.replace(process, 'exit', processExitFake);
+
+    // create user
+    const users = await db.User.findAll({
+      where: {
+        email: "default@example.com",
+      },
+    });
+
+    const user = users[0];
+
+    // create books and associations
+    const param = params2[0];
+    const book = await db.Book.create(param, {
+      include: [{
+        association: db.Book.associations.authors,
+      }],
+    });
+
+    await user.addBook(book);
+
+    await migrateToJSON();
+
+    const books = ReadingList.importFromJSON(config.dataFileDir);
+
+    assert.lengthOf(books, 4); // 3 added in first test, and 1 added in this test
   });
 });
 

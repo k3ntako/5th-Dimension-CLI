@@ -24,8 +24,10 @@ const LIMIT_ONE: string = '&maxResults=1';
 
 module.exports = async () => {
   try{
+    let existingBooks = [], existingBookIDs = [];
     if (fs.existsSync(config.dataFileDir)) {
-      throw new Error('JSON file already exists.')
+      existingBooks = ReadingList.importFromJSON(config.dataFileDir);
+      existingBookIDs = existingBooks.map(book => book.id);
     }
 
     const loading = new Loading();
@@ -96,15 +98,17 @@ module.exports = async () => {
 
       const volumeInfo = json.items[0].volumeInfo;
 
-      successfulBooks.push({
-        id: json.items[0].id,
-        title: volumeInfo.title,
-        authors: volumeInfo.authors,
-        publisher: volumeInfo.publisher || null,
-      });
+      if (!existingBookIDs.includes(json.items[0].id)){
+        successfulBooks.push({
+          id: json.items[0].id,
+          title: volumeInfo.title,
+          authors: volumeInfo.authors,
+          publisher: volumeInfo.publisher || null,
+        });
+      }
     };
 
-    ReadingList.exportToJSON(successfulBooks);
+    ReadingList.exportToJSON(existingBooks.concat(successfulBooks));
 
     loading.stop();
 
