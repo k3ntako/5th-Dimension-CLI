@@ -11,8 +11,7 @@ import { User as IUser } from '../sequelize/models/user';
 import { Book as IBook } from '../sequelize/models/book';
 import { NUMBERS } from '../utilities/emoji';
 
-const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk.keyword('orange')(message)}`);
-const error = (message: string) => console.error(`${emoji.get('warning')}  ${chalk.keyword('red')(message)}`);
+import { warn, error } from '../utilities/logging';
 
 const prompt = inquirer.createPromptModule();
 

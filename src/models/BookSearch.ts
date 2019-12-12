@@ -2,9 +2,6 @@ require('dotenv').config();
 import fetch, { Response } from 'node-fetch';
 import { IGoogleResponse } from '../types/interfaces';
 import Book from './Book';
-import chalk from 'chalk';
-import emoji from 'node-emoji';
-const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk.keyword('orange')(message)}`);
 
 const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
