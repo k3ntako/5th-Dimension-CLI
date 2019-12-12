@@ -9,24 +9,12 @@ import emoji from 'node-emoji';
 import chalk from 'chalk';
 import { User as IUser } from '../sequelize/models/user';
 import { Book as IBook } from '../sequelize/models/book';
+import { NUMBERS } from '../utilities/emoji';
 
 const warn = (message: string) => console.warn(`${emoji.get('warning')}  ${chalk.keyword('orange')(message)}`);
 const error = (message: string) => console.error(`${emoji.get('warning')}  ${chalk.keyword('red')(message)}`);
 
 const prompt = inquirer.createPromptModule();
-const NUMBERS = [
-  emoji.get('zero'), // never used, but index matches the number
-  emoji.get('one'),
-  emoji.get('two'),
-  emoji.get('three'),
-  emoji.get('four'),
-  emoji.get('five'),
-  emoji.get('six'),
-  emoji.get('seven'),
-  emoji.get('eight'),
-  emoji.get('nine'),
-  emoji.get('one') + " " + emoji.get('zero'),
-];
 
 const APP_NAME = chalk.cyanBright.bold("5th Dimension CLI");
 
