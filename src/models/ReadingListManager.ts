@@ -5,10 +5,10 @@ import Book from './Book';
 import User from './User';
 import Loading from './Loading';
 import clear from 'clear';
-import emoji from 'node-emoji';
 import chalk from 'chalk';
 import { User as IUser } from '../sequelize/models/user';
 import { Book as IBook } from '../sequelize/models/book';
+import promptChoices from '../utilities/promptChoices';
 import { NUMBERS } from '../utilities/emoji';
 
 import { warn, error } from '../utilities/logging';
@@ -18,17 +18,13 @@ const prompt = inquirer.createPromptModule();
 const APP_NAME = chalk.cyanBright.bold("5th Dimension CLI");
 
 
-const defaultChoices: inquirer.ChoiceCollection = [{
-  name: emoji.get('mag') + " Search for books!",
-  value: "search",
-}];
+const defaultChoices: inquirer.ChoiceCollection = [ promptChoices.search() ];
 
 
 export default class ReadingListManager {
   googleResults: Book[];
   user: IUser;
   loading: Loading;
-  listCount: number;
   readingListPage: number;
   constructor(user) {
     if(!user || !user.id){
@@ -37,7 +33,6 @@ export default class ReadingListManager {
 
     this.user = user;
     this.loading = new Loading();
-    this.listCount = 0;
     this.googleResults = [];
     this.readingListPage = 0; // 0 means reading list not shown
   }
@@ -54,76 +49,64 @@ export default class ReadingListManager {
   }
 
   static exit(){
-
     console.log(`Thank you for using ${APP_NAME}!`)
     console.log("Hope to see you soon!");
 
     process.exit();
   }
 
-  question = async (): Promise<void> => {
-    this.listCount = await ReadingList.getCount(this.user);
-    console.log("");
+  preparePromptChoices = async (): Promise<inquirer.ChoiceCollection> => {
+    const listCount = await ReadingList.getCount(this.user);
 
-    let promptChoices: inquirer.ChoiceCollection = defaultChoices.concat();
+    let promptChoicesToDisplay: inquirer.ChoiceCollection = defaultChoices.concat();
 
     // Add choices given on the prompt
     // if user has books in reading list, add view_list and remove_book as options
-    if (this.listCount) {
-      const bookPlurality = this.listCount === 1 ? "" : "s";
+    if (listCount) {
+      const bookPlurality = listCount === 1 ? "" : "s";
 
-      promptChoices.push({
-        name: emoji.get('books') + ` View your reading list (${this.listCount} book${bookPlurality})`,
-        value: "view_list",
-      }, {
-        name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
-        value: "remove_book",
-      });
+      promptChoicesToDisplay.push(promptChoices.view_list(listCount, bookPlurality));
+      promptChoicesToDisplay.push(promptChoices.remove_book());
     }
 
     // if there are results from a Google Books search, add add_book as an option
     if (this.googleResults.length){
-      promptChoices.splice(2, 0, {
-        name: emoji.get('star') + " Add book(s) above to your reading list",
-        value: "add_book",
-      })
+      promptChoicesToDisplay.splice(2, 0, promptChoices.add_book())
     }
 
     // add next page and previous page as options if appropriate
-    const count = await ReadingList.getCount(this.user);
-    const hasNextPage = this.readingListPage && count > this.readingListPage * 10;
+    const hasNextPage = this.readingListPage && listCount > this.readingListPage * 10;
     const hasPreviousPage = this.readingListPage && this.readingListPage > 1;
     if (hasNextPage || hasPreviousPage) {
-      promptChoices.push(new inquirer.Separator());
+      promptChoicesToDisplay.push(new inquirer.Separator());
     }
     if (hasNextPage) {
-      promptChoices.push({
-        name: emoji.get('arrow_forward') + "  Next page",
-        value: "next",
-      });
+      promptChoicesToDisplay.push(promptChoices.next());
     }
     if (hasPreviousPage) {
-      promptChoices.push({
-        name: emoji.get('arrow_backward') + "  Previous page",
-        value: "previous",
-      });
+      promptChoicesToDisplay.push(promptChoices.previous());
     }
 
     // add exit as an option
-    promptChoices.push(
+    promptChoicesToDisplay.push(
       new inquirer.Separator(),
-      {
-        name: emoji.get('closed_lock_with_key') + "  Exit",
-        value: "exit",
-      },
+      promptChoices.exit(),
       new inquirer.Separator(),
     );
+
+    return promptChoicesToDisplay;
+  }
+
+  question = async (): Promise<void> => {
+    console.log(""); // for spacing
+
+    const promptChoicesToDisplay = await this.preparePromptChoices();
 
     // Prompt options
     const promptOptions: inquirer.ListQuestion = {
       message: "What would you like to do?",
       name: "action",
-      choices: promptChoices,
+      choices: promptChoicesToDisplay,
       type: "list",
     };
 
