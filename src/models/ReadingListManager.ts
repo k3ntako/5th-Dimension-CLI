@@ -112,7 +112,13 @@ export default class ReadingListManager {
 
     // prompt
     const { action } = await ReadingListManager.prompt(promptOptions);
+    await this.performAction(action);
 
+
+    setTimeout(this.question, 300); // Delay before prompting them again
+  }
+
+  async performAction(action){
     // calls appropriate actionn based on input
     switch (action) {
       case "search":
@@ -155,8 +161,6 @@ export default class ReadingListManager {
         warn('Command was not found: ' + action);
         break;
     }
-
-    setTimeout(this.question, 300); // Delay before prompting them again
   }
 
   static logBook(book, idx?: number){
