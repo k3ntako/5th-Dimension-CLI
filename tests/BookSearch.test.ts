@@ -38,7 +38,7 @@ describe('BookSearch', (): void => {
       results = await BookSearch.search(searchTerm);
 
       assert.typeOf(results, 'array');
-    });
+    }).timeout(8000);
 
     it('should fetch result should be no more than five items long', async (): Promise<void> => {
       assert.isAtMost(results.length, 5);
@@ -52,4 +52,3 @@ describe('BookSearch', (): void => {
     });
   });
 });
-
