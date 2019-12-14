@@ -19,7 +19,7 @@ export default class AddBookAction extends Action {
     const tenBooksInList = await addBookAction.getList(user, readingListPage);
     addBookAction.logBooks(tenBooksInList);
 
-    return addBookAction;
+    return { addBookAction };
   }
 
   private async getList(user, readingListPage: number){

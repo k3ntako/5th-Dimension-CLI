@@ -14,7 +14,7 @@ export default class RemoveBookAction extends Action {
     super();
   }
 
-  static async start(books, user): Promise<RemoveBookAction>{
+  static async start(books, user){
     const removeBookAction = new RemoveBookAction();
 
     const promptChoices =  removeBookAction.preparePromptChoices(books);
@@ -25,7 +25,7 @@ export default class RemoveBookAction extends Action {
     const booksRemoved = await removeBookAction.removeBooks(books, bookIndices, user);
     await removeBookAction.logBooks(booksRemoved);
 
-    return removeBookAction;
+    return { removeBookAction };
   }
 
   private preparePromptChoices(books): inquirer.ChoiceCollection{

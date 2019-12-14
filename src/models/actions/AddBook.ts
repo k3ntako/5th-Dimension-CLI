@@ -15,7 +15,7 @@ export default class AddBookAction extends Action {
     super();
   }
 
-  static async start(googleResults, user): Promise<AddBookAction>{
+  static async start(googleResults, user){
     const addBookAction = new AddBookAction();
 
     const promptChoices = addBookAction.preparePromptChoices(googleResults);
@@ -24,7 +24,7 @@ export default class AddBookAction extends Action {
     const booksAdded: Book[] = await addBookAction.addBooksToDB(googleResults, bookIndices, user);
     addBookAction.logBooks(booksAdded);
 
-    return addBookAction;
+    return { addBookAction };
   }
 
   private preparePromptChoices(googleResults): inquirer.ChoiceCollection{

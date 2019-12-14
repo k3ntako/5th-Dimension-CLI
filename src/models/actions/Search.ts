@@ -27,7 +27,7 @@ export default class SearchAction extends Action {
 
     searchAction.logBooks(googleResults, searchStr);
 
-    return {searchAction, googleResults};
+    return { searchAction, googleResults };
   }
 
   private async promptSearchStr(): Promise<string> {
