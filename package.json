@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/clear": "^0.1.0",
     "chalk": "^3.0.0",
     "clear": "^0.1.0",
     "dotenv": "^8.2.0",
