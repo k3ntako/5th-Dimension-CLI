@@ -1,6 +1,6 @@
 import BookSearch from './BookSearch';
 import ReadingList from './ReadingList';
-import inquirer from 'inquirer';
+import inquirer,  {prompt} from 'inquirer';
 import Book from './Book';
 import User from './User';
 import Loading from './Loading';
@@ -10,10 +10,9 @@ import { User as IUser } from '../sequelize/models/user';
 import { Book as IBook } from '../sequelize/models/book';
 import promptChoices from '../utilities/promptChoices';
 import { NUMBERS } from '../utilities/emoji';
+import actions from './actions';
 
 import { warn, error } from '../utilities/logging';
-
-const prompt = inquirer.createPromptModule();
 
 const APP_NAME = chalk.cyanBright.bold("5th Dimension CLI");
 
@@ -24,7 +23,6 @@ const defaultChoices: inquirer.ChoiceCollection = [ promptChoices.search() ];
 export default class ReadingListManager {
   googleResults: Book[];
   user: IUser;
-  loading: Loading;
   readingListPage: number;
   constructor(user) {
     if(!user || !user.id){
@@ -32,13 +30,8 @@ export default class ReadingListManager {
     }
 
     this.user = user;
-    this.loading = new Loading();
     this.googleResults = [];
     this.readingListPage = 0; // 0 means reading list not shown
-  }
-
-  static async prompt(question: inquirer.QuestionCollection): Promise<inquirer.Answers> {
-    return await prompt(question);
   }
 
   start() {
@@ -55,9 +48,7 @@ export default class ReadingListManager {
     process.exit();
   }
 
-  preparePromptChoices = async (): Promise<inquirer.ChoiceCollection> => {
-    const listCount = await ReadingList.getCount(this.user);
-
+  preparePromptChoices = (listCount: number): inquirer.ChoiceCollection => {
     let promptChoicesToDisplay: inquirer.ChoiceCollection = defaultChoices.concat();
 
     // Add choices given on the prompt
@@ -100,7 +91,8 @@ export default class ReadingListManager {
   question = async (): Promise<void> => {
     console.log(""); // for spacing
 
-    const promptChoicesToDisplay = await this.preparePromptChoices();
+    const listCount = await ReadingList.getCount(this.user);
+    const promptChoicesToDisplay = this.preparePromptChoices(listCount);
 
     // Prompt options
     const promptOptions: inquirer.ListQuestion = {
@@ -123,33 +115,34 @@ export default class ReadingListManager {
     switch (action) {
       case "search":
         clear();
-        await this.promptSearch();
+        await actions.Search.start();
         break;
 
       case "view_list":
         clear();
-        await this.viewList();
+        await actions.ViewList.start(this.user, this.readingListPage);
         break;
 
       case "add_book":
-        await this.promptAddBook();
+        await actions.AddBook.start(this.googleResults, this.user);
         break;
 
       case "remove_book":
         clear();
-        await this.promptRemoveBook();
+        const tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
+        await action.RemoveBook.start(tenBooksInList, this.user);
         break;
 
       case "next":
         clear();
         this.readingListPage++;
-        await this.viewList();
+        await action.ViewList.start(this.user, this.readingListPage);
         break;
 
       case "previous":
         clear();
         this.readingListPage--;
-        await this.viewList();
+        await action.ViewList.start(this.user, this.readingListPage);
         break;
 
       case "exit":
@@ -161,128 +154,5 @@ export default class ReadingListManager {
         warn('Command was not found: ' + action);
         break;
     }
-  }
-
-  static logBook(book, idx?: number){
-    const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx + 1]}  ` : "";
-    const authors = book.authors && book.authors.join(", ");
-
-    console.log(emojiNum + chalk.bold(book.title));
-    console.log("Author(s): " + (authors || "N/A"));
-    console.log("Publisher: " + (book.publisher || "N/A") + "\n");
-  }
-
-  async promptSearch() {
-    this.readingListPage = null ;
-
-    const { search } = await ReadingListManager.prompt({
-      message: "Please enter your search term...",
-      name: "search",
-      type: "input",
-    });
-
-    if(!search || !search.trim()){
-      clear();
-      warn("No search term entered");
-      return await this.promptSearch();
-    }
-
-    try{
-      this.loading.start();
-      this.googleResults = await BookSearch.search(search);
-      this.loading.stop();
-    } catch(err) {
-      this.loading.stop();
-      error(err);
-    }
-
-    if (!this.googleResults.length){
-      warn(`No books found for: "${search}"`);
-    }else{
-      console.log(`${chalk.bold("Search results for:")} "${search}"\n`);
-      this.googleResults.forEach(ReadingListManager.logBook);
-    }
-
-    this.readingListPage = null;
-  }
-
-  async promptAddBook(){
-    const promptChoices: inquirer.ChoiceCollection = this.googleResults.map((book, idx) => ({
-      name: `${NUMBERS[idx + 1]}  ${book.title}`,
-      value: idx,
-    }));
-
-    const { bookIndices } = await ReadingListManager.prompt({
-      message: "Which book(s) would you like to add to your reading list?",
-      name: "bookIndices",
-      choices: promptChoices,
-      type: "checkbox",
-    });
-
-    clear();
-
-    if (!bookIndices.length) {
-      return console.log('No books added');
-    }
-
-    const books = this.googleResults.filter((_, idx) => bookIndices.includes(idx));
-    const titles = books.map(book => chalk.greenBright(book.title)).join('\n')
-
-    const promises = books.map(book => ReadingList.addBook(book, this.user));
-    await Promise.all(promises);
-
-    console.log(chalk.bold("Book(s) added:"));
-    console.log(titles);
-  }
-
-  async promptRemoveBook() {
-    const books: IBook[] = await this.viewList();
-
-    const promptChoices: inquirer.ChoiceCollection = books.map((book, idx) => ({
-      name: `${NUMBERS[idx + 1]}  ${book.title}`,
-      value: idx,
-    }));
-
-    const { bookIndices } = await ReadingListManager.prompt({
-      message: "Which book(s) would you like to remove from your reading list?",
-      name: "bookIndices",
-      choices: promptChoices,
-      type: "checkbox",
-    });
-
-    clear();
-
-    if (!bookIndices.length) {
-      return console.log('No books removed');
-    }
-
-    const booksToRemove = books.filter((_, idx) => bookIndices.includes(idx));
-
-    const titles = booksToRemove.map(book => chalk.redBright(book.title)).join('\n')
-    const promises = booksToRemove.map(book => ReadingList.removeBook(book.id, this.user.id));
-    await Promise.all(promises);
-
-    console.log(chalk.bold("Books removed:"))
-    console.log(titles);
-  }
-
-  async viewList(){
-    clear();
-
-    if (this.readingListPage < 1){
-      this.readingListPage = 1;
-    }
-
-    const books = await ReadingList.getList(this.user, this.readingListPage);
-    if(books.length){
-      console.log(chalk.bold("Your Reading List:"));
-      books.forEach(ReadingListManager.logBook);
-
-      return books;
-    }else{
-      console.log("There are no books in your reading list");
-    }
-
-    return [];
   }
 }
