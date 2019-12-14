@@ -103,7 +103,7 @@ export default class ReadingListManager {
     };
 
     // prompt
-    const { action } = await ReadingListManager.prompt(promptOptions);
+    const { action } = await prompt(promptOptions);
     await this.performAction(action);
 
 
@@ -131,19 +131,19 @@ export default class ReadingListManager {
       case "remove_book":
         clear();
         const tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
-        await action.RemoveBook.start(tenBooksInList, this.user);
+        await actions.RemoveBook.start(tenBooksInList, this.user);
         break;
 
       case "next":
         clear();
         this.readingListPage++;
-        await action.ViewList.start(this.user, this.readingListPage);
+        await actions.ViewList.start(this.user, this.readingListPage);
         break;
 
       case "previous":
         clear();
         this.readingListPage--;
-        await action.ViewList.start(this.user, this.readingListPage);
+        await actions.ViewList.start(this.user, this.readingListPage);
         break;
 
       case "exit":
