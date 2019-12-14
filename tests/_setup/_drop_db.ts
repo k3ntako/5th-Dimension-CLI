@@ -16,4 +16,3 @@ client.connect().then(() => {
   console.log("Finished creating clean test database");
   client.end();
 });
-

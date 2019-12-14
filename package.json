@@ -5,8 +5,7 @@
   "main": "./bin/index.js",
   "scripts": {
     "migrate": "npx sequelize-cli db:migrate",
-    "drop-test-db": "node ./tests/_setup.ts",
-    "test": "npm run drop-test-db && NODE_ENV=test npm run migrate && NODE_ENV=test ts-mocha ./tests/**/*.test.ts --exit",
+    "drop-test-db": "node ./tests/_setup/_drop_db.ts",
     "tsc": "tsc --watch"
   },
   "keywords": [],
