@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import Book from '../src/models/Book';
+import Book from '../../src/models/Book';
 
 const params = {
   title: "The Food Lab: Better Home Cooking Through Science",
@@ -94,4 +94,3 @@ describe('Book', (): void => {
     });
   });
 });
-

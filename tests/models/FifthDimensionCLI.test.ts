@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
-import start from '../src/index';
-import ReadingListManager from '../src/models/ReadingListManager';
+import start from '../../src/index';
+import ReadingListManager from '../../src/models/ReadingListManager';
 
 
 describe('index.ts', (): void => {
@@ -32,4 +32,3 @@ describe('index.ts', (): void => {
     });
   });
 });
-

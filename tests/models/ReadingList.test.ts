@@ -1,10 +1,10 @@
 import { assert } from 'chai';
-import ReadingList from '../src/models/ReadingList';
-import User from '../src/models/User';
-import Book from '../src/models/Book';
+import ReadingList from '../../src/models/ReadingList';
+import User from '../../src/models/User';
+import Book from '../../src/models/Book';
 
-import db from '../src/sequelize/models';
-import { IBook } from '../src/sequelize/models/book';
+import db from '../../src/sequelize/models';
+import { IBook } from '../../src/sequelize/models/book';
 
 const params = {
   title: "Test-driven Development",

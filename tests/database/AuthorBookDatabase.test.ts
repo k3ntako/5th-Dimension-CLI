@@ -1,8 +1,8 @@
 import { assert } from 'chai';
-import db from '../src/sequelize/models';
-import { Book as IBook } from '../src/sequelize/models/book';
-import { Author as IAuthor } from '../src/sequelize/models/author';
-import { AuthorBook as IAuthorBook } from '../src/sequelize/models/author_book';
+import db from '../../src/sequelize/models';
+import { Book as IBook } from '../../src/sequelize/models/book';
+import { Author as IAuthor } from '../../src/sequelize/models/author';
+import { AuthorBook as IAuthorBook } from '../../src/sequelize/models/author_book';
 
 const title: string = "Tuesdays with Morrie";
 const publisher: string = "Doubleday";

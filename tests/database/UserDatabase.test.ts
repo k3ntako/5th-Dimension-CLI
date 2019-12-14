@@ -1,8 +1,8 @@
 import { assert } from 'chai';
-import db from '../src/sequelize/models';
-import { Book as IBook } from '../src/sequelize/models/book';
-import { User as IUser } from '../src/sequelize/models/user';
-import { UserBook as IUserBook } from '../src/sequelize/models/user_book';
+import db from '../../src/sequelize/models';
+import { Book as IBook } from '../../src/sequelize/models/book';
+import { User as IUser } from '../../src/sequelize/models/user';
+import { UserBook as IUserBook } from '../../src/sequelize/models/user_book';
 
 const firstName: string = "Kentaro";
 const lastName: string = "Kaneki";

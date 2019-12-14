@@ -1,6 +1,6 @@
 import { assert } from 'chai';
-import BookSearch from '../src/models/BookSearch';
-import Book from '../src/models/Book';
+import BookSearch from '../../src/models/BookSearch';
+import Book from '../../src/models/Book';
 import sinon from 'sinon';
 
 describe('BookSearch', (): void => {

@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import User from '../src/models/User';
+import User from '../../src/models/User';
 
 // Regex for UUID
 // https://stackoverflow.com/questions/7905929/how-to-test-valid-uuid-guid
@@ -45,5 +45,3 @@ describe('User', (): void => {
     });
   });
 });
-
-

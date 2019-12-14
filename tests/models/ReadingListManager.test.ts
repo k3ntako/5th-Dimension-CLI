@@ -1,15 +1,15 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
-import ReadingListManager from '../src/models/ReadingListManager';
-import ReadingList from '../src/models/ReadingList';
-import Book from '../src/models/Book';
-import User from  '../src/models/User';
-import db from '../src/sequelize/models';
+import ReadingListManager from '../../src/models/ReadingListManager';
+import ReadingList from '../../src/models/ReadingList';
+import Book from '../../src/models/Book';
+import User from  '../../src/models/User';
+import db from '../../src/sequelize/models';
 import emoji from 'node-emoji';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { UserBook } from '../src/sequelize/models/user_book';
-import book from '../src/sequelize/models/book';
+import { UserBook } from '../../src/sequelize/models/user_book';
+import book from '../../src/sequelize/models/book';
 
 
 let defaultUser;
