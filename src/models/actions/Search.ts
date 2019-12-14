@@ -19,16 +19,18 @@ export default class SearchAction extends Action {
     this.loading = new Loading();
   }
 
-  static async start(): Promise<SearchAction>{
+  static async start(){
     const searchAction = new SearchAction();
 
-    const { googleResults, searchStr } = searchAction.promptSearch();
+    const searchStr: string = await searchAction.promptSearchStr();
+    const googleResults: Book[] = await searchAction.fetchBooks(searchStr);
+
     searchAction.logBooks(googleResults, searchStr);
 
-    return searchAction;
+    return {searchAction, googleResults};
   }
 
-  private async promptSearch() {
+  private async promptSearchStr(): Promise<string> {
     const { searchStr } = await prompt({
       message: "Please enter your search term...",
       name: "searchStr",
@@ -38,12 +40,10 @@ export default class SearchAction extends Action {
     if(!searchStr || !searchStr.trim()){
       clear();
       warn("No search term entered");
-      return await this.promptSearch();
+      return await this.promptSearchStr();
     }
 
-    const googleResults: Book[] = await this.fetchBooks(searchStr);
-
-    return { googleResults, searchStr };
+    return searchStr;
   }
 
   private fetchBooks = async (searchStr): Promise<Book[]> => {

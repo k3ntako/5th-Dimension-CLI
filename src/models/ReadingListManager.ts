@@ -115,7 +115,8 @@ export default class ReadingListManager {
     switch (action) {
       case "search":
         clear();
-        await actions.Search.start();
+        const { googleResults } = await actions.Search.start();
+        this.googleResults = googleResults;
         break;
 
       case "view_list":
