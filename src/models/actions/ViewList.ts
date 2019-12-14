@@ -12,22 +12,14 @@ export default class AddBookAction extends Action {
     super();
   }
 
-  static async start(user, readingListPage: number): Promise<AddBookAction>{
+  static async start(user, readingListPage: number){
     const addBookAction = new AddBookAction();
     clear();
 
-    const tenBooksInList = await addBookAction.getList(user, readingListPage);
+    const tenBooksInList = await ReadingList.getList(user, readingListPage);
     addBookAction.logBooks(tenBooksInList);
 
     return { addBookAction };
-  }
-
-  private async getList(user, readingListPage: number){
-    if (!readingListPage || readingListPage < 1){
-      readingListPage = 1;
-    }
-
-    return await ReadingList.getList(user, readingListPage);
   }
 
   private logBooks(tenBooksInList): void{
