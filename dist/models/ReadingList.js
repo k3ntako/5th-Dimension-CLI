@@ -96,6 +96,9 @@ class ReadingList {
     }
     static getList(user, page) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!page || page < 1) {
+                page = 1;
+            }
             const offset = (page - 1) * 10;
             let books = yield user.getBooks({
                 include: [{

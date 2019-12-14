@@ -14,9 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ReadingListManager_1 = __importDefault(require("./models/ReadingListManager"));
 const User_1 = __importDefault(require("./models/User"));
-const chalk_1 = __importDefault(require("chalk"));
-const node_emoji_1 = __importDefault(require("node-emoji"));
-const error = (message) => console.error(`${node_emoji_1.default.get('warning')}  ${chalk_1.default.keyword('red')(message)}`);
+const logging_1 = require("./utilities/logging");
 const start = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield User_1.default.loginAsDefault();
@@ -24,9 +22,9 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
         readingListManager.start();
     }
     catch (err) {
-        error("Sorry, there was an unexpected error with the program.");
-        error("If the issue persists, please contact the developer.\n");
-        error(err);
+        logging_1.error("Sorry, there was an unexpected error with the program.");
+        logging_1.error("If the issue persists, please contact the developer.\n");
+        logging_1.error(err);
         process.exit();
     }
 });
