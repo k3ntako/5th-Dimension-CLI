@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
-const node_fetch_1 = __importDefault(require("node-fetch"));
 const Book_1 = __importDefault(require("./Book"));
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
@@ -36,7 +35,7 @@ class BookSearch {
                 .map(search => encodeURIComponent(search))
                 .join("+");
             const url = BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
-            const response = yield node_fetch_1.default(url);
+            const response = yield fetch(url);
             if (!response.ok) {
                 throw new Error(`${response.status} - ${response.statusText}`);
             }

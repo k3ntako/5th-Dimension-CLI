@@ -1,5 +1,5 @@
 require('dotenv').config();
-import fetch, { Response } from 'node-fetch';
+import { Response } from 'node-fetch';
 import { IGoogleResponse } from '../types/interfaces';
 import Book from './Book';
 
