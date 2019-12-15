@@ -25,12 +25,26 @@ export default class User {
   }
 
   static async loginAsDefault(){
-    const users = await db.User.findAll({ where: { email: DEFAULT_USER.email }});
-    let user = users[0];
+    let user;
+    await db.sequelize.transaction(async transaction => {
+      const users = await db.User.findAll({
+        where: { email: DEFAULT_USER.email },
+        transaction,
+        lock: true,
+      });
 
-    if(!user){
-      user = await db.User.create(DEFAULT_USER);
-    }
+      user = users[0];
+
+      if(!user){
+        user = await db.User.create(
+          DEFAULT_USER,
+          {
+            transaction,
+            lock: true,
+          }
+        );
+      }
+    });
 
     return user;
   }

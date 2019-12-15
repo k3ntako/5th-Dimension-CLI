@@ -36,11 +36,21 @@ class User {
     }
     static loginAsDefault() {
         return __awaiter(this, void 0, void 0, function* () {
-            const users = yield models_1.default.User.findAll({ where: { email: DEFAULT_USER.email } });
-            let user = users[0];
-            if (!user) {
-                user = yield models_1.default.User.create(DEFAULT_USER);
-            }
+            let user;
+            yield models_1.default.sequelize.transaction((transaction) => __awaiter(this, void 0, void 0, function* () {
+                const users = yield models_1.default.User.findAll({
+                    where: { email: DEFAULT_USER.email },
+                    transaction,
+                    lock: true,
+                });
+                user = users[0];
+                if (!user) {
+                    user = yield models_1.default.User.create(DEFAULT_USER, {
+                        transaction,
+                        lock: true,
+                    });
+                }
+            }));
             return user;
         });
     }
