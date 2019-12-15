@@ -1,1 +1,3 @@
-require('../dist/index.js');
+const start = require('../dist/index.js').default;
+
+start();

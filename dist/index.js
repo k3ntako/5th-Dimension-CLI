@@ -28,5 +28,4 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
         process.exit();
     }
 });
-start();
 exports.default = start;
