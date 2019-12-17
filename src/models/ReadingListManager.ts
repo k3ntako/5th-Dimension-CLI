@@ -106,16 +106,18 @@ export default class ReadingListManager {
   }
 
   async performAction(action){
-    // calls appropriate actionn based on input
+    if (action !== "add_book") {
+      clear();
+    }
+
+    // calls appropriate action based on input
     switch (action) {
       case "search":
-        clear();
         const { googleResults } = await actions.Search.start();
         this.googleResults = googleResults;
         break;
 
       case "view_list":
-        clear();
         await actions.ViewList.start(this.user, this.readingListPage);
         break;
 
@@ -124,26 +126,22 @@ export default class ReadingListManager {
         break;
 
       case "remove_book":
-        clear();
         const tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
         await actions.RemoveBook.start(tenBooksInList, this.user);
         break;
 
       case "next":
-        clear();
         this.readingListPage++;
         await actions.ViewList.start(this.user, this.readingListPage);
         break;
 
       case "previous":
-        clear();
         this.readingListPage--;
         await actions.ViewList.start(this.user, this.readingListPage);
         break;
 
       case "exit":
-        clear();
-        await ReadingListManager.exit();
+        ReadingListManager.exit();
         break;
 
       default:

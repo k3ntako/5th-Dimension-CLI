@@ -95,38 +95,35 @@ class ReadingListManager {
     }
     performAction(action) {
         return __awaiter(this, void 0, void 0, function* () {
-            // calls appropriate actionn based on input
+            if (action !== "add_book") {
+                clear_1.default();
+            }
+            // calls appropriate action based on input
             switch (action) {
                 case "search":
-                    clear_1.default();
                     const { googleResults } = yield actions_1.default.Search.start();
                     this.googleResults = googleResults;
                     break;
                 case "view_list":
-                    clear_1.default();
                     yield actions_1.default.ViewList.start(this.user, this.readingListPage);
                     break;
                 case "add_book":
                     yield actions_1.default.AddBook.start(this.googleResults, this.user);
                     break;
                 case "remove_book":
-                    clear_1.default();
                     const tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
                     yield actions_1.default.RemoveBook.start(tenBooksInList, this.user);
                     break;
                 case "next":
-                    clear_1.default();
                     this.readingListPage++;
                     yield actions_1.default.ViewList.start(this.user, this.readingListPage);
                     break;
                 case "previous":
-                    clear_1.default();
                     this.readingListPage--;
                     yield actions_1.default.ViewList.start(this.user, this.readingListPage);
                     break;
                 case "exit":
-                    clear_1.default();
-                    yield ReadingListManager.exit();
+                    ReadingListManager.exit();
                     break;
                 default:
                     logging_1.warn('Command was not found: ' + action);
