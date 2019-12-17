@@ -6,7 +6,7 @@ export default class Loading {
     this.interval = null;
   }
 
-  start() {
+  start(): void {
     let i = 0;
     this.interval = setInterval(() => {
       let dots = "."
@@ -23,7 +23,7 @@ export default class Loading {
     }, 300);
   }
 
-  stop() {
+  stop(): void {
     clearInterval(this.interval);
     this.stream.clearLine();
     this.stream.cursorTo(0);

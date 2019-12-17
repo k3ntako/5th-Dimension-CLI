@@ -4,13 +4,13 @@ import { Book as IBook } from '../../src/sequelize/models/book';
 import { User as IUser } from '../../src/sequelize/models/user';
 import { UserBook as IUserBook } from '../../src/sequelize/models/user_book';
 
-const firstName: string = "Kentaro";
-const lastName: string = "Kaneki";
-const email: string = "myEmail@example.com";
+const firstName = "Kentaro";
+const lastName = "Kaneki";
+const email = "myEmail@example.com";
 
-const title: string = "Test Driven Development: By Example";
-const publisher: string = "Addison-Wesley Professional";
-const authorName: string = "Kent Beck";
+const title = "Test Driven Development: By Example";
+const publisher = "Addison-Wesley Professional";
+const authorName = "Kent Beck";
 
 
 describe('Database', (): void => {

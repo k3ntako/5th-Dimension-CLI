@@ -1,5 +1,5 @@
 import ReadingList from './ReadingList';
-import inquirer,  {prompt} from 'inquirer';
+import inquirer, {prompt} from 'inquirer';
 import clear from 'clear';
 import chalk from 'chalk';
 import Book from './Book';
@@ -29,14 +29,14 @@ export default class ReadingListManager {
     this.readingListPage = 0; // 0 means reading list not shown
   }
 
-  start() {
+  start(): void {
     clear();
     console.log(`Welcome to ${APP_NAME}!`);
     console.log("It's place to discover new books and save them for later!");
     this.question();
   }
 
-  static exit(){
+  static exit(): void{
     console.log(`Thank you for using ${APP_NAME}!`)
     console.log("Hope to see you soon!");
 
@@ -44,7 +44,7 @@ export default class ReadingListManager {
   }
 
   preparePromptChoices = (listCount: number): inquirer.ChoiceCollection => {
-    let promptChoicesToDisplay: inquirer.ChoiceCollection = defaultChoices.concat();
+    const promptChoicesToDisplay: inquirer.ChoiceCollection = defaultChoices.concat();
 
     // Add choices given on the prompt
     // if user has books in reading list, add view_list and remove_book as options

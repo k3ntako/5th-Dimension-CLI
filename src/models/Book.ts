@@ -2,19 +2,19 @@ export default class Book {
   id?: string;
   title: string;
   publisher?: string;
-  authors: string[] |  any;
+  authors: string[];
   isbn_10?: string;
   isbn_13?: string;
   issn?: string;
   other_identifier?: string;
 
-  constructor(params) {
+  constructor(params: FD.BookParams) {
     ["id","title", "publisher", "authors", "isbn_10", "isbn_13", "issn", "other_identifier"].forEach(key => {
       this[key] = params[key] || null;
     });
   }
 
-  static create(params){
+  static create(params: FD.GoogleBook): Book{
     const { title, publisher, authors, industryIdentifiers } = params;
     if(!title || !title.trim()) return null;
 
@@ -24,15 +24,15 @@ export default class Book {
       authors: authors,
     }
 
-    if (industryIdentifiers){
+    if (industryIdentifiers && industryIdentifiers.length){
       parsedParams = this.addIdentifiers(parsedParams, industryIdentifiers);
     }
 
     return new Book(parsedParams);
   }
 
-  static addIdentifiers(paramsWithoutIdentifiers, industryIdentifiers){
-    const params = Object.assign({}, paramsWithoutIdentifiers); // remove reference (aka no side effects)
+  static addIdentifiers(paramsWithoutIdentifiers, industryIdentifiers: FD.IndustryIdentifier[]): FD.BookParams{
+    const params: FD.BookParams = Object.assign({}, paramsWithoutIdentifiers); // remove reference (aka no side effects)
 
     industryIdentifiers.forEach(identifierObj => {
       const identifier = identifierObj.identifier && identifierObj.identifier.trim();

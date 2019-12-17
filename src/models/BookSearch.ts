@@ -3,19 +3,21 @@ import { Response } from 'node-fetch';
 import { IGoogleResponse } from '../types/interfaces';
 import Book from './Book';
 
-const doubleSpaceRegex: RegExp = /\s\s+/g; // remove multiple spaces in a row
+require('dotenv').config();
 
-const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
-const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
-const FIELDS: string = "&fields=items(volumeInfo(title,authors,publisher,industryIdentifiers))";
-const LIMIT: string = '&maxResults=5';
+const doubleSpaceRegex = /\s\s+/g; // remove multiple spaces in a row
+
+const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
+const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
+const FIELDS = "&fields=items(volumeInfo(title,authors,publisher,industryIdentifiers))";
+const LIMIT = '&maxResults=5';
 
 export default class BookSearch{
   constructor(){}
 
-  static async search(searchStr: string) {
+  static async search(searchStr: string): Promise<Book[]> {
     const url: string = BookSearch.generateURL(searchStr);
-    const googleResultsRaw: IGoogleResponse = await BookSearch.fetchBooks(url);
+    const googleResultsRaw: FD.GoogleResponse = await BookSearch.fetchBooks(url);
 
     return this.parseGoogleResults(googleResultsRaw);
   }
@@ -32,8 +34,8 @@ export default class BookSearch{
     return BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
   }
 
-  static async fetchBooks(url: string): Promise<IGoogleResponse> {
-    const response: Response = await fetch(url);
+  static async fetchBooks(url: string): Promise<FD.GoogleResponse> {
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`${response.status} - ${response.statusText}`)
     }
@@ -41,7 +43,7 @@ export default class BookSearch{
     return await response.json();
   }
 
-  static parseGoogleResults = (googleResultsRaw: IGoogleResponse): Book[] => {
+  static parseGoogleResults = (googleResultsRaw: FD.GoogleResponse): Book[] => {
     // no books returned
     if (!googleResultsRaw.items) {
       return [];
@@ -49,7 +51,7 @@ export default class BookSearch{
 
     const books = [];
     googleResultsRaw.items.forEach(bookInfo => {
-      const book = Book.create(bookInfo.volumeInfo);
+      const book: Book = Book.create(bookInfo.volumeInfo);
 
       if (book) books.push(book);
     });

@@ -1,6 +1,6 @@
 import emoji from 'node-emoji';
 
-export const NUMBERS = [
+export const NUMBERS: string[] = [
   emoji.get('zero'), // never used, but index matches the number
   emoji.get('one'),
   emoji.get('two'),

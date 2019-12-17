@@ -19,8 +19,8 @@ export default class SearchAction extends Action {
     this.loading = new Loading();
   }
 
-  static async start(){
-    const searchAction = new SearchAction();
+  static async start(): Promise<{searchAction: SearchAction; googleResults: Book[]}>{
+    const searchAction: SearchAction = new SearchAction();
 
     const searchStr: string = await searchAction.promptSearchStr();
     const googleResults: Book[] = await searchAction.fetchBooks(searchStr);
@@ -46,7 +46,7 @@ export default class SearchAction extends Action {
     return searchStr;
   }
 
-  private fetchBooks = async (searchStr): Promise<Book[]> => {
+  private fetchBooks = async (searchStr: string): Promise<Book[]> => {
     try{
       this.loading.start();
       const googleResults = await BookSearch.search(searchStr);

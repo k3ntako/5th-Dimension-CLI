@@ -3,7 +3,7 @@ import Book from './Book';
 import { Book as IBook } from '../sequelize/models/book';
 import { User as IUser } from '../sequelize/models/user';
 
-interface ITitleAndPublisher {
+interface TitleAndPublisher {
   title?: string;
   publisher?: string;
 }
@@ -12,11 +12,11 @@ export default class ReadingList {
   searchStr: string;
   constructor() {}
 
-  static async getCount(user){
+  static async getCount(user): Promise<number>{
     return await user.countBooks();
   }
 
-  static async addBook(book: Book, user: IUser){
+  static async addBook(book: Book, user: IUser): Promise<Book>{
     try{
       const { isbn_10, isbn_13, issn, other_identifier, title, publisher, authors } = book;
 
@@ -39,7 +39,7 @@ export default class ReadingList {
           other_identifier,
         };
       } else {
-        let and: ITitleAndPublisher = {
+        const and: TitleAndPublisher = {
           title
         };
         and.publisher = publisher || null;
@@ -83,7 +83,7 @@ export default class ReadingList {
     }
   }
 
-  static async removeBook(id: string, userId: string){
+  static async removeBook(id: string, userId: string): Promise<number>{
     return await db.UserBook.destroy({
       where: {
         book_id: id,
@@ -98,7 +98,7 @@ export default class ReadingList {
     }
 
     const offset = (page - 1) * 10;
-    let books: IBook[] = await user.getBooks({
+    const books: IBook[] = await user.getBooks({
       include: [{
         model: db.sequelize.models.UserBook,
         as: 'userBooks',

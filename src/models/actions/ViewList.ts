@@ -4,6 +4,8 @@ import clear from 'clear';
 
 // Local dependencies
 import Action from './Action';
+import Book from '../Book';
+import { User as IUser } from '../../sequelize/models/user';
 import ReadingList from '../ReadingList';
 
 
@@ -12,11 +14,11 @@ export default class ViewListAction extends Action {
     super();
   }
 
-  static async start(user, readingListPage: number){
+  static async start(user: IUser, readingListPage: number): Promise<{viewListAction: ViewListAction}>{
     const viewListAction = new ViewListAction();
     clear();
 
-    const tenBooksInList = await ReadingList.getList(user, readingListPage);
+    const tenBooksInList: Book[] = await ReadingList.getList(user, readingListPage);
     viewListAction.logBooks(tenBooksInList);
 
     return { viewListAction };

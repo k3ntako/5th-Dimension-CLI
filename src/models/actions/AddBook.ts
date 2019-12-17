@@ -15,8 +15,8 @@ export default class AddBookAction extends Action {
     super();
   }
 
-  static async start(googleResults, user){
-    const addBookAction = new AddBookAction();
+  static async start(googleResults: Book[], user): Promise<{ addBookAction: AddBookAction}> {
+    const addBookAction: AddBookAction = new AddBookAction();
 
     const promptChoices = addBookAction.preparePromptChoices(googleResults);
     const { bookIndices } = await addBookAction.promptBooksToAdd(promptChoices);
@@ -27,14 +27,14 @@ export default class AddBookAction extends Action {
     return { addBookAction };
   }
 
-  private preparePromptChoices(googleResults): inquirer.ChoiceCollection{
+  private preparePromptChoices(googleResults): inquirer.ChoiceCollection {
     return googleResults.map((book, idx) => ({
       name: `${NUMBERS[idx + 1]}  ${book.title}`,
       value: idx,
     }));
   }
 
-  private async promptBooksToAdd(promptChoices){
+  private async promptBooksToAdd(promptChoices: inquirer.ChoiceCollection): Promise<{bookIndices: number[]}>{
     return await prompt({
       message: "Which book(s) would you like to add to your reading list?",
       name: "bookIndices",
@@ -43,7 +43,7 @@ export default class AddBookAction extends Action {
     });
   }
 
-  private async addBooksToDB(googleResults, bookIndices, user){
+  private async addBooksToDB(googleResults, bookIndices, user): Promise<Book[]>{
     const booksToAdd = googleResults.filter((_, idx) => bookIndices.includes(idx));
 
     const promises = booksToAdd.map(book => ReadingList.addBook(book, user));

@@ -5,6 +5,8 @@ import inquirer, { prompt } from 'inquirer';
 
 // Local dependencies
 import Action from './Action';
+import Book from '../Book';
+import { User as IUser } from '../../sequelize/models/user';
 import { NUMBERS } from '../../utilities/emoji';
 import ReadingList from '../ReadingList';
 
@@ -14,8 +16,8 @@ export default class RemoveBookAction extends Action {
     super();
   }
 
-  static async start(books, user){
-    const removeBookAction = new RemoveBookAction();
+  static async start(books: Book[], user: IUser): Promise<{removeBookAction: RemoveBookAction}>{
+    const removeBookAction: RemoveBookAction = new RemoveBookAction();
 
     const promptChoices =  removeBookAction.preparePromptChoices(books);
     const { bookIndices } = await removeBookAction.promptBooksToRemove(promptChoices);
@@ -28,14 +30,14 @@ export default class RemoveBookAction extends Action {
     return { removeBookAction };
   }
 
-  private preparePromptChoices(books): inquirer.ChoiceCollection{
+  private preparePromptChoices(books): inquirer.ChoiceCollection {
     return books.map((book, idx) => ({
       name: `${NUMBERS[idx + 1]}  ${book.title}`,
       value: idx,
     }));
   }
 
-  private async promptBooksToRemove(promptChoices) {
+  private async promptBooksToRemove(promptChoices: inquirer.ChoiceCollection): Promise<{bookIndices: number[]}> {
     return await prompt({
       message: "Which book(s) would you like to remove from your reading list?",
       name: "bookIndices",
@@ -44,16 +46,16 @@ export default class RemoveBookAction extends Action {
     });
   }
 
-  private async removeBooks(books, bookIndices, user): Promise<void>{
-    const booksToRemove = books.filter((_, idx) => bookIndices.includes(idx));
-    const promises = booksToRemove.map(book => ReadingList.removeBook(book.id, user.id));
+  private async removeBooks(books: Book[], bookIndices: number[], user: IUser): Promise<Book[]>{
+    const booksToRemove: Book[] = books.filter((_, idx) => bookIndices.includes(idx));
+    const promises: Promise<number>[] = booksToRemove.map(book => ReadingList.removeBook(book.id, user.id));
     await Promise.all(promises);
 
     return booksToRemove;
   }
 
-  private logBooks(booksToRemove): void{
-    const titles = booksToRemove.map(book => chalk.redBright(book.title)).join('\n');
+  private logBooks(booksToRemove: Book[]): void{
+    const titles: string = booksToRemove.map(book => chalk.redBright(book.title)).join('\n');
 
     if (!booksToRemove.length) {
       return console.log('No books removed');
