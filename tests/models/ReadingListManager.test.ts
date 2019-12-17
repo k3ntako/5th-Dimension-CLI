@@ -100,7 +100,7 @@ describe('ReadingListManager', (): void => {
           value: 'search',
         }, {
           name: emoji.get('books') + " View your reading list (2 books)",
-        value: 'view_list',
+          value: 'view_list',
         }, {
           name: emoji.get('star') + " Add book(s) above to your reading list",
           value: "add_book",
@@ -194,98 +194,6 @@ describe('ReadingListManager', (): void => {
 
       const arg: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
       assert.strictEqual(arg, `${emoji.get('one')}  ${chalk.bold(title)}`);
-    });
-  });
-
-  describe('#promptAddBook()', (): void => {
-    it('should call ReadingList.addBook with books selected', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0,2] });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'addBook', fakeAddBook);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.googleResults = [
-        new Book({ title, authors, publisher, isbn_10, isbn_13 }),
-        new Book(bookInfo1),
-        new Book(bookInfo2),
-      ];
-      await readingListManager.promptAddBook();
-
-      assert.strictEqual(fakeAddBook.callCount, 2)
-
-      const args0 = fakeAddBook.getCall(0).args[0];
-      const args1 = fakeAddBook.getCall(1).args[0];
-
-      assert.include({
-        title: args0.title,
-        authors: args0.authors,
-        publisher: args0.publisher,
-        isbn_10: args0.isbn_10,
-        isbn_13: args0.isbn_13
-      }, {
-        title, authors, publisher, isbn_10, isbn_13
-      });
-
-      assert.include({
-        title: args1.title,
-        authors: args1.authors,
-        publisher: args1.publisher,
-        isbn_10: args1.isbn_10,
-        isbn_13: args1.isbn_13
-      }, {
-        title: bookInfo2.title,
-        authors: bookInfo2.authors,
-        publisher: bookInfo2.publisher,
-        isbn_10: bookInfo2.isbn_10,
-        isbn_13: bookInfo2.isbn_13
-      });
-    });
-
-    it('should console log titles of deleted books', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0, 2] });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'addBook', fakeAddBook);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.googleResults = [
-        new Book({ title, authors, publisher, isbn_10, isbn_13 }),
-        new Book(bookInfo1),
-        new Book(bookInfo2),
-      ];
-      await readingListManager.promptAddBook();
-
-      const args = fdCLI.fakes.consoleLogFake.args;
-
-      const secondToLastArg = args[args.length - 2][0];
-      const lastArg = args[args.length - 1][0];
-      assert.strictEqual(secondToLastArg, chalk.bold("Book(s) added:"))
-      assert.include(lastArg, chalk.greenBright(title))
-      assert.include(lastArg, chalk.greenBright(bookInfo2.title))
-    });
-
-    it('should inform user that no books were added if no books were added', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [] });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
-      const fakeAddBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingList, 'addBook', fakeAddBook);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.googleResults = [
-        new Book({ title, authors, publisher, isbn_10, isbn_13 }),
-        new Book(bookInfo1),
-        new Book(bookInfo2),
-      ];
-      await readingListManager.promptAddBook();
-
-      const arg = fdCLI.fakes.consoleLogFake.lastCall.lastArg;
-      assert.strictEqual(fakeAddBook.callCount, 0);
-      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 1);
-      assert.strictEqual(arg, "No books added");
     });
   });
 
