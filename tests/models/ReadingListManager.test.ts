@@ -211,121 +211,67 @@ describe('ReadingListManager', (): void => {
     });
   });
 
-  describe('.next()', (): void => {
+  describe('#preparePromptChoices()', () => {
     it('should prompt user to go to next page if there are more than 10 books', async (): Promise<void> => {
-      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
-      sinon.replace(ReadingList, 'getCount', getCountFake);
-
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.readingListPage = 1;
-      await readingListManager.question();
+      const promptChoices = await readingListManager.preparePromptChoices(11);
 
-      const args = JSON.stringify(fakePrompt.args[0][0]);
-
-      assert.include(args, JSON.stringify({
+      assert.deepInclude(promptChoices, {
         name: emoji.get('arrow_forward') + "  Next page",
         value: 'next',
-      }));
+      });
     });
 
     it('should not prompt user to go to next page if they are on the last page', async (): Promise<void> => {
-      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
-      sinon.replace(ReadingList, 'getCount', getCountFake);
-
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.readingListPage = 2;
-      await readingListManager.question();
+      const promptChoices = await readingListManager.preparePromptChoices(11);
 
-      const args = JSON.stringify(fakePrompt.args[0][0]);
-
-      assert.notInclude(args, JSON.stringify({
+      assert.notDeepInclude(promptChoices, {
         name: emoji.get('arrow_forward') + "  Next page",
         value: 'next',
-      }));
+      });
     });
 
-    it('selecting next should increase page', async (): Promise<void> => {
-      // destroy all books
-      await db.Book.destroy({ where: {} });
+    it('should prompt user to go to back page if they are past the first page', async (): Promise<void> => {
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingListPage = 2;
+      const promptChoices = await readingListManager.preparePromptChoices(11);
 
-      // Add 12 books to reading list
-      const promises = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'].map(title => {
-        return db.Book.create({ title }).then(book => defaultUser.addBook(book));
+      assert.deepInclude(promptChoices, {
+        name: emoji.get('arrow_backward') + "  Previous page",
+        value: "previous",
       });
+    });
 
-      await Promise.all(promises);
-
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "next" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
+    it('should not prompt user to go to back page if they are on the first page', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.readingListPage = 1;
-      await readingListManager.question();
+      const promptChoices = await readingListManager.preparePromptChoices(11);
+
+      assert.notDeepInclude(promptChoices, {
+        name: emoji.get('arrow_backward') + "  Previous page",
+        value: "previous",
+      });
+    });
+  });
+
+  describe('#performAction()', (): void => {
+    it('selecting next should increase page', async (): Promise<void> => {
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.readingListPage = 1;
+
+      readingListManager.performAction('next');
 
       assert.strictEqual(readingListManager.readingListPage, 2);
     });
 
-    it('should prompt user to go to back page if they are past the first page', async (): Promise<void> => {
-      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
-      sinon.replace(ReadingList, 'getCount', getCountFake);
-
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.readingListPage = 2;
-      await readingListManager.question();
-
-      const args = JSON.stringify(fakePrompt.args[0][0]);
-
-      assert.include(args, JSON.stringify({
-        name: emoji.get('arrow_backward') + "  Previous page",
-        value: "previous",
-      }));
-    });
-
-    it('should not prompt user to go to back page if they are on the first page', async (): Promise<void> => {
-      const getCountFake: sinon.SinonSpy<any> = sinon.fake.resolves(11);
-      sinon.replace(ReadingList, 'getCount', getCountFake);
-
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.readingListPage = 1;
-      await readingListManager.question();
-
-      const args = JSON.stringify(fakePrompt.args[0][0]);
-
-      assert.notInclude(args, JSON.stringify({
-        name: emoji.get('arrow_backward') + "  Previous page",
-        value: "previous",
-      }));
-    });
-
     it('selecting back should decrease page', async (): Promise<void> => {
-      // destroy all books
-      await db.Book.destroy({ where: {} });
-
-      // Add 12 books to reading list
-      const promises = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'].map(title => {
-        return db.Book.create({ title }).then(book => defaultUser.addBook(book));
-      });
-
-      await Promise.all(promises);
-
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "previous" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.readingListPage = 2;
-      await readingListManager.question();
+
+      readingListManager.performAction('previous');
 
       assert.strictEqual(readingListManager.readingListPage, 1);
     });
