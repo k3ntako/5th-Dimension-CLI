@@ -14,44 +14,51 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const Book_1 = __importDefault(require("./Book"));
+const doubleSpaceRegex = /\s\s+/g; // remove multiple spaces in a row
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
 const FIELDS = "&fields=items(volumeInfo(title,authors,publisher,industryIdentifiers))";
 const LIMIT = '&maxResults=5';
 class BookSearch {
-    constructor() { }
+    constructor() {
+    }
     static search(searchStr) {
         return __awaiter(this, void 0, void 0, function* () {
-            const regex = /\s\s+/g; // remove multiple spaces in a row
-            const parsedSearchStr = searchStr.trim().replace(regex, ' ');
-            return yield BookSearch.fetchBooks(parsedSearchStr);
+            const url = BookSearch.generateURL(searchStr);
+            const googleResultsRaw = yield BookSearch.fetchBooks(url);
+            return this.parseGoogleResults(googleResultsRaw);
         });
     }
-    static fetchBooks(searchStr) {
+    static fetchBooks(url) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Format searchStr into what Google expects
-            const searchURL = searchStr
-                .split(" ")
-                .map(search => encodeURIComponent(search))
-                .join("+");
-            const url = BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
             const response = yield fetch(url);
             if (!response.ok) {
                 throw new Error(`${response.status} - ${response.statusText}`);
             }
-            const json = yield response.json();
-            // no books returned
-            if (!json.items) {
-                return [];
-            }
-            const books = [];
-            json.items.forEach(bookInfo => {
-                const book = Book_1.default.create(bookInfo.volumeInfo);
-                if (book)
-                    books.push(book);
-            });
-            return books;
+            return yield response.json();
         });
     }
 }
 exports.default = BookSearch;
+BookSearch.generateURL = (searchStr) => {
+    const parsedSearchStr = searchStr.trim().replace(doubleSpaceRegex, ' ');
+    // Format searchStr into what Google expects
+    const searchURL = parsedSearchStr
+        .split(" ")
+        .map(search => encodeURIComponent(search))
+        .join("+");
+    return BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
+};
+BookSearch.parseGoogleResults = (googleResultsRaw) => {
+    // no books returned
+    if (!googleResultsRaw.items) {
+        return [];
+    }
+    const books = [];
+    googleResultsRaw.items.forEach(bookInfo => {
+        const book = Book_1.default.create(bookInfo.volumeInfo);
+        if (book)
+            books.push(book);
+    });
+    return books;
+};

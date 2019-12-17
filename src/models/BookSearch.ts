@@ -3,6 +3,8 @@ import { Response } from 'node-fetch';
 import { IGoogleResponse } from '../types/interfaces';
 import Book from './Book';
 
+const doubleSpaceRegex: RegExp = /\s\s+/g; // remove multiple spaces in a row
+
 const BASE_URL: string = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY: string = "&key=" + process.env.GOOGLE_BOOKS_API_KEY;
 const FIELDS: string = "&fields=items(volumeInfo(title,authors,publisher,industryIdentifiers))";
@@ -12,35 +14,41 @@ export default class BookSearch{
   constructor(){}
 
   static async search(searchStr: string) {
-    const regex: RegExp = /\s\s+/g; // remove multiple spaces in a row
-    const parsedSearchStr = searchStr.trim().replace(regex, ' ');
+    const url: string = BookSearch.generateURL(searchStr);
+    const googleResultsRaw: IGoogleResponse = await BookSearch.fetchBooks(url);
 
-    return await BookSearch.fetchBooks(parsedSearchStr);
+    return this.parseGoogleResults(googleResultsRaw);
   }
 
-  static async fetchBooks(searchStr: string) {
+  static generateURL = (searchStr): string => {
+    const parsedSearchStr: string = searchStr.trim().replace(doubleSpaceRegex, ' ');
+
     // Format searchStr into what Google expects
-    const searchURL: string = searchStr
+    const searchURL: string = parsedSearchStr
       .split(" ")
       .map(search => encodeURIComponent(search))
       .join("+");
 
-    const url: string = BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
+    return BASE_URL + `?q=${searchURL}` + FIELDS + LIMIT + API_KEY;
+  }
 
+  static async fetchBooks(url: string): Promise<IGoogleResponse> {
     const response: Response = await fetch(url);
     if (!response.ok) {
       throw new Error(`${response.status} - ${response.statusText}`)
     }
 
-    const json: IGoogleResponse = await response.json();
+    return await response.json();
+  }
 
+  static parseGoogleResults = (googleResultsRaw: IGoogleResponse): Book[] => {
     // no books returned
-    if(!json.items){
+    if (!googleResultsRaw.items) {
       return [];
     }
 
     const books = [];
-    json.items.forEach(bookInfo => {
+    googleResultsRaw.items.forEach(bookInfo => {
       const book = Book.create(bookInfo.volumeInfo);
 
       if (book) books.push(book);
@@ -48,5 +56,4 @@ export default class BookSearch{
 
     return books;
   }
-
 }
