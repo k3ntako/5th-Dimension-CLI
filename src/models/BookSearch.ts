@@ -1,6 +1,4 @@
-require('dotenv').config();
-import { Response } from 'node-fetch';
-import { IGoogleResponse } from '../types/interfaces';
+/* global fetch */ // ESLint - fetch is available globally
 import Book from './Book';
 
 require('dotenv').config();

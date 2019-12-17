@@ -22,13 +22,13 @@ class User {
     constructor() { }
     static create(params) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { firstName, lastName, email } = params;
+            const { first_name, last_name, email } = params;
             if (!email) {
                 throw new Error('No email passed in');
             }
             const user = yield models_1.default.User.create({
-                first_name: firstName,
-                last_name: lastName,
+                first_name,
+                last_name,
                 email: email,
             });
             return user;

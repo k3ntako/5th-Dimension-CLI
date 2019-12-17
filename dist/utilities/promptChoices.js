@@ -9,17 +9,17 @@ exports.default = {
         name: node_emoji_1.default.get('mag') + " Search for books!",
         value: "search",
     }),
-    view_list: (listCount, bookPlurality) => ({
+    viewList: (listCount, bookPlurality) => ({
         name: node_emoji_1.default.get('books') + ` View your reading list (${listCount} book${bookPlurality})`,
-        value: "view_list",
+        value: "viewList",
     }),
-    remove_book: () => ({
+    removeBook: () => ({
         name: node_emoji_1.default.get('no_entry_sign') + ` Remove book(s) from your reading list`,
-        value: "remove_book",
+        value: "removeBook",
     }),
-    add_book: () => ({
+    addBook: () => ({
         name: node_emoji_1.default.get('star') + " Add book(s) above to your reading list",
-        value: "add_book",
+        value: "addBook",
     }),
     next: () => ({
         name: node_emoji_1.default.get('arrow_forward') + "  Next page",

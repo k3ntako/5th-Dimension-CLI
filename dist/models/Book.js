@@ -15,7 +15,7 @@ class Book {
             publisher: publisher && publisher.trim(),
             authors: authors,
         };
-        if (industryIdentifiers) {
+        if (industryIdentifiers && industryIdentifiers.length) {
             parsedParams = this.addIdentifiers(parsedParams, industryIdentifiers);
         }
         return new Book(parsedParams);

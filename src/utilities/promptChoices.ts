@@ -1,36 +1,36 @@
 import emoji from 'node-emoji';
 
-interface IPromptOption {
+interface PromptOption {
   name: string;
   value: string;
 }
 
 export default {
-  search: (): IPromptOption => ({
+  search: (): PromptOption => ({
     name: emoji.get('mag') + " Search for books!",
     value: "search",
   }),
-  view_list: (listCount: number, bookPlurality: string): IPromptOption => ({
+  viewList: (listCount: number, bookPlurality: string): PromptOption => ({
     name: emoji.get('books') + ` View your reading list (${listCount} book${bookPlurality})`,
-    value: "view_list",
+    value: "viewList",
   }),
-  remove_book: (): IPromptOption => ({
+  removeBook: (): PromptOption => ({
     name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
-    value: "remove_book",
+    value: "removeBook",
   }),
-  add_book: (): IPromptOption => ({
+  addBook: (): PromptOption => ({
     name: emoji.get('star') + " Add book(s) above to your reading list",
-    value: "add_book",
+    value: "addBook",
   }),
-  next: (): IPromptOption => ({
+  next: (): PromptOption => ({
     name: emoji.get('arrow_forward') + "  Next page",
     value: "next",
   }),
-  previous: (): IPromptOption => ({
+  previous: (): PromptOption => ({
     name: emoji.get('arrow_backward') + "  Previous page",
     value: "previous",
   }),
-  exit: (): IPromptOption => ({
+  exit: (): PromptOption => ({
     name: emoji.get('closed_lock_with_key') + "  Exit",
     value: "exit",
   }),

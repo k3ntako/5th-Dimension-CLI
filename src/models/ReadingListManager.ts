@@ -7,7 +7,7 @@ import { User as IUser } from '../sequelize/models/user';
 import promptChoices from '../utilities/promptChoices';
 import actions from './actions';
 
-import { warn, error } from '../utilities/logging';
+import { warn } from '../utilities/logging';
 
 const APP_NAME = chalk.cyanBright.bold("5th Dimension CLI");
 
@@ -47,17 +47,17 @@ export default class ReadingListManager {
     const promptChoicesToDisplay: inquirer.ChoiceCollection = defaultChoices.concat();
 
     // Add choices given on the prompt
-    // if user has books in reading list, add view_list and remove_book as options
+    // if user has books in reading list, add viewList and removeBook as options
     if (listCount) {
       const bookPlurality = listCount === 1 ? "" : "s";
 
-      promptChoicesToDisplay.push(promptChoices.view_list(listCount, bookPlurality));
-      promptChoicesToDisplay.push(promptChoices.remove_book());
+      promptChoicesToDisplay.push(promptChoices.viewList(listCount, bookPlurality));
+      promptChoicesToDisplay.push(promptChoices.removeBook());
     }
 
-    // if there are results from a Google Books search, add add_book as an option
+    // if there are results from a Google Books search, add addBook as an option
     if (this.googleResults.length){
-      promptChoicesToDisplay.splice(2, 0, promptChoices.add_book())
+      promptChoicesToDisplay.splice(2, 0, promptChoices.addBook())
     }
 
     // add next page and previous page as options if appropriate
@@ -105,8 +105,8 @@ export default class ReadingListManager {
     setTimeout(this.question, 300); // Delay before prompting them again
   }
 
-  async performAction(action){
-    if (action !== "add_book") {
+  async performAction(action): Promise<void>{
+    if (action !== "addBook") {
       clear();
     }
 
@@ -117,15 +117,15 @@ export default class ReadingListManager {
         this.googleResults = googleResults;
         break;
 
-      case "view_list":
+      case "viewList":
         await actions.ViewList.start(this.user, this.readingListPage);
         break;
 
-      case "add_book":
+      case "addBook":
         await actions.AddBook.start(this.googleResults, this.user);
         break;
 
-      case "remove_book":
+      case "removeBook":
         const tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
         await actions.RemoveBook.start(tenBooksInList, this.user);
         break;

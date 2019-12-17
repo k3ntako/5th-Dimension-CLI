@@ -31,17 +31,17 @@ const defaultChoices = [promptChoices_1.default.search()];
 class ReadingListManager {
     constructor(user) {
         this.preparePromptChoices = (listCount) => {
-            let promptChoicesToDisplay = defaultChoices.concat();
+            const promptChoicesToDisplay = defaultChoices.concat();
             // Add choices given on the prompt
-            // if user has books in reading list, add view_list and remove_book as options
+            // if user has books in reading list, add viewList and removeBook as options
             if (listCount) {
                 const bookPlurality = listCount === 1 ? "" : "s";
-                promptChoicesToDisplay.push(promptChoices_1.default.view_list(listCount, bookPlurality));
-                promptChoicesToDisplay.push(promptChoices_1.default.remove_book());
+                promptChoicesToDisplay.push(promptChoices_1.default.viewList(listCount, bookPlurality));
+                promptChoicesToDisplay.push(promptChoices_1.default.removeBook());
             }
-            // if there are results from a Google Books search, add add_book as an option
+            // if there are results from a Google Books search, add addBook as an option
             if (this.googleResults.length) {
-                promptChoicesToDisplay.splice(2, 0, promptChoices_1.default.add_book());
+                promptChoicesToDisplay.splice(2, 0, promptChoices_1.default.addBook());
             }
             // add next page and previous page as options if appropriate
             const hasNextPage = this.readingListPage && listCount > this.readingListPage * 10;
@@ -95,7 +95,7 @@ class ReadingListManager {
     }
     performAction(action) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (action !== "add_book") {
+            if (action !== "addBook") {
                 clear_1.default();
             }
             // calls appropriate action based on input
@@ -104,13 +104,13 @@ class ReadingListManager {
                     const { googleResults } = yield actions_1.default.Search.start();
                     this.googleResults = googleResults;
                     break;
-                case "view_list":
+                case "viewList":
                     yield actions_1.default.ViewList.start(this.user, this.readingListPage);
                     break;
-                case "add_book":
+                case "addBook":
                     yield actions_1.default.AddBook.start(this.googleResults, this.user);
                     break;
-                case "remove_book":
+                case "removeBook":
                     const tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
                     yield actions_1.default.RemoveBook.start(tenBooksInList, this.user);
                     break;

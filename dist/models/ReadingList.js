@@ -47,7 +47,7 @@ class ReadingList {
                     };
                 }
                 else {
-                    let and = {
+                    const and = {
                         title
                     };
                     and.publisher = publisher || null;
@@ -101,7 +101,7 @@ class ReadingList {
                 page = 1;
             }
             const offset = (page - 1) * 10;
-            let books = yield user.getBooks({
+            const books = yield user.getBooks({
                 include: [{
                         model: models_1.default.sequelize.models.UserBook,
                         as: 'userBooks',

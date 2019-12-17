@@ -8,19 +8,19 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-
 describe('User', (): void => {
   describe('.create()', (): void => {
     it('should create a new user in database', async (): Promise<void> => {
-      const firstName = "Grace";
-      const lastName = "Hopper";
+      const first_name = "Grace";
+      const last_name = "Hopper";
       const email = "g.hopper@example.com";
 
       const user = await User.create({
-        firstName, lastName, email,
+        first_name, last_name, email,
       });
 
       assert.containsAllKeys(user.dataValues, ['id', 'first_name', 'last_name', 'email']);
 
       assert.match(user.id, uuidRegex)
-      assert.strictEqual(user.first_name, firstName);
-      assert.strictEqual(user.last_name, lastName);
+      assert.strictEqual(user.first_name, first_name);
+      assert.strictEqual(user.last_name, last_name);
       assert.strictEqual(user.email, email);
     });
   });

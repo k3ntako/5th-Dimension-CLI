@@ -6,6 +6,7 @@ import { NUMBERS } from '../../utilities/emoji';
 
 
 export default class Action {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor(){}
 
   protected logOneBook(book, idx?: number): void{

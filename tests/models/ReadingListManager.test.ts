@@ -54,7 +54,7 @@ describe('ReadingListManager', (): void => {
   });
 
   describe('#question()', async (): Promise<void> => {
-    it('should return search, view_list, remove_book, and exit, given book(s) in reading list', async (): Promise<void> => {
+    it('should return search, viewList, removeBook, and exit, given book(s) in reading list', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       const promptChoices = await readingListManager.preparePromptChoices(2);
 
@@ -63,10 +63,10 @@ describe('ReadingListManager', (): void => {
           value: 'search',
         }, {
           name: emoji.get('books') + " View your reading list (2 books)",
-          value: 'view_list',
+          value: 'viewList',
         }, {
           name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
-          value: "remove_book",
+          value: "removeBook",
         },
         new inquirer.Separator(),
         {
@@ -77,7 +77,7 @@ describe('ReadingListManager', (): void => {
       ]);
     });
 
-    it('should return add_book given book(s) in readingListManager.googleResults', async (): Promise<void> => {
+    it('should return addBook given book(s) in readingListManager.googleResults', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.googleResults = googleResults;
       const promptChoices = await readingListManager.preparePromptChoices(3);
@@ -87,13 +87,13 @@ describe('ReadingListManager', (): void => {
           value: 'search',
         }, {
           name: emoji.get('books') + " View your reading list (3 books)",
-          value: 'view_list',
+          value: 'viewList',
         }, {
           name: emoji.get('star') + " Add book(s) above to your reading list",
-          value: "add_book",
+          value: "addBook",
         }, {
           name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
-          value: "remove_book",
+          value: "removeBook",
         },
         new inquirer.Separator(),
         {
@@ -104,7 +104,7 @@ describe('ReadingListManager', (): void => {
       ]);
     });
 
-    it('should not return remove_book and view_list given no books', async (): Promise<void> => {
+    it('should not return removeBook and viewList given no books', async (): Promise<void> => {
       await db.UserBook.destroy({ where: {} });
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
@@ -141,12 +141,12 @@ describe('ReadingListManager', (): void => {
       assert.strictEqual(fakeSearchStart.callCount, 1);
     });
 
-    it('should call actions.ViewList.start() if user selects view_list', async (): Promise<void> => {
+    it('should call actions.ViewList.start() if user selects viewList', async (): Promise<void> => {
       const fakeViewListStart: sinon.SinonSpy<any> = sinon.fake();
       sinon.replace(actions.ViewList, 'start', fakeViewListStart);
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.performAction('view_list');
+      readingListManager.performAction('viewList');
 
       assert.strictEqual(fakeViewListStart.callCount, 1);
     });

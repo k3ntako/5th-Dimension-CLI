@@ -1,3 +1,5 @@
+/* global describe, it */ // ESLint global variable
+
 import { assert } from 'chai';
 import db from '../../src/sequelize/models';
 import { Book as IBook } from '../../src/sequelize/models/book';
