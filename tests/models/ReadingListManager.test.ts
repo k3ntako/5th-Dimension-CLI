@@ -197,38 +197,6 @@ describe('ReadingListManager', (): void => {
     });
   });
 
-  describe('#promptSearch()', (): void => {
-    it('should fetch a books from Google Books based on search query and console log the results', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ search: title });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
-      const fakeLogBook: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(ReadingListManager, 'logBook', fakeLogBook);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      await readingListManager.promptSearch();
-
-      const arg: string = fdCLI.fakes.consoleLogFake.lastArg;
-
-      assert.strictEqual(arg, `${chalk.bold("Search results for:")} "${title}"\n`);
-      assert.strictEqual(fakeLogBook.callCount, 5);
-    });
-
-    it('should warn user if they enter a blank search', async (): Promise<void> => {
-      const promptStub = sinon.stub();
-      promptStub.onCall(0).resolves({ search: "  " }); // returns this on first call
-      promptStub.resolves({ search: "Hello" }); // returns on every call after first
-      sinon.replace(ReadingListManager, 'prompt', promptStub);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      await readingListManager.promptSearch();
-
-      const arg = fdCLI.fakes.consoleWarnFake.getCall(0).lastArg;
-      assert.include(arg, 'No search term entered');
-      assert.include(arg, emoji.get('warning'));
-    });
-  });
-
   describe('#promptAddBook()', (): void => {
     it('should call ReadingList.addBook with books selected', async (): Promise<void> => {
       const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ bookIndices: [0,2] });
