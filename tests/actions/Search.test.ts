@@ -46,7 +46,6 @@ describe('Search action', (): void => {
       sinon.replace(inquirer, 'prompt', fakePrompt);
 
       const {googleResults} = await actions.Search.start();
-      sinon.restore();
 
       const firstBook = googleResults[0];
       assert.strictEqual(firstBook.title, bookInfo1.title);
