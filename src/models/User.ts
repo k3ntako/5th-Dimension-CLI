@@ -7,7 +7,7 @@ const DEFAULT_USER = {
 
 
 export default class User {
-  constructor(params) {}
+  constructor() {}
 
   static async create(params) {
     const { firstName, lastName, email } = params;

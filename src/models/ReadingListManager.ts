@@ -1,15 +1,10 @@
-import BookSearch from './BookSearch';
 import ReadingList from './ReadingList';
 import inquirer,  {prompt} from 'inquirer';
-import Book from './Book';
-import User from './User';
-import Loading from './Loading';
 import clear from 'clear';
 import chalk from 'chalk';
+import Book from './Book';
 import { User as IUser } from '../sequelize/models/user';
-import { Book as IBook } from '../sequelize/models/book';
 import promptChoices from '../utilities/promptChoices';
-import { NUMBERS } from '../utilities/emoji';
 import actions from './actions';
 
 import { warn, error } from '../utilities/logging';

@@ -19,7 +19,7 @@ const DEFAULT_USER = {
     email: "default@example.com",
 };
 class User {
-    constructor(params) { }
+    constructor() { }
     static create(params) {
         return __awaiter(this, void 0, void 0, function* () {
             const { firstName, lastName, email } = params;

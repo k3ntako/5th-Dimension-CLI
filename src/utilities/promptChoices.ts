@@ -1,6 +1,4 @@
-import chalk from 'chalk';
 import emoji from 'node-emoji';
-import inquirer from 'inquirer';
 
 interface IPromptOption {
   name: string;
