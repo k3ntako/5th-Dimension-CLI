@@ -10,7 +10,8 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { UserBook } from '../../src/sequelize/models/user_book';
 import book from '../../src/sequelize/models/book';
-
+import actions from '../../src/models/actions'
+import Action from '../../src/models/actions/Action'
 
 let defaultUser;
 
@@ -66,29 +67,16 @@ describe('ReadingListManager', (): void => {
   });
 
   describe('#question()', async (): Promise<void> => {
-    before(async (): Promise<void> => {
-      await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(bookInfo1, defaultUser);
-    });
-
-    it('should call ReadingListManager.prompt with appropriate arguments', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
+    it('should return search, view_list, remove_book, and exit, given book(s) in reading list', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      await readingListManager.question();
+      const promptChoices = await readingListManager.preparePromptChoices(2);
 
-      const args = fakePrompt.lastArg;
-
-      assert.strictEqual(args.message, 'What would you like to do?');
-      assert.strictEqual(args.name, 'action');
-      assert.strictEqual(args.type, 'list');
-      assert.sameDeepMembers(args.choices, [{
+      assert.sameDeepMembers(promptChoices, [{
           name: emoji.get('mag') + " Search for books!",
           value: 'search',
         }, {
-        name: emoji.get('books') + " View your reading list (1 book)",
-        value: 'view_list',
+          name: emoji.get('books') + " View your reading list (2 books)",
+          value: 'view_list',
         }, {
           name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
           value: "remove_book",
@@ -102,52 +90,85 @@ describe('ReadingListManager', (): void => {
       ]);
     });
 
-    it('should call ReadingListManager#promptSearch if user selects search', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "search" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
-
+    it('should return add_book given book(s) in readingListManager.googleResults', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      const fakePromptSearch: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(readingListManager, 'promptSearch', fakePromptSearch);
-      await readingListManager.question();
-      assert.strictEqual(fakePromptSearch.callCount, 1);
+      readingListManager.googleResults = [ bookInfo1 ];
+      const promptChoices = await readingListManager.preparePromptChoices(2);
+
+      assert.sameDeepMembers(promptChoices, [{
+          name: emoji.get('mag') + " Search for books!",
+          value: 'search',
+        }, {
+          name: emoji.get('books') + " View your reading list (2 books)",
+        value: 'view_list',
+        }, {
+          name: emoji.get('star') + " Add book(s) above to your reading list",
+          value: "add_book",
+        }, {
+          name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
+          value: "remove_book",
+        },
+        new inquirer.Separator(),
+        {
+          name: emoji.get('closed_lock_with_key') + "  Exit",
+          value: "exit",
+        },
+        new inquirer.Separator(),
+      ]);
     });
 
-    it('should ask if user would like to add books to reading list if there are search results', async (): Promise<void> => {
-      const book: Book = new Book({ title, authors, publisher, isbn_10, isbn_13 });
-
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "nothing" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+    it('should not return remove_book and view_list given no books', async (): Promise<void> => {
+      await db.UserBook.destroy({ where: {} });
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.googleResults = [book];
-      await readingListManager.question();
+      const promptChoices = await readingListManager.preparePromptChoices(0);
 
-      const args = fakePrompt.lastArg;
+      assert.sameDeepMembers(promptChoices, [{
+          name: emoji.get('mag') + " Search for books!",
+          value: 'search',
+        },
+        new inquirer.Separator(),
+        {
+          name: emoji.get('closed_lock_with_key') + "  Exit",
+          value: "exit",
+        },
+        new inquirer.Separator(),
+      ]);
+    });
+  });
 
 
-      assert.includeDeepMembers(args.choices, [{
-        name: emoji.get('star') + " Add book(s) above to your reading list",
-        value: 'add_book',
-      }]);
-
+  describe('#performAction()', async (): Promise<void> => {
+    before(async (): Promise<void> => {
+      await db.UserBook.destroy({ where: {} });
+      await ReadingList.addBook(bookInfo1, defaultUser);
     });
 
-    it('should call ReadingListManager#viewList if user selects to view list', async (): Promise<void> => {
-      const fakePrompt: sinon.SinonSpy<any> = sinon.fake.resolves({ action: "view_list" });
-      sinon.replace(ReadingListManager, 'prompt', fakePrompt);
+    it('should call actions.Search.start() if user selects search', async (): Promise<void> => {
+      const fakeSearchStart: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(actions.Search, 'start', fakeSearchStart);
 
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      const fakeViewList: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(readingListManager, 'viewList', fakeViewList);
-      await readingListManager.question();
-      assert.strictEqual(fakeViewList.callCount, 1);
+      readingListManager.performAction('search');
+
+      assert.strictEqual(fakeSearchStart.callCount, 1);
+    });
+
+    it('should call actions.ViewList.start() if user selects view_list', async (): Promise<void> => {
+      const fakeViewListStart: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(actions.ViewList, 'start', fakeViewListStart);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.performAction('view_list');
+
+      assert.strictEqual(fakeViewListStart.callCount, 1);
     });
   });
 
   describe('.logBook', (): void => {
     it('should console log information about the book', async (): Promise<void> => {
-      ReadingListManager.logBook({
+      const action = new Action();
+      action.logOneBook({
         title,
         authors,
         publisher: null,
@@ -164,7 +185,8 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should console log the title with emoji if provided a number', async (): Promise<void> => {
-      ReadingListManager.logBook({
+      const action = new Action();
+      action.logOneBook({
         title,
         authors,
         publisher: null,
