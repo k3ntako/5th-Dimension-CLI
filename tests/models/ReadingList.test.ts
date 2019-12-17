@@ -2,9 +2,7 @@ import { assert } from 'chai';
 import ReadingList from '../../src/models/ReadingList';
 import User from '../../src/models/User';
 import Book from '../../src/models/Book';
-
 import db from '../../src/sequelize/models';
-import { IBook } from '../../src/sequelize/models/book';
 
 const params = {
   title: "Test-driven Development",
@@ -155,8 +153,8 @@ describe('ReadingList', (): void => {
       await ReadingList.addBook(params, defaultUser);
     });
 
-    it('should return reading list', async (): Promise<void> => {
-      const books = await ReadingList.getList(defaultUser, 1);
+    it('should return reading list (array of Book)', async (): Promise<void> => {
+      const books: Book[] = await ReadingList.getList(defaultUser, 1);
       assert.lengthOf(books, 1);
 
       // The book should have all the fields provided.
@@ -166,6 +164,7 @@ describe('ReadingList', (): void => {
       delete paramsWithoutAuthors.authors;
 
       assert.include(books[0], paramsWithoutAuthors);
+      assert.instanceOf(books[0], Book);
     });
 
     it('should return newest additions to the reading list first', async (): Promise<void> => {

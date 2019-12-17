@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const models_1 = __importDefault(require("../sequelize/models"));
+const Book_1 = __importDefault(require("./Book"));
 class ReadingList {
     constructor() { }
     static getCount(user) {
@@ -104,12 +105,24 @@ class ReadingList {
                 include: [{
                         model: models_1.default.sequelize.models.UserBook,
                         as: 'userBooks',
+                    }, {
+                        model: models_1.default.sequelize.models.Author,
+                        as: 'authors',
+                        attributes: ['name'],
                     }],
                 order: [['userBooks', 'created_at', 'DESC']],
                 offset,
                 limit: 10,
             });
-            return books;
+            const bookPromises = books.map(book => book.toJSON());
+            const bookJSON = yield Promise.all(bookPromises);
+            // Book#authors is an object because it is an association
+            // below turns authors, an array of objects, to an array of author names (string)
+            const parsedBookJSON = bookJSON.map(bookJSON => {
+                bookJSON.authors = bookJSON.authors.map(author => author.name);
+                return bookJSON;
+            });
+            return parsedBookJSON.map(book => new Book_1.default(book));
         });
     }
 }

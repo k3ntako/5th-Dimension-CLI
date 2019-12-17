@@ -92,7 +92,7 @@ export default class ReadingList {
     });
   }
 
-  static async getList(user: IUser, page: number){
+  static async getList(user: IUser, page: number): Promise<Book[]>{
     if (!page || page < 1){
       page = 1;
     }
@@ -102,11 +102,26 @@ export default class ReadingList {
       include: [{
         model: db.sequelize.models.UserBook,
         as: 'userBooks',
+      }, {
+        model: db.sequelize.models.Author,
+        as: 'authors',
+        attributes: ['name'],
       }],
       order: [[ 'userBooks', 'created_at', 'DESC']],
       offset,
       limit: 10,
     });
-    return books;
+
+    const bookPromises = books.map(book => book.toJSON());
+    const bookJSON = await Promise.all(bookPromises);
+
+    // Book#authors is an object because it is an association
+    // below turns authors, an array of objects, to an array of author names (string)
+    const parsedBookJSON = bookJSON.map(bookJSON => {
+      bookJSON.authors = bookJSON.authors.map(author => author.name);
+      return bookJSON;
+    });
+
+    return parsedBookJSON.map(book => new Book(book));
   }
 }
