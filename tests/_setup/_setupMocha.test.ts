@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import fetchMock from 'fetch-mock';
 
-import { bornACrime } from './_mockBooks';
+import { bornACrime, makeWayForDucklings } from './_mockBooks';
 
 Object.assign(global, {
   fdCLI: {
@@ -26,6 +26,11 @@ beforeEach((): void => {
 
   fetchMock.mock('begin:https://www.googleapis.com/books/v1/volumes?q=Born+a+Crime', {
     body: bornACrime,
+    status: 200,
+  });
+
+  fetchMock.mock('begin:https://www.googleapis.com/books/v1/volumes?q=Make+Way+for+Ducklings', {
+    body: makeWayForDucklings,
     status: 200,
   });
 });

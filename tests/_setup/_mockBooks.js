@@ -81,3 +81,99 @@ export const bornACrime = {
     }
   }],
 }
+
+export const makeWayForDucklings = {
+  "items": [
+    {
+      "volumeInfo": {
+        "title": "Make Way for Ducklings",
+        "authors": [
+          "Robert McCloskey"
+        ],
+        "publisher": "Penguin",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9781101997956"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "1101997958"
+          }
+        ]
+      }
+    },
+    {
+      "volumeInfo": {
+        "title": "Make Way for Ducklings",
+        "publisher": "Puffin",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_10",
+            "identifier": "0140501711"
+          },
+          {
+            "type": "ISBN_13",
+            "identifier": "9780140501711"
+          }
+        ]
+      }
+    },
+    {
+      "volumeInfo": {
+        "title": "Make Way for Ducklings",
+        "authors": [
+          "Robert McCloskey"
+        ],
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_10",
+            "identifier": "0590758187"
+          },
+          {
+            "type": "ISBN_13",
+            "identifier": "9780590758185"
+          }
+        ]
+      }
+    },
+    {
+      "volumeInfo": {
+        "title": "One Morning in Maine",
+        "authors": [
+          "Robert McCloskey"
+        ],
+        "publisher": "Penguin",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9780140501742"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "0140501746"
+          }
+        ]
+      }
+    },
+    {
+      "volumeInfo": {
+        "title": "Blueberries for Sal",
+        "authors": [
+          "Robert McCloskey"
+        ],
+        "publisher": "Penguin",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9781101654811"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "1101654813"
+          }
+        ]
+      }
+    }
+  ]
+}
