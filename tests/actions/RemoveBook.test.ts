@@ -4,33 +4,15 @@ import User from  '../../src/models/User';
 import db from '../../src/sequelize/models';
 import chalk from 'chalk';
 import actions from '../../src/models/actions'
-import Book from '../../src/models/Book';
 import ReadingList from '../../src/models/ReadingList';
+import {
+  bornACrimeInfo,
+  makeWayForDucklingsInfo,
+  whereTheCrawdadsSingInfo
+} from '../_testHelpers/books';
 
 
 let defaultUser;
-
-const title: string = 'Born a Crime';
-const authors: string[] = ['Trevor Noah'];
-const publisher: string = 'Spiegel & Grau';
-const isbn_10: string = '0399588183';
-const isbn_13: string = '9780399588181';
-
-const bookInfo1 = {
-  title: "Make Way for Ducklings",
-  authors: ["Robert McCloskey"],
-  publisher: "Puffin Books",
-  isbn_10: "0140501711",
-  isbn_13: "9780140501711",
-};
-
-const bookInfo2 = {
-  title: "Where the Crawdads Sing",
-  authors: ["Delia Owens"],
-  publisher: "Penguin",
-  isbn_10: "0735219117",
-  isbn_13: "9780735219113",
-};
 
 describe('RemoveBook action', (): void => {
   before(async () => {
@@ -45,7 +27,7 @@ describe('RemoveBook action', (): void => {
 
   it('should delete selected books', async (): Promise<void> => {
     // add book
-    const bookAdded = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
+    const bookAdded = await ReadingList.addBook(bornACrimeInfo, defaultUser);
 
     // fake user input
     const promptBooksToRemove = sinon.fake.resolves({ bookIndices: [0] });
@@ -61,8 +43,8 @@ describe('RemoveBook action', (): void => {
 
     it('should console log titles of deleted books', async (): Promise<void> => {
       // add books
-      const bookAdded1 = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
-      const bookAdded2 = await ReadingList.addBook(bookInfo1, defaultUser);
+      const bookAdded1 = await ReadingList.addBook(bornACrimeInfo, defaultUser);
+      const bookAdded2 = await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
 
       // fake user input
       const promptBooksToRemove = sinon.fake.resolves({ bookIndices: [0, 1] });
@@ -84,8 +66,8 @@ describe('RemoveBook action', (): void => {
 
     it('should inform user that no books were removed if no books were removed', async (): Promise<void> => {
       // add books
-      const bookAdded1 = await ReadingList.addBook({ title, authors, publisher, isbn_10, isbn_13 }, defaultUser);
-      const bookAdded2 = await ReadingList.addBook(bookInfo1, defaultUser);
+      const bookAdded1 = await ReadingList.addBook(bornACrimeInfo, defaultUser);
+      const bookAdded2 = await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
 
       // fake user input
       const promptBooksToRemove = sinon.fake.resolves({ bookIndices: [] });

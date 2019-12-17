@@ -12,30 +12,20 @@ import { UserBook } from '../../src/sequelize/models/user_book';
 import book from '../../src/sequelize/models/book';
 import actions from '../../src/models/actions'
 import Action from '../../src/models/actions/Action'
+import {
+  bornACrimeInfo,
+  makeWayForDucklingsInfo,
+  whereTheCrawdadsSingInfo
+} from '../_testHelpers/books';
+
+const googleResults = [
+  bornACrimeInfo,
+  makeWayForDucklingsInfo,
+  whereTheCrawdadsSingInfo,
+];
 
 let defaultUser;
 
-const title: string = 'Born a Crime';
-const authors: string[] = ['Trevor Noah'];
-const publisher: string = 'Spiegel & Grau';
-const isbn_10: string = '0399588183';
-const isbn_13: string = '9780399588181';
-
-const bookInfo1 = {
-  title: "Make Way for Ducklings",
-  authors: ["Robert McCloskey"],
-  publisher: "Puffin Books",
-  isbn_10: "0140501711",
-  isbn_13: "9780140501711",
-};
-
-const bookInfo2 = {
-  title: "Where the Crawdads Sing",
-  authors: ["Delia Owens"],
-  publisher: "Penguin",
-  isbn_10: "0735219117",
-  isbn_13: "9780735219113",
-};
 
 describe('ReadingListManager', (): void => {
   before(async () => {
@@ -92,14 +82,14 @@ describe('ReadingListManager', (): void => {
 
     it('should return add_book given book(s) in readingListManager.googleResults', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.googleResults = [ bookInfo1 ];
-      const promptChoices = await readingListManager.preparePromptChoices(2);
+      readingListManager.googleResults = googleResults;
+      const promptChoices = await readingListManager.preparePromptChoices(3);
 
       assert.sameDeepMembers(promptChoices, [{
           name: emoji.get('mag') + " Search for books!",
           value: 'search',
         }, {
-          name: emoji.get('books') + " View your reading list (2 books)",
+          name: emoji.get('books') + " View your reading list (3 books)",
           value: 'view_list',
         }, {
           name: emoji.get('star') + " Add book(s) above to your reading list",
@@ -141,7 +131,7 @@ describe('ReadingListManager', (): void => {
   describe('#performAction()', async (): Promise<void> => {
     before(async (): Promise<void> => {
       await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(bookInfo1, defaultUser);
+      await ReadingList.addBook(bornACrimeInfo, defaultUser);
     });
 
     it('should call actions.Search.start() if user selects search', async (): Promise<void> => {

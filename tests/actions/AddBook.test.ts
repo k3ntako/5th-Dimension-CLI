@@ -4,41 +4,28 @@ import User from  '../../src/models/User';
 import db from '../../src/sequelize/models';
 import chalk from 'chalk';
 import actions from '../../src/models/actions'
-import Book from '../../src/models/Book';
+import {
+  bornACrimeInfo,
+  makeWayForDucklingsInfo,
+  whereTheCrawdadsSingInfo
+} from '../_testHelpers/books';
 
+const googleResults = [
+  bornACrimeInfo,
+  makeWayForDucklingsInfo,
+  whereTheCrawdadsSingInfo,
+];
 
 let defaultUser;
 
-const title: string = 'Born a Crime';
-const authors: string[] = ['Trevor Noah'];
-const publisher: string = 'Spiegel & Grau';
-const isbn_10: string = '0399588183';
-const isbn_13: string = '9780399588181';
-
-const bookInfo1 = {
-  title: "Make Way for Ducklings",
-  authors: ["Robert McCloskey"],
-  publisher: "Puffin Books",
-  isbn_10: "0140501711",
-  isbn_13: "9780140501711",
-};
-
-const bookInfo2 = {
-  title: "Where the Crawdads Sing",
-  authors: ["Delia Owens"],
-  publisher: "Penguin",
-  isbn_10: "0735219117",
-  isbn_13: "9780735219113",
-};
-
 describe('AddBook action', (): void => {
-  beforeEach(async () => {
+  before(async () => {
     defaultUser = await User.loginAsDefault();
+  });
 
-
+  beforeEach(async () => {
     await db.UserBook.destroy({ where: {} });
     await db.Book.destroy({ where: {} });
-    // await ReadingList.addBook(bookInfo1, defaultUser);
   });
 
   it('should add selected books to db', async (): Promise<void> => {
@@ -51,15 +38,8 @@ describe('AddBook action', (): void => {
 
     assert.lengthOf(bookInDBBefore, 0); // there should be no books
 
-
     const promptBooksToAdd = sinon.fake.resolves({ bookIndices: [0, 2] });
     sinon.replace(actions.AddBook.prototype, 'promptBooksToAdd', promptBooksToAdd);
-
-    const googleResults = [
-      new Book({ title, authors, publisher, isbn_10, isbn_13 }),
-      new Book(bookInfo1),
-      new Book(bookInfo2),
-    ];
 
     await actions.AddBook.start(googleResults, defaultUser);
 
@@ -87,7 +67,10 @@ describe('AddBook action', (): void => {
       isbn_10: firstBook.isbn_10,
       isbn_13: firstBook.isbn_13
     }, {
-      title, publisher, isbn_10, isbn_13
+      title: bornACrimeInfo.title,
+      publisher: bornACrimeInfo.publisher,
+      isbn_10: bornACrimeInfo.isbn_10,
+      isbn_13: bornACrimeInfo.isbn_13
     });
 
     assert.include({
@@ -96,22 +79,16 @@ describe('AddBook action', (): void => {
       isbn_10: secondBook.isbn_10,
       isbn_13: secondBook.isbn_13
     }, {
-      title: bookInfo2.title,
-      publisher: bookInfo2.publisher,
-      isbn_10: bookInfo2.isbn_10,
-      isbn_13: bookInfo2.isbn_13
+      title: whereTheCrawdadsSingInfo.title,
+      publisher: whereTheCrawdadsSingInfo.publisher,
+      isbn_10: whereTheCrawdadsSingInfo.isbn_10,
+      isbn_13: whereTheCrawdadsSingInfo.isbn_13
     });
   });
 
   it('should console log titles of added books', async (): Promise<void> => {
     const promptBooksToAdd = sinon.fake.resolves({ bookIndices: [0, 2] });
     sinon.replace(actions.AddBook.prototype, 'promptBooksToAdd', promptBooksToAdd);
-
-    const googleResults = [
-      new Book({ title, authors, publisher, isbn_10, isbn_13 }),
-      new Book(bookInfo1),
-      new Book(bookInfo2),
-    ];
 
     await actions.AddBook.start(googleResults, defaultUser);
 
@@ -120,19 +97,13 @@ describe('AddBook action', (): void => {
     const secondToLastArg = args[args.length - 2][0];
     const lastArg = args[args.length - 1][0];
     assert.strictEqual(secondToLastArg, chalk.bold("Book(s) added:"))
-    assert.include(lastArg, chalk.greenBright(title))
-    assert.include(lastArg, chalk.greenBright(bookInfo2.title))
+    assert.include(lastArg, chalk.greenBright(bornACrimeInfo.title))
+    assert.include(lastArg, chalk.greenBright(whereTheCrawdadsSingInfo.title))
   });
 
   it('should inform user that no books were added if no books were added', async (): Promise<void> => {
     const promptBooksToAdd = sinon.fake.resolves({ bookIndices: [] });
     sinon.replace(actions.AddBook.prototype, 'promptBooksToAdd', promptBooksToAdd);
-
-    const googleResults = [
-      new Book({ title, authors, publisher, isbn_10, isbn_13 }),
-      new Book(bookInfo1),
-      new Book(bookInfo2),
-    ];
 
     await actions.AddBook.start(googleResults, defaultUser);
 

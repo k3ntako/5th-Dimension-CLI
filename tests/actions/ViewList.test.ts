@@ -4,31 +4,14 @@ import User from '../../src/models/User';
 import db from '../../src/sequelize/models';
 import actions from '../../src/models/actions'
 import ReadingList from '../../src/models/ReadingList';
+import {
+  bornACrimeInfo,
+  makeWayForDucklingsInfo,
+  whereTheCrawdadsSingInfo
+} from '../_testHelpers/books';
 
 
 let defaultUser;
-
-const title: string = 'Born a Crime';
-const authors: string[] = ['Trevor Noah'];
-const publisher: string = 'Spiegel & Grau';
-const isbn_10: string = '0399588183';
-const isbn_13: string = '9780399588181';
-
-const bookInfo1 = {
-  title: "Make Way for Ducklings",
-  authors: ["Robert McCloskey"],
-  publisher: "Puffin Books",
-  isbn_10: "0140501711",
-  isbn_13: "9780140501711",
-};
-
-const bookInfo2 = {
-  title: "Where the Crawdads Sing",
-  authors: ["Delia Owens"],
-  publisher: "Penguin",
-  isbn_10: "0735219117",
-  isbn_13: "9780735219113",
-};
 
 describe('ViewList', (): void => {
   before(async () => {
@@ -56,7 +39,7 @@ describe('ViewList', (): void => {
   });
 
   it('should console log reading list', async (): Promise<void> => {
-    await ReadingList.addBook(bookInfo1, defaultUser);
+    await ReadingList.addBook(bornACrimeInfo, defaultUser);
 
     // fake ViewList#logOneBook
     const fakeLogOneBook: sinon.SinonSpy<any> = sinon.fake();
@@ -66,11 +49,15 @@ describe('ViewList', (): void => {
     await actions.ViewList.start(defaultUser, 1);
 
     // remove authors, because it's harder to test
-    const bookInfo1WithoutAuthor = bookInfo1;
-    delete bookInfo1.authors;
+    const bornACrimeWithoutAuthor = {
+      title: bornACrimeInfo.title,
+      publisher: bornACrimeInfo.publisher,
+      isbn_10: bornACrimeInfo.isbn_10,
+      isbn_13: bornACrimeInfo.isbn_13,
+    };
 
     // assertions
     assert.strictEqual(fakeLogOneBook.callCount, 1, "logBook should be called once");
-    assert.deepInclude(fakeLogOneBook.lastArg[0], bookInfo1WithoutAuthor);
+    assert.deepInclude(fakeLogOneBook.lastArg[0], bornACrimeWithoutAuthor);
   });
 });

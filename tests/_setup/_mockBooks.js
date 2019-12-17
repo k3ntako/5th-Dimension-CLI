@@ -177,3 +177,103 @@ export const makeWayForDucklings = {
     }
   ]
 }
+
+export const whereTheCrawdadsSing = {
+  "items": [
+    {
+      "volumeInfo": {
+        "title": "Where the Crawdads Sing",
+        "authors": [
+          "Delia Owens"
+        ],
+        "publisher": "Penguin",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9780735219113"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "0735219117"
+          }
+        ]
+      }
+    },
+    {
+      "volumeInfo": {
+        "title": "Where the Crawdads Sing Deluxe Edition",
+        "authors": [
+          "Delia Owens"
+        ],
+        "publisher": "G.P. Putnam's Sons",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9780593187982"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "0593187989"
+          }
+        ]
+      }
+    },
+    {
+      "volumeInfo": {
+        "title": "Cry of the Kalahari",
+        "authors": [
+          "Mark Owens",
+          "Delia Owens"
+        ],
+        "publisher": "Houghton Mifflin Harcourt",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9780544341647"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "0544341643"
+          }
+        ]
+      }
+    },
+    {
+      "volumeInfo": {
+        "title": "Summary",
+        "authors": [
+          "Epic-Summary"
+        ],
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_10",
+            "identifier": "179896998X"
+          },
+          {
+            "type": "ISBN_13",
+            "identifier": "9781798969984"
+          }
+        ]
+      }
+    },
+    {
+      "volumeInfo": {
+        "title": "Before We Were Yours",
+        "authors": [
+          "Lisa Wingate"
+        ],
+        "publisher": "Ballantine Books",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9780425284704"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "0425284700"
+          }
+        ]
+      }
+    }
+  ]
+}
