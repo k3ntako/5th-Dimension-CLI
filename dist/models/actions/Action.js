@@ -8,7 +8,6 @@ const chalk_1 = __importDefault(require("chalk"));
 // Local dependencies
 const emoji_1 = require("../../utilities/emoji");
 class Action {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     constructor() { }
     logOneBook(book, idx) {
         const emojiNum = Number.isInteger(idx) ? `${emoji_1.NUMBERS[idx + 1]}  ` : "";

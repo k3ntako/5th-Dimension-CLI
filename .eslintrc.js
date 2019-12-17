@@ -28,5 +28,7 @@ module.exports = {
         "book_id", "user_id", "author_id"
       ]
     }],
+    "no-empty-function": "off",
+    "@typescript-eslint/no-empty-function": "off",
   },
 };
