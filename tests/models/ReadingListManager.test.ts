@@ -159,17 +159,17 @@ describe('ReadingListManager', (): void => {
     it('should console log information about the book', async (): Promise<void> => {
       const action = new Action();
       action.logOneBook({
-        title,
-        authors,
+        title: bornACrimeInfo.title,
+        authors: bornACrimeInfo.authors,
         publisher: null,
       });
 
       assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 3);
 
       const arg1: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.strictEqual(arg1, chalk.bold(title));
+      assert.strictEqual(arg1, chalk.bold(bornACrimeInfo.title));
       const arg2: string = fdCLI.fakes.consoleLogFake.getCall(1).lastArg;
-      assert.strictEqual(arg2, "Author(s): " + authors[0]);
+      assert.strictEqual(arg2, "Author(s): " + bornACrimeInfo.authors[0]);
       const arg3: string = fdCLI.fakes.consoleLogFake.getCall(2).lastArg;
       assert.strictEqual(arg3, "Publisher: N/A\n");
     });
@@ -177,13 +177,13 @@ describe('ReadingListManager', (): void => {
     it('should console log the title with emoji if provided a number', async (): Promise<void> => {
       const action = new Action();
       action.logOneBook({
-        title,
-        authors,
+        title: bornACrimeInfo.title,
+        authors: bornACrimeInfo.authors,
         publisher: null,
       }, 0);
 
       const arg: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.strictEqual(arg, `${emoji.get('one')}  ${chalk.bold(title)}`);
+      assert.strictEqual(arg, `${emoji.get('one')}  ${chalk.bold(bornACrimeInfo.title)}`);
     });
   });
 
