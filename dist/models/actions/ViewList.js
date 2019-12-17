@@ -18,17 +18,17 @@ const clear_1 = __importDefault(require("clear"));
 // Local dependencies
 const Action_1 = __importDefault(require("./Action"));
 const ReadingList_1 = __importDefault(require("../ReadingList"));
-class AddBookAction extends Action_1.default {
+class ViewListAction extends Action_1.default {
     constructor() {
         super();
     }
     static start(user, readingListPage) {
         return __awaiter(this, void 0, void 0, function* () {
-            const addBookAction = new AddBookAction();
+            const viewListAction = new ViewListAction();
             clear_1.default();
             const tenBooksInList = yield ReadingList_1.default.getList(user, readingListPage);
-            addBookAction.logBooks(tenBooksInList);
-            return { addBookAction };
+            viewListAction.logBooks(tenBooksInList);
+            return { viewListAction };
         });
     }
     logBooks(tenBooksInList) {
@@ -41,4 +41,4 @@ class AddBookAction extends Action_1.default {
         }
     }
 }
-exports.default = AddBookAction;
+exports.default = ViewListAction;

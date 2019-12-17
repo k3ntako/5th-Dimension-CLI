@@ -7,19 +7,19 @@ import Action from './Action';
 import ReadingList from '../ReadingList';
 
 
-export default class AddBookAction extends Action {
+export default class ViewListAction extends Action {
   constructor(){
     super();
   }
 
   static async start(user, readingListPage: number){
-    const addBookAction = new AddBookAction();
+    const viewListAction = new ViewListAction();
     clear();
 
     const tenBooksInList = await ReadingList.getList(user, readingListPage);
-    addBookAction.logBooks(tenBooksInList);
+    viewListAction.logBooks(tenBooksInList);
 
-    return { addBookAction };
+    return { viewListAction };
   }
 
   private logBooks(tenBooksInList): void{
