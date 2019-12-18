@@ -2,7 +2,6 @@ import db from '../sequelize/models';
 import Book from './Book';
 import { Book as IBook } from '../sequelize/models/book';
 import { User as IUser } from '../sequelize/models/user';
-import ReadingListManager from './ReadingListManager';
 
 interface TitleAndPublisher {
   title?: string;
