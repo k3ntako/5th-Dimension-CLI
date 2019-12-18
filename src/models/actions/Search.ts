@@ -1,11 +1,10 @@
 // Third-party dependencies
-import clear from 'clear';
 import { prompt } from 'inquirer';
 
 // Local dependencies
 import Book from '../Book';
 import BookSearch from '../BookSearch';
-import { error, warn } from '../../utilities/errorLogging';
+import { error } from '../../utilities/errorLogging';
 import Loading from '../Loading';
 
 
