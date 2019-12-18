@@ -10,6 +10,6 @@ interface IfdCLI {
 
 declare namespace NodeJS {
   interface Global {
-    fdCLI: IfdCLI
+    fdCLI: IfdCLI;
   }
 }

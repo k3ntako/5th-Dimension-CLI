@@ -6,7 +6,7 @@ declare namespace FD {
     publisher: string;
     isbn_10?: string;
     isbn_13?: string;
-    issn: string;
+    issn?: string;
     other_identifier?: string;
   }
 

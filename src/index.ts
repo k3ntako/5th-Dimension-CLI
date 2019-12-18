@@ -1,11 +1,12 @@
 import ReadingListManager from './models/ReadingListManager';
 import User from './models/User';
+import {User as IUser} from './sequelize/models/user';
 import { error } from './utilities/logging';
 
 
-const start = async () => {
+const start = async (): Promise<void> => {
   try {
-    const user = await User.loginAsDefault();
+    const user: IUser = await User.loginAsDefault();
     const readingListManager = new ReadingListManager(user);
     readingListManager.start();
   } catch (err) {

@@ -33,7 +33,7 @@ export default class Book {
     const { title, publisher, authors, industryIdentifiers } = params;
     if(!title || !title.trim()) return null;
 
-    let parsedParams = {
+    let parsedParams: FD.BookParams = {
       title: title.trim(),
       publisher: publisher && publisher.trim(),
       authors: authors,
