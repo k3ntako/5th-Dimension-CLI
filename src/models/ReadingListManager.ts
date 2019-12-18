@@ -29,7 +29,7 @@ export default class ReadingListManager {
 
   start(): void {
     messages.startMessage();
-    this.question();
+    this.promptNextAction();
   }
 
   static exit(): void{
@@ -81,7 +81,7 @@ export default class ReadingListManager {
     return await prompt(promptOptions)
   }
 
-  question = async (): Promise<void> => {
+  promptNextAction = async (): Promise<void> => {
     messages.emptyLine(); // for spacing
 
     const listCount = await ReadingList.getCount(this.user);
@@ -99,7 +99,7 @@ export default class ReadingListManager {
     const { action } = await this.prompt(promptOptions);
     await this.performAction(action);
 
-    setTimeout(this.question, 300); // Delay before prompting them again
+    setTimeout(this.promptNextAction, 300); // Delay before prompting them again
   }
 
   async performAction(action): Promise<void>{

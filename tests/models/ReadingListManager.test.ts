@@ -42,18 +42,18 @@ describe('ReadingListManager', (): void => {
       assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 3);
     });
 
-    it('should call on readingListManager#question', (): void => {
+    it('should call on readingListManager#promptNextAction', (): void => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
 
-      const questionFake: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(readingListManager, 'question', questionFake);
+      const promptNextActionFake: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(readingListManager, 'promptNextAction', promptNextActionFake);
 
       readingListManager.start();
-      assert.strictEqual(questionFake.callCount, 1);
+      assert.strictEqual(promptNextActionFake.callCount, 1);
     });
   });
 
-  describe('#question()', async (): Promise<void> => {
+  describe('#promptNextAction()', async (): Promise<void> => {
     it('should return search, viewList, removeBook, and exit, given book(s) in reading list', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       const promptChoices = await readingListManager.preparePromptChoices(2);

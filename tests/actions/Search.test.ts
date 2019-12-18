@@ -35,7 +35,7 @@ describe('Search action', (): void => {
       const fakePrompt = sinon.fake.resolves({ action: "search" });
       sinon.replace(readingListManager, 'prompt', fakePrompt);
 
-      // replace setTimeout so it doesn't as another question
+      // replace setTimeout so it doesn't call promptNextAction again
       const fakeSetTimeout = sinon.fake();
       sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
@@ -48,7 +48,7 @@ describe('Search action', (): void => {
       sinon.replace(messages, 'logOneBook', fakeLogOneBook);
 
       // call method
-      await readingListManager.question();
+      await readingListManager.promptNextAction();
 
       const args = fakeLogOneBook.args;
 

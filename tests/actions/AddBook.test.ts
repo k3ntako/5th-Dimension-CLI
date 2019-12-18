@@ -96,7 +96,7 @@ describe('AddBook action', (): void => {
     const fakePrompt = sinon.fake.resolves({ action: "addBook" });
     sinon.replace(readingListManager, 'prompt', fakePrompt);
 
-    // replace setTimeout so it doesn't as another question
+    // replace setTimeout so it doesn't call promptNextAction again
     const fakeSetTimeout = sinon.fake();
     sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
@@ -104,7 +104,7 @@ describe('AddBook action', (): void => {
     const promptBooksToAdd = sinon.fake.resolves({ bookIndices: [0, 2] });
     sinon.replace(actions.AddBook.prototype, 'promptBooksToAdd', promptBooksToAdd);
 
-    await readingListManager.question();
+    await readingListManager.promptNextAction();
 
     const args = fdCLI.fakes.consoleLogFake.args;
 
@@ -123,7 +123,7 @@ describe('AddBook action', (): void => {
     const fakePrompt = sinon.fake.resolves({ action: "addBook" });
     sinon.replace(readingListManager, 'prompt', fakePrompt);
 
-    // replace setTimeout so it doesn't as another question
+    // replace setTimeout so it doesn't call promptNextAction again
     const fakeSetTimeout = sinon.fake();
     sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
@@ -131,7 +131,7 @@ describe('AddBook action', (): void => {
     const promptBooksToAdd = sinon.fake.resolves({ bookIndices: [] });
     sinon.replace(actions.AddBook.prototype, 'promptBooksToAdd', promptBooksToAdd);
 
-    await readingListManager.question();
+    await readingListManager.promptNextAction();
 
     const arg = fdCLI.fakes.consoleLogFake.lastCall.lastArg;
     assert.strictEqual(arg, "No books added");

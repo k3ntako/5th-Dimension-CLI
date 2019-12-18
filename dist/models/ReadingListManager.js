@@ -59,7 +59,7 @@ class ReadingListManager {
             promptChoicesToDisplay.push(new inquirer_1.default.Separator(), promptChoices_1.default.exit(), new inquirer_1.default.Separator());
             return promptChoicesToDisplay;
         };
-        this.question = () => __awaiter(this, void 0, void 0, function* () {
+        this.promptNextAction = () => __awaiter(this, void 0, void 0, function* () {
             messages_1.default.emptyLine(); // for spacing
             const listCount = yield ReadingList_1.default.getCount(this.user);
             const promptChoicesToDisplay = this.preparePromptChoices(listCount);
@@ -73,7 +73,7 @@ class ReadingListManager {
             // prompt
             const { action } = yield this.prompt(promptOptions);
             yield this.performAction(action);
-            setTimeout(this.question, 300); // Delay before prompting them again
+            setTimeout(this.promptNextAction, 300); // Delay before prompting them again
         });
         if (!user || !user.id) {
             throw new Error("No user passed in");
@@ -84,7 +84,7 @@ class ReadingListManager {
     }
     start() {
         messages_1.default.startMessage();
-        this.question();
+        this.promptNextAction();
     }
     static exit() {
         messages_1.default.exitMessage();

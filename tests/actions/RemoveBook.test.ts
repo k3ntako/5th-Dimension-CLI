@@ -52,7 +52,7 @@ describe('RemoveBook action', (): void => {
       const fakePrompt = sinon.fake.resolves({ action: "removeBook" });
       sinon.replace(readingListManager, 'prompt', fakePrompt);
 
-      // replace setTimeout so it doesn't as another question
+      // replace setTimeout so it doesn't call promptNextAction again
       const fakeSetTimeout = sinon.fake();
       sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
@@ -61,7 +61,7 @@ describe('RemoveBook action', (): void => {
       sinon.replace(actions.RemoveBook.prototype, 'promptBooksToRemove', promptBooksToRemove);
 
       // remove books
-      await readingListManager.question();
+      await readingListManager.promptNextAction();
 
       // get arguments logged
       const args = fdCLI.fakes.consoleLogFake.args;
@@ -85,7 +85,7 @@ describe('RemoveBook action', (): void => {
       const fakePrompt = sinon.fake.resolves({ action: "removeBook" });
       sinon.replace(readingListManager, 'prompt', fakePrompt);
 
-      // replace setTimeout so it doesn't as another question
+      // replace setTimeout so it doesn't call promptNextAction again
       const fakeSetTimeout = sinon.fake();
       sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
@@ -94,7 +94,7 @@ describe('RemoveBook action', (): void => {
       sinon.replace(actions.RemoveBook.prototype, 'promptBooksToRemove', promptBooksToRemove);
 
       // remove books
-      await readingListManager.question();
+      await readingListManager.promptNextAction();
 
       // get last argument logged
       const arg = fdCLI.fakes.consoleLogFake.lastCall.lastArg;

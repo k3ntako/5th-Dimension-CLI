@@ -30,7 +30,7 @@ describe('ViewList', (): void => {
     const fakePrompt = sinon.fake.resolves({ action: "viewList" });
     sinon.replace(readingListManager, 'prompt', fakePrompt);
 
-    // replace setTimeout so it doesn't as another question
+    // replace setTimeout so it doesn't call promptNextAction again
     const fakeSetTimeout = sinon.fake();
     sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
@@ -39,7 +39,7 @@ describe('ViewList', (): void => {
     sinon.replace(messages, 'logOneBook', fakeLogOneBook);
 
     // call method
-    await readingListManager.question();
+    await readingListManager.promptNextAction();
 
     // assertions
     assert.strictEqual(fakeLogOneBook.callCount, 0, "logOneBook should not be called");
@@ -60,7 +60,7 @@ describe('ViewList', (): void => {
     const fakePrompt = sinon.fake.resolves({ action: "viewList" });
     sinon.replace(readingListManager, 'prompt', fakePrompt);
 
-    // replace setTimeout so it doesn't as another question
+    // replace setTimeout so it doesn't call promptNextAction again
     const fakeSetTimeout = sinon.fake();
     sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
@@ -69,7 +69,7 @@ describe('ViewList', (): void => {
     sinon.replace(messages, 'logOneBook', fakeLogOneBook);
 
     // call method
-    await readingListManager.question();
+    await readingListManager.promptNextAction();
 
     // remove authors, because it's harder to test
     const bornACrimeWithoutAuthor = {
