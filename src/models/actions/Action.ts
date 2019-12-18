@@ -3,6 +3,7 @@ import chalk from 'chalk';
 
 // Local dependencies
 import { NUMBERS } from '../../utilities/emoji';
+import logging from '../../utilities/logging';
 
 
 export default class Action {
@@ -12,8 +13,11 @@ export default class Action {
     const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx + 1]}  ` : "";
     const authors = book.authors && book.authors.join(", ");
 
-    console.log(emojiNum + chalk.bold(book.title));
-    console.log("Author(s): " + (authors || "N/A"));
-    console.log("Publisher: " + (book.publisher || "N/A") + "\n");
+    logging.logOneBook(
+      emojiNum,
+      chalk.bold(book.title),
+      authors,
+      book.publisher
+    );
   }
 }

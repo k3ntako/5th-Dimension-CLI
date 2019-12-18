@@ -12,12 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// Third-party dependencies
-const chalk_1 = __importDefault(require("chalk"));
 const clear_1 = __importDefault(require("clear"));
 // Local dependencies
 const Action_1 = __importDefault(require("./Action"));
 const ReadingList_1 = __importDefault(require("../ReadingList"));
+const logging_1 = __importDefault(require("../../utilities/logging"));
 class ViewListAction extends Action_1.default {
     constructor() {
         super();
@@ -33,11 +32,11 @@ class ViewListAction extends Action_1.default {
     }
     logBooks(tenBooksInList) {
         if (tenBooksInList.length) {
-            console.log(chalk_1.default.bold("Your Reading List:"));
+            logging_1.default.readingListMessage();
             tenBooksInList.forEach(this.logOneBook);
         }
         else {
-            console.log("There are no books in your reading list");
+            logging_1.default.noReadingListBooks();
         }
     }
 }

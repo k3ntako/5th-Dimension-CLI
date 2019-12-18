@@ -9,6 +9,7 @@ import Book from '../Book';
 import { User as IUser } from '../../sequelize/models/user';
 import { NUMBERS } from '../../utilities/emoji';
 import ReadingList from '../ReadingList';
+import logging from '../../utilities/logging';
 
 
 export default class RemoveBookAction extends Action {
@@ -58,10 +59,9 @@ export default class RemoveBookAction extends Action {
     const titles: string = booksToRemove.map(book => chalk.redBright(book.title)).join('\n');
 
     if (!booksToRemove.length) {
-      return console.log('No books removed');
+      return logging.noBookRemoved();
     }
 
-    console.log(chalk.bold("Books removed:"))
-    console.log(titles);
+    logging.booksRemoved(titles);
   }
 }

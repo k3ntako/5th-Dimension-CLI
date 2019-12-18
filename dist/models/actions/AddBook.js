@@ -20,6 +20,7 @@ const inquirer_1 = require("inquirer");
 const Action_1 = __importDefault(require("./Action"));
 const ReadingList_1 = __importDefault(require("../ReadingList"));
 const emoji_1 = require("../../utilities/emoji");
+const logging_1 = __importDefault(require("../../utilities/logging"));
 class AddBookAction extends Action_1.default {
     constructor() {
         super();
@@ -61,11 +62,10 @@ class AddBookAction extends Action_1.default {
     logBooks(bookAdded) {
         clear_1.default();
         if (!bookAdded.length) {
-            return console.log('No books added');
+            return logging_1.default.noBooksAdded();
         }
         const titles = bookAdded.map(book => chalk_1.default.greenBright(book.title)).join('\n');
-        console.log(chalk_1.default.bold("Book(s) added:"));
-        console.log(titles);
+        logging_1.default.booksAdded(titles);
     }
 }
 exports.default = AddBookAction;

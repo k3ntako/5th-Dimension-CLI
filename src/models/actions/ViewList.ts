@@ -7,6 +7,7 @@ import Action from './Action';
 import Book from '../Book';
 import { User as IUser } from '../../sequelize/models/user';
 import ReadingList from '../ReadingList';
+import logging from '../../utilities/logging';
 
 
 export default class ViewListAction extends Action {
@@ -26,10 +27,10 @@ export default class ViewListAction extends Action {
 
   private logBooks(tenBooksInList): void{
     if(tenBooksInList.length){
-      console.log(chalk.bold("Your Reading List:"));
+      logging.readingListMessage();
       tenBooksInList.forEach(this.logOneBook);
     }else{
-      console.log("There are no books in your reading list");
+      logging.noReadingListBooks();
     }
   }
 

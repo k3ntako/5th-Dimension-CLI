@@ -22,11 +22,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ReadingList_1 = __importDefault(require("./ReadingList"));
 const inquirer_1 = __importStar(require("inquirer"));
 const clear_1 = __importDefault(require("clear"));
-const chalk_1 = __importDefault(require("chalk"));
 const promptChoices_1 = __importDefault(require("../utilities/promptChoices"));
 const actions_1 = __importDefault(require("./actions"));
+const logging_1 = __importDefault(require("../utilities/logging"));
 const errorLogging_1 = require("../utilities/errorLogging");
-const APP_NAME = chalk_1.default.cyanBright.bold("5th Dimension CLI");
 const defaultChoices = [promptChoices_1.default.search()];
 class ReadingListManager {
     constructor(user) {
@@ -60,7 +59,7 @@ class ReadingListManager {
             return promptChoicesToDisplay;
         };
         this.question = () => __awaiter(this, void 0, void 0, function* () {
-            console.log(""); // for spacing
+            logging_1.default.emptyLine(); // for spacing
             const listCount = yield ReadingList_1.default.getCount(this.user);
             const promptChoicesToDisplay = this.preparePromptChoices(listCount);
             // Prompt options
@@ -83,14 +82,11 @@ class ReadingListManager {
         this.readingListPage = 0; // 0 means reading list not shown
     }
     start() {
-        clear_1.default();
-        console.log(`Welcome to ${APP_NAME}!`);
-        console.log("It's place to discover new books and save them for later!");
+        logging_1.default.startMessage();
         this.question();
     }
     static exit() {
-        console.log(`Thank you for using ${APP_NAME}!`);
-        console.log("Hope to see you soon!");
+        logging_1.default.exitMessage();
         process.exit();
     }
     performAction(action) {

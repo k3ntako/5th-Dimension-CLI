@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // Third-party dependencies
-const chalk_1 = __importDefault(require("chalk"));
 const clear_1 = __importDefault(require("clear"));
 const inquirer_1 = require("inquirer");
 // Local dependencies
@@ -21,6 +20,7 @@ const Action_1 = __importDefault(require("./Action"));
 const BookSearch_1 = __importDefault(require("../BookSearch"));
 const errorLogging_1 = require("../../utilities/errorLogging");
 const Loading_1 = __importDefault(require("../Loading"));
+const logging_1 = __importDefault(require("../../utilities/logging"));
 class SearchAction extends Action_1.default {
     constructor() {
         super();
@@ -64,9 +64,9 @@ class SearchAction extends Action_1.default {
     }
     logBooks(googleResults, searchStr) {
         if (!googleResults.length) {
-            return errorLogging_1.warn(`No books found for: "${searchStr}"`);
+            return logging_1.default.noSearchResults(searchStr);
         }
-        console.log(`${chalk_1.default.bold("Search results for:")} "${searchStr}"\n`);
+        logging_1.default.searchResultsMessage(searchStr);
         googleResults.forEach(this.logOneBook);
     }
 }

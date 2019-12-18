@@ -1,15 +1,12 @@
 import ReadingList from './ReadingList';
 import inquirer, {prompt} from 'inquirer';
 import clear from 'clear';
-import chalk from 'chalk';
 import Book from './Book';
 import { User as IUser } from '../sequelize/models/user';
 import promptChoices from '../utilities/promptChoices';
 import actions from './actions';
-
+import logging from '../utilities/logging';
 import { warn } from '../utilities/errorLogging';
-
-const APP_NAME = chalk.cyanBright.bold("5th Dimension CLI");
 
 
 const defaultChoices: inquirer.ChoiceCollection = [ promptChoices.search() ];
@@ -30,16 +27,12 @@ export default class ReadingListManager {
   }
 
   start(): void {
-    clear();
-    console.log(`Welcome to ${APP_NAME}!`);
-    console.log("It's place to discover new books and save them for later!");
+    logging.startMessage();
     this.question();
   }
 
   static exit(): void{
-    console.log(`Thank you for using ${APP_NAME}!`)
-    console.log("Hope to see you soon!");
-
+    logging.exitMessage();
     process.exit();
   }
 
@@ -84,7 +77,7 @@ export default class ReadingListManager {
   }
 
   question = async (): Promise<void> => {
-    console.log(""); // for spacing
+    logging.emptyLine(); // for spacing
 
     const listCount = await ReadingList.getCount(this.user);
     const promptChoicesToDisplay = this.preparePromptChoices(listCount);

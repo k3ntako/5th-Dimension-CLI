@@ -1,5 +1,4 @@
 // Third-party dependencies
-import chalk from 'chalk';
 import clear from 'clear';
 import { prompt } from 'inquirer';
 
@@ -9,6 +8,7 @@ import Book from '../Book';
 import BookSearch from '../BookSearch';
 import { error, warn } from '../../utilities/errorLogging';
 import Loading from '../Loading';
+import logging from '../../utilities/logging';
 
 
 export default class SearchAction extends Action {
@@ -60,11 +60,10 @@ export default class SearchAction extends Action {
 
   private logBooks(googleResults: Book[], searchStr: string): void{
     if(!googleResults.length){
-      return warn(`No books found for: "${searchStr}"`);
+      return logging.noSearchResults(searchStr);
     }
 
-    console.log(`${chalk.bold("Search results for:")} "${searchStr}"\n`);
+    logging.searchResultsMessage(searchStr);
     googleResults.forEach(this.logOneBook);
   }
-
 }

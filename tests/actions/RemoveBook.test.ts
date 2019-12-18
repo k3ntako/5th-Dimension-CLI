@@ -58,7 +58,7 @@ describe('RemoveBook action', (): void => {
       // assertions
       const secondToLastArg = args[args.length - 2][0];
       const lastArg = args[args.length - 1][0];
-      assert.strictEqual(secondToLastArg, chalk.bold("Books removed:"))
+      assert.strictEqual(secondToLastArg, chalk.bold("Book(s) removed:"))
       assert.include(lastArg, chalk.redBright(bornACrimeBook.title))
       assert.include(lastArg, chalk.redBright(makeWayForDucklingsBook.title))
     });

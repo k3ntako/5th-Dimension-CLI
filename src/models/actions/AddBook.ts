@@ -8,6 +8,7 @@ import Action from './Action';
 import Book from '../Book';
 import ReadingList from '../ReadingList';
 import { NUMBERS } from '../../utilities/emoji';
+import logging from '../../utilities/logging';
 
 
 export default class AddBookAction extends Action {
@@ -56,11 +57,10 @@ export default class AddBookAction extends Action {
     clear();
 
     if (!bookAdded.length) {
-      return console.log('No books added');
+      return logging.noBooksAdded();
     }
 
     const titles = bookAdded.map(book => chalk.greenBright(book.title)).join('\n');
-    console.log(chalk.bold("Book(s) added:"));
-    console.log(titles);
+    logging.booksAdded(titles)
   }
 }
