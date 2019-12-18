@@ -134,7 +134,7 @@ describe('ReadingList', (): void => {
     it('should remove book from database', async (): Promise<void> => {
       const tddBook = await ReadingList.addBook(tddParams, defaultUser);
 
-      await ReadingList.removeBook(book.id, defaultUser.id);
+      await ReadingList.removeBook(tddBook.id, defaultUser.id);
       const userBooks = await db.UserBook.findAll({
         where: {
           book_id: tddBook.id,
