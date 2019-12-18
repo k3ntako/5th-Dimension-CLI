@@ -7,10 +7,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const AddBook_1 = __importDefault(require("./AddBook"));
 const RemoveBook_1 = __importDefault(require("./RemoveBook"));
 const Search_1 = __importDefault(require("./Search"));
-const ViewList_1 = __importDefault(require("./ViewList"));
 exports.default = {
     AddBook: AddBook_1.default,
     RemoveBook: RemoveBook_1.default,
     Search: Search_1.default,
-    ViewList: ViewList_1.default,
 };
