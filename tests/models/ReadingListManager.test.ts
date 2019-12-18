@@ -53,27 +53,27 @@ describe('ReadingListManager', (): void => {
     });
   });
 
-  describe('#promptNextAction()', async (): Promise<void> => {
+  describe('#preparePromptChoices()', () => {
     it('should return search, viewList, removeBook, and exit, given book(s) in reading list', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       const promptChoices = await readingListManager.preparePromptChoices(2);
 
       assert.sameDeepMembers(promptChoices, [{
-          name: emoji.get('mag') + " Search for books!",
-          value: 'search',
-        }, {
-          name: emoji.get('books') + " View your reading list (2 books)",
-          value: 'viewList',
-        }, {
-          name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
-          value: "removeBook",
-        },
-        new inquirer.Separator(),
-        {
-          name: emoji.get('closed_lock_with_key') + "  Exit",
-          value: "exit",
-        },
-        new inquirer.Separator(),
+        name: emoji.get('mag') + " Search for books!",
+        value: 'search',
+      }, {
+        name: emoji.get('books') + " View your reading list (2 books)",
+        value: 'viewList',
+      }, {
+        name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
+        value: "removeBook",
+      },
+      new inquirer.Separator(),
+      {
+        name: emoji.get('closed_lock_with_key') + "  Exit",
+        value: "exit",
+      },
+      new inquirer.Separator(),
       ]);
     });
 
@@ -83,24 +83,24 @@ describe('ReadingListManager', (): void => {
       const promptChoices = await readingListManager.preparePromptChoices(3);
 
       assert.sameDeepMembers(promptChoices, [{
-          name: emoji.get('mag') + " Search for books!",
-          value: 'search',
-        }, {
-          name: emoji.get('books') + " View your reading list (3 books)",
-          value: 'viewList',
-        }, {
-          name: emoji.get('star') + " Add book(s) above to your reading list",
-          value: "addBook",
-        }, {
-          name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
-          value: "removeBook",
-        },
-        new inquirer.Separator(),
-        {
-          name: emoji.get('closed_lock_with_key') + "  Exit",
-          value: "exit",
-        },
-        new inquirer.Separator(),
+        name: emoji.get('mag') + " Search for books!",
+        value: 'search',
+      }, {
+        name: emoji.get('books') + " View your reading list (3 books)",
+        value: 'viewList',
+      }, {
+        name: emoji.get('star') + " Add book(s) above to your reading list",
+        value: "addBook",
+      }, {
+        name: emoji.get('no_entry_sign') + ` Remove book(s) from your reading list`,
+        value: "removeBook",
+      },
+      new inquirer.Separator(),
+      {
+        name: emoji.get('closed_lock_with_key') + "  Exit",
+        value: "exit",
+      },
+      new inquirer.Separator(),
       ]);
     });
 
@@ -111,82 +111,18 @@ describe('ReadingListManager', (): void => {
       const promptChoices = await readingListManager.preparePromptChoices(0);
 
       assert.sameDeepMembers(promptChoices, [{
-          name: emoji.get('mag') + " Search for books!",
-          value: 'search',
-        },
-        new inquirer.Separator(),
-        {
-          name: emoji.get('closed_lock_with_key') + "  Exit",
-          value: "exit",
-        },
-        new inquirer.Separator(),
+        name: emoji.get('mag') + " Search for books!",
+        value: 'search',
+      },
+      new inquirer.Separator(),
+      {
+        name: emoji.get('closed_lock_with_key') + "  Exit",
+        value: "exit",
+      },
+      new inquirer.Separator(),
       ]);
     });
-  });
 
-
-  describe('#performAction()', async (): Promise<void> => {
-    before(async (): Promise<void> => {
-      await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(bornACrimeInfo, defaultUser);
-    });
-
-    it('should call actions.Search.start() if user selects search', async (): Promise<void> => {
-      const fakeSearchStart: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(actions.Search, 'start', fakeSearchStart);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.performAction('search');
-
-      assert.strictEqual(fakeSearchStart.callCount, 1);
-    });
-  });
-
-  describe('messages', (): void => {
-    it('should console log information about the book', async (): Promise<void> => {
-      messages.logOneBook({
-        title: bornACrimeInfo.title,
-        authors: bornACrimeInfo.authors,
-        publisher: null,
-      });
-
-      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 3);
-
-      const arg1: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.strictEqual(arg1, chalk.bold(bornACrimeInfo.title));
-      const arg2: string = fdCLI.fakes.consoleLogFake.getCall(1).lastArg;
-      assert.strictEqual(arg2, "Author(s): " + bornACrimeInfo.authors[0]);
-      const arg3: string = fdCLI.fakes.consoleLogFake.getCall(2).lastArg;
-      assert.strictEqual(arg3, "Publisher: N/A\n");
-    });
-
-    it('should console log the title with emoji if provided a number', async (): Promise<void> => {
-      messages.logOneBook({
-        title: bornACrimeInfo.title,
-        authors: bornACrimeInfo.authors,
-        publisher: null,
-      }, 0);
-
-      const arg: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
-      assert.strictEqual(arg, `${emoji.get('one')}  ${chalk.bold(bornACrimeInfo.title)}`);
-    });
-  });
-
-  describe('.exit()', (): void => {
-    it('should console log good-bye message and close app', async (): Promise<void> => {
-      // Fake process.exit
-      const processExitFake: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(process, 'exit', processExitFake);
-
-      await ReadingListManager.exit();
-
-
-      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 2);
-      assert.strictEqual(processExitFake.callCount, 1);
-    });
-  });
-
-  describe('#preparePromptChoices()', () => {
     it('should prompt user to go to next page if there are more than 10 books', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.readingListPage = 1;
@@ -232,7 +168,22 @@ describe('ReadingListManager', (): void => {
     });
   });
 
-  describe('#performAction()', (): void => {
+  describe('#performAction()', async (): Promise<void> => {
+    before(async (): Promise<void> => {
+      await db.UserBook.destroy({ where: {} });
+      await ReadingList.addBook(bornACrimeInfo, defaultUser);
+    });
+
+    it('should call actions.Search.start() if user selects search', async (): Promise<void> => {
+      const fakeSearchStart: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(actions.Search, 'start', fakeSearchStart);
+
+      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
+      readingListManager.performAction('search');
+
+      assert.strictEqual(fakeSearchStart.callCount, 1);
+    });
+
     it('selecting next should increase page', async (): Promise<void> => {
       const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
       readingListManager.readingListPage = 1;
@@ -249,6 +200,50 @@ describe('ReadingListManager', (): void => {
       readingListManager.performAction('previous');
 
       assert.strictEqual(readingListManager.readingListPage, 1);
+    });
+  });
+
+  describe('messages', (): void => {
+    it('should console log information about the book', async (): Promise<void> => {
+      messages.logOneBook({
+        title: bornACrimeInfo.title,
+        authors: bornACrimeInfo.authors,
+        publisher: null,
+      });
+
+      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 3);
+
+      const arg1: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
+      assert.strictEqual(arg1, chalk.bold(bornACrimeInfo.title));
+      const arg2: string = fdCLI.fakes.consoleLogFake.getCall(1).lastArg;
+      assert.strictEqual(arg2, "Author(s): " + bornACrimeInfo.authors[0]);
+      const arg3: string = fdCLI.fakes.consoleLogFake.getCall(2).lastArg;
+      assert.strictEqual(arg3, "Publisher: N/A\n");
+    });
+
+    it('should console log the title with emoji if provided a number', async (): Promise<void> => {
+      messages.logOneBook({
+        title: bornACrimeInfo.title,
+        authors: bornACrimeInfo.authors,
+        publisher: null,
+      }, 0);
+
+      const arg: string = fdCLI.fakes.consoleLogFake.getCall(0).lastArg;
+      assert.strictEqual(arg, `${emoji.get('one')}  ${chalk.bold(bornACrimeInfo.title)}`);
+    });
+  });
+
+  describe('.exit()', (): void => {
+    it('should console log good-bye message and close app', async (): Promise<void> => {
+      // Fake process.exit
+      const processExitFake: sinon.SinonSpy<any> = sinon.fake();
+      sinon.replace(process, 'exit', processExitFake);
+
+      await ReadingListManager.exit();
+
+
+      assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 2);
+      assert.strictEqual(processExitFake.callCount, 1);
     });
   });
 });
