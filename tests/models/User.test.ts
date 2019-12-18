@@ -35,13 +35,13 @@ describe('User', (): void => {
     });
 
     it('should not create default user if it already exists', async (): Promise<void> => {
-      const user1 = await User.loginAsDefault();
-      const user2 = await User.loginAsDefault();
+      const userFirstAdd = await User.loginAsDefault();
+      const userSecondAdd = await User.loginAsDefault();
 
-      assert.strictEqual(user1.id, user2.id);
-      assert.strictEqual(user2.first_name, "Default");
-      assert.strictEqual(user2.last_name, "User");
-      assert.strictEqual(user2.email, "default@example.com");2
+      assert.strictEqual(userFirstAdd.id, userSecondAdd.id);
+      assert.strictEqual(userSecondAdd.first_name, "Default");
+      assert.strictEqual(userSecondAdd.last_name, "User");
+      assert.strictEqual(userSecondAdd.email, "default@example.com");2
     });
   });
 });

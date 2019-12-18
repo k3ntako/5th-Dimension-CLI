@@ -42,15 +42,15 @@ describe('RemoveBook action', (): void => {
 
     it('should console log titles of deleted books', async (): Promise<void> => {
       // add books
-      const bookAdded1 = await ReadingList.addBook(bornACrimeInfo, defaultUser);
-      const bookAdded2 = await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
+      const bornACrimeBook = await ReadingList.addBook(bornACrimeInfo, defaultUser);
+      const makeWayForDucklingsBook = await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
 
       // fake user input
       const promptBooksToRemove = sinon.fake.resolves({ bookIndices: [0, 1] });
       sinon.replace(actions.RemoveBook.prototype, 'promptBooksToRemove', promptBooksToRemove);
 
       // remove book
-      await actions.RemoveBook.start([bookAdded1, bookAdded2], defaultUser);
+      await actions.RemoveBook.start([bornACrimeBook, makeWayForDucklingsBook], defaultUser);
 
       // get arguments logged
       const args = fdCLI.fakes.consoleLogFake.args;
@@ -59,21 +59,21 @@ describe('RemoveBook action', (): void => {
       const secondToLastArg = args[args.length - 2][0];
       const lastArg = args[args.length - 1][0];
       assert.strictEqual(secondToLastArg, chalk.bold("Books removed:"))
-      assert.include(lastArg, chalk.redBright(bookAdded1.title))
-      assert.include(lastArg, chalk.redBright(bookAdded2.title))
+      assert.include(lastArg, chalk.redBright(bornACrimeBook.title))
+      assert.include(lastArg, chalk.redBright(makeWayForDucklingsBook.title))
     });
 
     it('should inform user that no books were removed if no books were removed', async (): Promise<void> => {
       // add books
-      const bookAdded1 = await ReadingList.addBook(bornACrimeInfo, defaultUser);
-      const bookAdded2 = await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
+      const bornACrimeBook = await ReadingList.addBook(bornACrimeInfo, defaultUser);
+      const makeWayForDucklingsBook = await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
 
       // fake user input
       const promptBooksToRemove = sinon.fake.resolves({ bookIndices: [] });
       sinon.replace(actions.RemoveBook.prototype, 'promptBooksToRemove', promptBooksToRemove);
 
       // remove book
-      await actions.RemoveBook.start([bookAdded1, bookAdded2], defaultUser);
+      await actions.RemoveBook.start([bornACrimeBook, makeWayForDucklingsBook], defaultUser);
 
       // get last argument logged
       const arg = fdCLI.fakes.consoleLogFake.lastCall.lastArg;
