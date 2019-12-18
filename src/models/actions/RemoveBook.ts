@@ -1,34 +1,23 @@
 // Third-party dependencies
-import clear from 'clear';
-import chalk from 'chalk';
 import inquirer, { prompt } from 'inquirer';
 
 // Local dependencies
-import Action from './Action';
 import Book from '../Book';
 import { User as IUser } from '../../sequelize/models/user';
 import { NUMBERS } from '../../utilities/emoji';
 import ReadingList from '../ReadingList';
-import logging from '../../utilities/logging';
 
 
-export default class RemoveBookAction extends Action {
-  constructor(){
-    super();
-  }
+export default class RemoveBookAction {
+  constructor(){}
 
-  static async start(books: Book[], user: IUser): Promise<{removeBookAction: RemoveBookAction}>{
+  static async start(books: Book[], user: IUser): Promise<Book[]>{
     const removeBookAction: RemoveBookAction = new RemoveBookAction();
 
     const promptChoices =  removeBookAction.preparePromptChoices(books);
     const { bookIndices } = await removeBookAction.promptBooksToRemove(promptChoices);
 
-    clear();
-
-    const booksRemoved = await removeBookAction.removeBooks(books, bookIndices, user);
-    await removeBookAction.logBooks(booksRemoved);
-
-    return { removeBookAction };
+    return await removeBookAction.removeBooks(books, bookIndices, user);
   }
 
   private preparePromptChoices(books): inquirer.ChoiceCollection {
@@ -53,15 +42,5 @@ export default class RemoveBookAction extends Action {
     await Promise.all(promises);
 
     return booksToRemove;
-  }
-
-  private logBooks(booksToRemove: Book[]): void{
-    const titles: string = booksToRemove.map(book => chalk.redBright(book.title)).join('\n');
-
-    if (!booksToRemove.length) {
-      return logging.noBookRemoved();
-    }
-
-    logging.booksRemoved(titles);
   }
 }

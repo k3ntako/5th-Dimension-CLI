@@ -12,13 +12,32 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const clear_1 = __importDefault(require("clear"));
+// Local dependencies
+const Action_1 = __importDefault(require("../actions/Action"));
 const ReadingList_1 = __importDefault(require("../ReadingList"));
-class ViewListAction {
-    constructor() { }
+const logging_1 = __importDefault(require("../../utilities/logging"));
+class ViewListAction extends Action_1.default {
+    constructor() {
+        super();
+    }
     static start(user, readingListPage) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield ReadingList_1.default.getList(user, readingListPage);
+            const viewListAction = new ViewListAction();
+            const tenBooksInList = yield ReadingList_1.default.getList(user, readingListPage);
+            viewListAction.logBooks(tenBooksInList);
+            return { viewListAction };
         });
+    }
+    logBooks(tenBooksInList) {
+        if (tenBooksInList.length) {
+            clear_1.default();
+            logging_1.default.readingListMessage();
+            tenBooksInList.forEach(this.logOneBook);
+        }
+        else {
+            logging_1.default.noReadingListBooks();
+        }
     }
 }
 exports.default = ViewListAction;

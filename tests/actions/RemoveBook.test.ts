@@ -9,6 +9,7 @@ import {
   bornACrimeInfo,
   makeWayForDucklingsInfo,
 } from '../_testHelpers/BookInstances';
+import ReadingListManager from '../../src/models/ReadingListManager';
 
 
 let defaultUser;
@@ -41,16 +42,26 @@ describe('RemoveBook action', (): void => {
   });
 
     it('should console log titles of deleted books', async (): Promise<void> => {
+      const readingListManager = new ReadingListManager(defaultUser);
+
       // add books
       const bornACrimeBook = await ReadingList.addBook(bornACrimeInfo, defaultUser);
       const makeWayForDucklingsBook = await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
+
+      // replace readingListManager.prompt
+      const fakePrompt = sinon.fake.resolves({ action: "removeBook" });
+      sinon.replace(readingListManager, 'prompt', fakePrompt);
+
+      // replace setTimeout so it doesn't as another question
+      const fakeSetTimeout = sinon.fake();
+      sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
       // fake user input
       const promptBooksToRemove = sinon.fake.resolves({ bookIndices: [0, 1] });
       sinon.replace(actions.RemoveBook.prototype, 'promptBooksToRemove', promptBooksToRemove);
 
-      // remove book
-      await actions.RemoveBook.start([bornACrimeBook, makeWayForDucklingsBook], defaultUser);
+      // remove books
+      await readingListManager.question();
 
       // get arguments logged
       const args = fdCLI.fakes.consoleLogFake.args;
@@ -64,16 +75,26 @@ describe('RemoveBook action', (): void => {
     });
 
     it('should inform user that no books were removed if no books were removed', async (): Promise<void> => {
+      const readingListManager = new ReadingListManager(defaultUser);
+
       // add books
-      const bornACrimeBook = await ReadingList.addBook(bornACrimeInfo, defaultUser);
-      const makeWayForDucklingsBook = await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
+      await ReadingList.addBook(bornACrimeInfo, defaultUser);
+      await ReadingList.addBook(makeWayForDucklingsInfo, defaultUser);
+
+      // replace readingListManager.prompt
+      const fakePrompt = sinon.fake.resolves({ action: "removeBook" });
+      sinon.replace(readingListManager, 'prompt', fakePrompt);
+
+      // replace setTimeout so it doesn't as another question
+      const fakeSetTimeout = sinon.fake();
+      sinon.replace(global, 'setTimeout', fakeSetTimeout);
 
       // fake user input
       const promptBooksToRemove = sinon.fake.resolves({ bookIndices: [] });
       sinon.replace(actions.RemoveBook.prototype, 'promptBooksToRemove', promptBooksToRemove);
 
-      // remove book
-      await actions.RemoveBook.start([bornACrimeBook, makeWayForDucklingsBook], defaultUser);
+      // remove books
+      await readingListManager.question();
 
       // get last argument logged
       const arg = fdCLI.fakes.consoleLogFake.lastCall.lastArg;

@@ -9,6 +9,8 @@ import {
   makeWayForDucklingsInfo,
   whereTheCrawdadsSingInfo
 } from '../_testHelpers/BookInstances';
+import ReadingListManager from '../../src/models/ReadingListManager';
+import inquirer from 'inquirer';
 
 const googleResults = [
   bornACrimeInfo,
@@ -87,10 +89,22 @@ describe('AddBook action', (): void => {
   });
 
   it('should console log titles of added books', async (): Promise<void> => {
+    const readingListManager = new ReadingListManager(defaultUser);
+    readingListManager.googleResults = googleResults;
+
+    // replace readingListManager.prompt
+    const fakePrompt = sinon.fake.resolves({ action: "addBook" });
+    sinon.replace(readingListManager, 'prompt', fakePrompt);
+
+    // replace setTimeout so it doesn't as another question
+    const fakeSetTimeout = sinon.fake();
+    sinon.replace(global, 'setTimeout', fakeSetTimeout);
+
+    // fakes user response for adding books
     const promptBooksToAdd = sinon.fake.resolves({ bookIndices: [0, 2] });
     sinon.replace(actions.AddBook.prototype, 'promptBooksToAdd', promptBooksToAdd);
 
-    await actions.AddBook.start(googleResults, defaultUser);
+    await readingListManager.question();
 
     const args = fdCLI.fakes.consoleLogFake.args;
 
@@ -102,13 +116,24 @@ describe('AddBook action', (): void => {
   });
 
   it('should inform user that no books were added if no books were added', async (): Promise<void> => {
+    const readingListManager = new ReadingListManager(defaultUser);
+    readingListManager.googleResults = googleResults;
+
+    // replace readingListManager.prompt
+    const fakePrompt = sinon.fake.resolves({ action: "addBook" });
+    sinon.replace(readingListManager, 'prompt', fakePrompt);
+
+    // replace setTimeout so it doesn't as another question
+    const fakeSetTimeout = sinon.fake();
+    sinon.replace(global, 'setTimeout', fakeSetTimeout);
+
+    // fakes user response for adding books
     const promptBooksToAdd = sinon.fake.resolves({ bookIndices: [] });
     sinon.replace(actions.AddBook.prototype, 'promptBooksToAdd', promptBooksToAdd);
 
-    await actions.AddBook.start(googleResults, defaultUser);
+    await readingListManager.question();
 
     const arg = fdCLI.fakes.consoleLogFake.lastCall.lastArg;
-    assert.strictEqual(fdCLI.fakes.consoleLogFake.callCount, 1);
     assert.strictEqual(arg, "No books added");
   });
 });

@@ -15,15 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Third-party dependencies
 const clear_1 = __importDefault(require("clear"));
 const inquirer_1 = require("inquirer");
-// Local dependencies
-const Action_1 = __importDefault(require("./Action"));
 const BookSearch_1 = __importDefault(require("../BookSearch"));
 const errorLogging_1 = require("../../utilities/errorLogging");
 const Loading_1 = __importDefault(require("../Loading"));
-const logging_1 = __importDefault(require("../../utilities/logging"));
-class SearchAction extends Action_1.default {
+class SearchAction {
     constructor() {
-        super();
         this.fetchBooks = (searchStr) => __awaiter(this, void 0, void 0, function* () {
             try {
                 this.loading.start();
@@ -43,8 +39,7 @@ class SearchAction extends Action_1.default {
             const searchAction = new SearchAction();
             const searchStr = yield searchAction.promptSearchStr();
             const googleResults = yield searchAction.fetchBooks(searchStr);
-            searchAction.logBooks(googleResults, searchStr);
-            return { searchAction, googleResults };
+            return { googleResults, searchStr };
         });
     }
     promptSearchStr() {
@@ -61,13 +56,6 @@ class SearchAction extends Action_1.default {
             }
             return searchStr;
         });
-    }
-    logBooks(googleResults, searchStr) {
-        if (!googleResults.length) {
-            return logging_1.default.noSearchResults(searchStr);
-        }
-        logging_1.default.searchResultsMessage(searchStr);
-        googleResults.forEach(this.logOneBook);
     }
 }
 exports.default = SearchAction;

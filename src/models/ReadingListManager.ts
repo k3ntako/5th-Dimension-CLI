@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import ReadingList from './ReadingList';
 import inquirer, {prompt} from 'inquirer';
 import clear from 'clear';
@@ -5,7 +6,8 @@ import Book from './Book';
 import { User as IUser } from '../sequelize/models/user';
 import promptChoices from '../utilities/promptChoices';
 import actions from './actions';
-import logging from '../utilities/logging';
+import loggers from './loggers';
+import messages from '../utilities/messages';
 import { warn } from '../utilities/errorLogging';
 
 
@@ -27,12 +29,12 @@ export default class ReadingListManager {
   }
 
   start(): void {
-    logging.startMessage();
+    messages.startMessage();
     this.question();
   }
 
   static exit(): void{
-    logging.exitMessage();
+    messages.exitMessage();
     process.exit();
   }
 
@@ -76,8 +78,12 @@ export default class ReadingListManager {
     return promptChoicesToDisplay;
   }
 
+  async prompt(promptOptions): Promise<inquirer.Answers>{
+    return await prompt(promptOptions)
+  }
+
   question = async (): Promise<void> => {
-    logging.emptyLine(); // for spacing
+    messages.emptyLine(); // for spacing
 
     const listCount = await ReadingList.getCount(this.user);
     const promptChoicesToDisplay = this.preparePromptChoices(listCount);
@@ -91,9 +97,8 @@ export default class ReadingListManager {
     };
 
     // prompt
-    const { action } = await prompt(promptOptions);
+    const { action } = await this.prompt(promptOptions);
     await this.performAction(action);
-
 
     setTimeout(this.question, 300); // Delay before prompting them again
   }
@@ -103,34 +108,42 @@ export default class ReadingListManager {
       clear();
     }
 
+    let tenBooksInList: Book[];
+    if (["viewList", "removeBook", "next", "previous"].includes(action)){
+      tenBooksInList = await actions.ViewList.start(this.user, this.readingListPage);
+    }
+
     // calls appropriate action based on input
     switch (action) {
       case "search":
-        const { googleResults } = await actions.Search.start();
+        const { googleResults, searchStr } = await actions.Search.start();
         this.googleResults = googleResults;
+        loggers.search(googleResults, searchStr);
         break;
 
       case "viewList":
-        await actions.ViewList.start(this.user, this.readingListPage);
+
+        loggers.viewList(tenBooksInList);
         break;
 
       case "addBook":
-        await actions.AddBook.start(this.googleResults, this.user);
+        const booksAdded = await actions.AddBook.start(this.googleResults, this.user);
+        loggers.addBook(booksAdded);
         break;
 
       case "removeBook":
-        const tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
-        await actions.RemoveBook.start(tenBooksInList, this.user);
+        const removedBooks = await actions.RemoveBook.start(tenBooksInList, this.user);
+        loggers.removeBook(removedBooks);
         break;
 
       case "next":
         this.readingListPage++;
-        await actions.ViewList.start(this.user, this.readingListPage);
+        await loggers.viewList(tenBooksInList);
         break;
 
       case "previous":
         this.readingListPage--;
-        await actions.ViewList.start(this.user, this.readingListPage);
+        await loggers.viewList(tenBooksInList);
         break;
 
       case "exit":

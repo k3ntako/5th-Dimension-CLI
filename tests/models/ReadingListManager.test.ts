@@ -8,12 +8,12 @@ import emoji from 'node-emoji';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import actions from '../../src/models/actions'
-import Action from '../../src/models/actions/Action'
 import {
   bornACrimeInfo,
   makeWayForDucklingsInfo,
   whereTheCrawdadsSingInfo
 } from '../_testHelpers/BookInstances';
+import messages from '../../src/utilities/messages';
 
 const googleResults = [
   bornACrimeInfo,
@@ -140,22 +140,11 @@ describe('ReadingListManager', (): void => {
 
       assert.strictEqual(fakeSearchStart.callCount, 1);
     });
-
-    it('should call actions.ViewList.start() if user selects viewList', async (): Promise<void> => {
-      const fakeViewListStart: sinon.SinonSpy<any> = sinon.fake();
-      sinon.replace(actions.ViewList, 'start', fakeViewListStart);
-
-      const readingListManager: ReadingListManager = new ReadingListManager(defaultUser);
-      readingListManager.performAction('viewList');
-
-      assert.strictEqual(fakeViewListStart.callCount, 1);
-    });
   });
 
-  describe('.logBook', (): void => {
+  describe('messages', (): void => {
     it('should console log information about the book', async (): Promise<void> => {
-      const action = new Action();
-      action.logOneBook({
+      messages.logOneBook({
         title: bornACrimeInfo.title,
         authors: bornACrimeInfo.authors,
         publisher: null,
@@ -172,8 +161,7 @@ describe('ReadingListManager', (): void => {
     });
 
     it('should console log the title with emoji if provided a number', async (): Promise<void> => {
-      const action = new Action();
-      action.logOneBook({
+      messages.logOneBook({
         title: bornACrimeInfo.title,
         authors: bornACrimeInfo.authors,
         publisher: null,

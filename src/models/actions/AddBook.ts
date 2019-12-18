@@ -1,31 +1,24 @@
 // Third-party dependencies
-import chalk from 'chalk';
-import clear from 'clear';
 import inquirer, { prompt } from 'inquirer';
 
 // Local dependencies
-import Action from './Action';
 import Book from '../Book';
 import ReadingList from '../ReadingList';
 import { NUMBERS } from '../../utilities/emoji';
-import logging from '../../utilities/logging';
 
 
-export default class AddBookAction extends Action {
-  constructor(){
-    super();
-  }
+export default class AddBookAction {
+  constructor(){}
 
-  static async start(googleResults: Book[], user): Promise<{ addBookAction: AddBookAction}> {
+  static async start(googleResults: Book[], user): Promise<Book[]> {
     const addBookAction: AddBookAction = new AddBookAction();
 
     const promptChoices = addBookAction.preparePromptChoices(googleResults);
     const { bookIndices } = await addBookAction.promptBooksToAdd(promptChoices);
 
     const booksAdded: Book[] = await addBookAction.addBooksToDB(googleResults, bookIndices, user);
-    addBookAction.logBooks(booksAdded);
 
-    return { addBookAction };
+    return booksAdded;
   }
 
   private preparePromptChoices(googleResults): inquirer.ChoiceCollection {
@@ -51,16 +44,5 @@ export default class AddBookAction extends Action {
     await Promise.all(promises);
 
     return booksToAdd;
-  }
-
-  private logBooks(bookAdded: Book[]): void{
-    clear();
-
-    if (!bookAdded.length) {
-      return logging.noBooksAdded();
-    }
-
-    const titles = bookAdded.map(book => chalk.greenBright(book.title)).join('\n');
-    logging.booksAdded(titles)
   }
 }

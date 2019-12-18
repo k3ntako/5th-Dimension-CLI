@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import clear from 'clear';
 import { warn } from './errorLogging';
+import { NUMBERS } from './emoji';
 
 const APP_NAME = chalk.cyanBright.bold("5th Dimension CLI");
 
@@ -20,10 +21,13 @@ export default {
   },
 
   // Log one book
-  logOneBook: (emojiNum, title, authors, publisher): void => {
-    console.log(emojiNum + title);
+  logOneBook(book, idx?: number): void {
+    const emojiNum = Number.isInteger(idx) ? `${NUMBERS[idx + 1]}  ` : "";
+    const authors = book.authors && book.authors.join(", ");
+
+    console.log(emojiNum + chalk.bold(book.title));
     console.log("Author(s): " + (authors || "N/A"));
-    console.log("Publisher: " + (publisher || "N/A") + "\n");
+    console.log("Publisher: " + (book.publisher || "N/A") + "\n");
   },
 
   // Adding books

@@ -13,26 +13,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // Third-party dependencies
-const chalk_1 = __importDefault(require("chalk"));
-const clear_1 = __importDefault(require("clear"));
 const inquirer_1 = require("inquirer");
-// Local dependencies
-const Action_1 = __importDefault(require("./Action"));
 const ReadingList_1 = __importDefault(require("../ReadingList"));
 const emoji_1 = require("../../utilities/emoji");
-const logging_1 = __importDefault(require("../../utilities/logging"));
-class AddBookAction extends Action_1.default {
-    constructor() {
-        super();
-    }
+class AddBookAction {
+    constructor() { }
     static start(googleResults, user) {
         return __awaiter(this, void 0, void 0, function* () {
             const addBookAction = new AddBookAction();
             const promptChoices = addBookAction.preparePromptChoices(googleResults);
             const { bookIndices } = yield addBookAction.promptBooksToAdd(promptChoices);
             const booksAdded = yield addBookAction.addBooksToDB(googleResults, bookIndices, user);
-            addBookAction.logBooks(booksAdded);
-            return { addBookAction };
+            return booksAdded;
         });
     }
     preparePromptChoices(googleResults) {
@@ -58,14 +50,6 @@ class AddBookAction extends Action_1.default {
             yield Promise.all(promises);
             return booksToAdd;
         });
-    }
-    logBooks(bookAdded) {
-        clear_1.default();
-        if (!bookAdded.length) {
-            return logging_1.default.noBooksAdded();
-        }
-        const titles = bookAdded.map(book => chalk_1.default.greenBright(book.title)).join('\n');
-        logging_1.default.booksAdded(titles);
     }
 }
 exports.default = AddBookAction;

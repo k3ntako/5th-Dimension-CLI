@@ -3,31 +3,25 @@ import clear from 'clear';
 import { prompt } from 'inquirer';
 
 // Local dependencies
-import Action from './Action';
 import Book from '../Book';
 import BookSearch from '../BookSearch';
 import { error, warn } from '../../utilities/errorLogging';
 import Loading from '../Loading';
-import logging from '../../utilities/logging';
 
 
-export default class SearchAction extends Action {
+export default class SearchAction {
   loading: Loading;
   constructor(){
-    super();
-
     this.loading = new Loading();
   }
 
-  static async start(): Promise<{searchAction: SearchAction; googleResults: Book[]}>{
+  static async start(): Promise<{ googleResults: Book[]; searchStr: string}>{
     const searchAction: SearchAction = new SearchAction();
 
     const searchStr: string = await searchAction.promptSearchStr();
     const googleResults: Book[] = await searchAction.fetchBooks(searchStr);
 
-    searchAction.logBooks(googleResults, searchStr);
-
-    return { searchAction, googleResults };
+    return {googleResults, searchStr};
   }
 
   private async promptSearchStr(): Promise<string> {
@@ -56,14 +50,5 @@ export default class SearchAction extends Action {
       this.loading.stop();
       error(err);
     }
-  }
-
-  private logBooks(googleResults: Book[], searchStr: string): void{
-    if(!googleResults.length){
-      return logging.noSearchResults(searchStr);
-    }
-
-    logging.searchResultsMessage(searchStr);
-    googleResults.forEach(this.logOneBook);
   }
 }

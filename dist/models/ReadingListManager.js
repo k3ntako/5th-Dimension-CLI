@@ -19,12 +19,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable no-case-declarations */
 const ReadingList_1 = __importDefault(require("./ReadingList"));
 const inquirer_1 = __importStar(require("inquirer"));
 const clear_1 = __importDefault(require("clear"));
 const promptChoices_1 = __importDefault(require("../utilities/promptChoices"));
 const actions_1 = __importDefault(require("./actions"));
-const logging_1 = __importDefault(require("../utilities/logging"));
+const loggers_1 = __importDefault(require("./loggers"));
+const messages_1 = __importDefault(require("../utilities/messages"));
 const errorLogging_1 = require("../utilities/errorLogging");
 const defaultChoices = [promptChoices_1.default.search()];
 class ReadingListManager {
@@ -59,7 +61,7 @@ class ReadingListManager {
             return promptChoicesToDisplay;
         };
         this.question = () => __awaiter(this, void 0, void 0, function* () {
-            logging_1.default.emptyLine(); // for spacing
+            messages_1.default.emptyLine(); // for spacing
             const listCount = yield ReadingList_1.default.getCount(this.user);
             const promptChoicesToDisplay = this.preparePromptChoices(listCount);
             // Prompt options
@@ -70,7 +72,7 @@ class ReadingListManager {
                 type: "list",
             };
             // prompt
-            const { action } = yield inquirer_1.prompt(promptOptions);
+            const { action } = yield this.prompt(promptOptions);
             yield this.performAction(action);
             setTimeout(this.question, 300); // Delay before prompting them again
         });
@@ -82,41 +84,52 @@ class ReadingListManager {
         this.readingListPage = 0; // 0 means reading list not shown
     }
     start() {
-        logging_1.default.startMessage();
+        messages_1.default.startMessage();
         this.question();
     }
     static exit() {
-        logging_1.default.exitMessage();
+        messages_1.default.exitMessage();
         process.exit();
+    }
+    prompt(promptOptions) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield inquirer_1.prompt(promptOptions);
+        });
     }
     performAction(action) {
         return __awaiter(this, void 0, void 0, function* () {
             if (action !== "addBook") {
                 clear_1.default();
             }
+            let tenBooksInList;
+            if (["viewList", "removeBook", "next", "previous"].includes(action)) {
+                tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
+            }
             // calls appropriate action based on input
             switch (action) {
                 case "search":
-                    const { googleResults } = yield actions_1.default.Search.start();
+                    const { googleResults, searchStr } = yield actions_1.default.Search.start();
                     this.googleResults = googleResults;
+                    loggers_1.default.search(googleResults, searchStr);
                     break;
                 case "viewList":
-                    yield actions_1.default.ViewList.start(this.user, this.readingListPage);
+                    loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "addBook":
-                    yield actions_1.default.AddBook.start(this.googleResults, this.user);
+                    const booksAdded = yield actions_1.default.AddBook.start(this.googleResults, this.user);
+                    loggers_1.default.addBook(booksAdded);
                     break;
                 case "removeBook":
-                    const tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
-                    yield actions_1.default.RemoveBook.start(tenBooksInList, this.user);
+                    const removedBooks = yield actions_1.default.RemoveBook.start(tenBooksInList, this.user);
+                    loggers_1.default.removeBook(removedBooks);
                     break;
                 case "next":
                     this.readingListPage++;
-                    yield actions_1.default.ViewList.start(this.user, this.readingListPage);
+                    yield loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "previous":
                     this.readingListPage--;
-                    yield actions_1.default.ViewList.start(this.user, this.readingListPage);
+                    yield loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "exit":
                     ReadingListManager.exit();
