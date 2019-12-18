@@ -12,8 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// Third-party dependencies
-const clear_1 = __importDefault(require("clear"));
 const inquirer_1 = require("inquirer");
 const BookSearch_1 = __importDefault(require("../BookSearch"));
 const errorLogging_1 = require("../../utilities/errorLogging");
@@ -50,9 +48,7 @@ class SearchAction {
                 type: "input",
             });
             if (!searchStr || !searchStr.trim()) {
-                clear_1.default();
-                errorLogging_1.warn("No search term entered");
-                return yield this.promptSearchStr();
+                throw new Error("No search term entered");
             }
             return searchStr;
         });

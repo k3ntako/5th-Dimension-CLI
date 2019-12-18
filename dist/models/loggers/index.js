@@ -25,6 +25,7 @@ exports.default = {
         messages_1.default.booksRemoved(titles);
     },
     search(googleResults, searchStr) {
+        clear_1.default();
         if (!googleResults.length) {
             return messages_1.default.noSearchResults(searchStr);
         }

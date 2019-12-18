@@ -22,7 +22,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable no-case-declarations */
 const ReadingList_1 = __importDefault(require("./ReadingList"));
 const inquirer_1 = __importStar(require("inquirer"));
-const clear_1 = __importDefault(require("clear"));
 const promptChoices_1 = __importDefault(require("../utilities/promptChoices"));
 const actions_1 = __importDefault(require("./actions"));
 const loggers_1 = __importDefault(require("./loggers"));
@@ -98,19 +97,21 @@ class ReadingListManager {
     }
     performAction(action) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (action !== "addBook") {
-                clear_1.default();
-            }
             let tenBooksInList;
             // calls appropriate action based on input
             switch (action) {
                 case "search":
-                    const { googleResults, searchStr } = yield actions_1.default.Search.start();
-                    this.googleResults = googleResults;
-                    loggers_1.default.search(googleResults, searchStr);
+                    try {
+                        const { googleResults, searchStr } = yield actions_1.default.Search.start();
+                        this.googleResults = googleResults;
+                        loggers_1.default.search(googleResults, searchStr);
+                    }
+                    catch (error) {
+                        errorLogging_1.warn(error.message);
+                    }
                     break;
                 case "viewList":
-                    tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
+                    tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
                     loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "addBook":
@@ -118,18 +119,18 @@ class ReadingListManager {
                     loggers_1.default.addBook(booksAdded);
                     break;
                 case "removeBook":
-                    tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
+                    tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
                     const removedBooks = yield actions_1.default.RemoveBook.start(tenBooksInList, this.user);
                     loggers_1.default.removeBook(removedBooks);
                     break;
                 case "next":
                     this.readingListPage++;
-                    tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
+                    tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
                     yield loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "previous":
                     this.readingListPage--;
-                    tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
+                    tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
                     yield loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "exit":

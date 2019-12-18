@@ -32,9 +32,7 @@ export default class SearchAction {
     });
 
     if(!searchStr || !searchStr.trim()){
-      clear();
-      warn("No search term entered");
-      return await this.promptSearchStr();
+      throw new Error("No search term entered")
     }
 
     return searchStr;

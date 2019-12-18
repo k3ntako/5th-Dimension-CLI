@@ -1,7 +1,6 @@
 /* eslint-disable no-case-declarations */
 import ReadingList from './ReadingList';
 import inquirer, {prompt} from 'inquirer';
-import clear from 'clear';
 import Book from './Book';
 import { User as IUser } from '../sequelize/models/user';
 import promptChoices from '../utilities/promptChoices';
@@ -104,18 +103,18 @@ export default class ReadingListManager {
   }
 
   async performAction(action): Promise<void>{
-    if (action !== "addBook") {
-      clear();
-    }
-
     let tenBooksInList: Book[];
 
     // calls appropriate action based on input
     switch (action) {
       case "search":
-        const { googleResults, searchStr } = await actions.Search.start();
-        this.googleResults = googleResults;
-        loggers.search(googleResults, searchStr);
+        try {
+          const { googleResults, searchStr } = await actions.Search.start();
+          this.googleResults = googleResults;
+          loggers.search(googleResults, searchStr);
+        } catch (error) {
+          warn(error.message);
+        }
         break;
 
       case "viewList":

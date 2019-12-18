@@ -32,6 +32,8 @@ export default {
   },
 
   search(googleResults: Book[], searchStr: string): void {
+    clear();
+
     if (!googleResults.length) {
       return messages.noSearchResults(searchStr);
     }
