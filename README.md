@@ -47,7 +47,13 @@ All interactions will involve your keyboard. Often, your will be asked to choose
 If you want to change the font size, please look at the settings in your Terminal application.
 
 ### Adding features
-Because the source code is written in Typescript, you need to compile the files to vanilla Javascript. Run `npm tsc` and it will compile your Typescript in the background. Open a new Terminal window to run tests and run the program. Edit the Typescript files in `/src` or `/tests`. Do not touch `/dist` as they are the compiled version (plain Javascript) of `/src`.
+Because the source code is written in Typescript, you need to compile the files to vanilla Javascript. Run `npm run tsc` and it will compile your Typescript in the background. Open a new Terminal window to run tests and run the program. Edit the Typescript files in `/src` or `/tests`. Do not touch `/dist` as they are the compiled version (plain Javascript) of `/src`.
+
+An issue with `npm run tsc` is that it does not delete `dist` files that were deleted in `src`. Before pushing to remote (e.g., Github), it would be a good idea to stop `npm run tsc` and then run the following in Terminal from the root directory of this project. This will first delete the `dist` folder and then recreate it based on the `src` folder, which will no longer have the deleted files.
+```
+  $ rm -rf dist
+  $ npm run tsc
+```
 
 ### PR with JSON instead of Postgres
 As I example below, I have come to realize that Postgres was not necessary for this project. I have created a new branch (`json`) and opened a [PR](https://github.com/k3ntako/5th-Dimension-CLI/pull/1). This new branch utilizes a JSON file instead of Postgres, and it offers an `npm` command that will create a JSON file with the books in the Postgres database. For instructions on migrating, please read the *Migrating from Postgres* section in the ReadMe on the `json` branch. This was completed after the deadline, and thus it was not merged.
