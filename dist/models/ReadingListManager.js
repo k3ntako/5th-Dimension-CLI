@@ -102,9 +102,6 @@ class ReadingListManager {
                 clear_1.default();
             }
             let tenBooksInList;
-            if (["viewList", "removeBook", "next", "previous"].includes(action)) {
-                tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
-            }
             // calls appropriate action based on input
             switch (action) {
                 case "search":
@@ -113,6 +110,7 @@ class ReadingListManager {
                     loggers_1.default.search(googleResults, searchStr);
                     break;
                 case "viewList":
+                    tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
                     loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "addBook":
@@ -120,15 +118,18 @@ class ReadingListManager {
                     loggers_1.default.addBook(booksAdded);
                     break;
                 case "removeBook":
+                    tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
                     const removedBooks = yield actions_1.default.RemoveBook.start(tenBooksInList, this.user);
                     loggers_1.default.removeBook(removedBooks);
                     break;
                 case "next":
                     this.readingListPage++;
+                    tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
                     yield loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "previous":
                     this.readingListPage--;
+                    tenBooksInList = yield actions_1.default.ViewList.start(this.user, this.readingListPage);
                     yield loggers_1.default.viewList(tenBooksInList);
                     break;
                 case "exit":

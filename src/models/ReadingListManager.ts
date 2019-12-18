@@ -109,9 +109,6 @@ export default class ReadingListManager {
     }
 
     let tenBooksInList: Book[];
-    if (["viewList", "removeBook", "next", "previous"].includes(action)){
-      tenBooksInList = await actions.ViewList.start(this.user, this.readingListPage);
-    }
 
     // calls appropriate action based on input
     switch (action) {
@@ -122,7 +119,7 @@ export default class ReadingListManager {
         break;
 
       case "viewList":
-
+        tenBooksInList = await actions.ViewList.start(this.user, this.readingListPage);
         loggers.viewList(tenBooksInList);
         break;
 
@@ -132,17 +129,20 @@ export default class ReadingListManager {
         break;
 
       case "removeBook":
+        tenBooksInList = await actions.ViewList.start(this.user, this.readingListPage);
         const removedBooks = await actions.RemoveBook.start(tenBooksInList, this.user);
         loggers.removeBook(removedBooks);
         break;
 
       case "next":
         this.readingListPage++;
+        tenBooksInList = await actions.ViewList.start(this.user, this.readingListPage);
         await loggers.viewList(tenBooksInList);
         break;
 
       case "previous":
         this.readingListPage--;
+        tenBooksInList = await actions.ViewList.start(this.user, this.readingListPage);
         await loggers.viewList(tenBooksInList);
         break;
 

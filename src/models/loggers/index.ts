@@ -31,7 +31,7 @@ export default {
     messages.booksRemoved(titles);
   },
 
-  search({googleResults, searchStr}): void {
+  search(googleResults: Book[], searchStr: string): void {
     if (!googleResults.length) {
       return messages.noSearchResults(searchStr);
     }
