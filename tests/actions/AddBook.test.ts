@@ -8,7 +8,7 @@ import {
   bornACrimeInfo,
   makeWayForDucklingsInfo,
   whereTheCrawdadsSingInfo
-} from '../_testHelpers/books';
+} from '../_testHelpers/BookInstances';
 
 const googleResults = [
   bornACrimeInfo,

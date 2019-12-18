@@ -5,9 +5,7 @@ import actions from '../../src/models/actions'
 
 import {
   bornACrimeInfo,
-  makeWayForDucklingsInfo,
-  whereTheCrawdadsSingInfo
-} from '../_testHelpers/books';
+} from '../_testHelpers/BookInstances';
 
 
 describe('Search action', (): void => {

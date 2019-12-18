@@ -6,9 +6,7 @@ import actions from '../../src/models/actions'
 import ReadingList from '../../src/models/ReadingList';
 import {
   bornACrimeInfo,
-  makeWayForDucklingsInfo,
-  whereTheCrawdadsSingInfo
-} from '../_testHelpers/books';
+} from '../_testHelpers/BookInstances';
 
 
 let defaultUser;
