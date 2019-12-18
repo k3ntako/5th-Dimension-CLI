@@ -1,7 +1,7 @@
 import ReadingListManager from './models/ReadingListManager';
 import User from './models/User';
 import {User as IUser} from './sequelize/models/user';
-import { error } from './utilities/logging';
+import { error } from './utilities/errorLogging';
 
 
 const start = async (): Promise<void> => {

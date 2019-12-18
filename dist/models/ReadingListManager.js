@@ -25,7 +25,7 @@ const clear_1 = __importDefault(require("clear"));
 const chalk_1 = __importDefault(require("chalk"));
 const promptChoices_1 = __importDefault(require("../utilities/promptChoices"));
 const actions_1 = __importDefault(require("./actions"));
-const logging_1 = require("../utilities/logging");
+const errorLogging_1 = require("../utilities/errorLogging");
 const APP_NAME = chalk_1.default.cyanBright.bold("5th Dimension CLI");
 const defaultChoices = [promptChoices_1.default.search()];
 class ReadingListManager {
@@ -126,7 +126,7 @@ class ReadingListManager {
                     ReadingListManager.exit();
                     break;
                 default:
-                    logging_1.warn('Command was not found: ' + action);
+                    errorLogging_1.warn('Command was not found: ' + action);
                     break;
             }
         });

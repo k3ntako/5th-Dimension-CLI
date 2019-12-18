@@ -19,7 +19,7 @@ const inquirer_1 = require("inquirer");
 // Local dependencies
 const Action_1 = __importDefault(require("./Action"));
 const BookSearch_1 = __importDefault(require("../BookSearch"));
-const logging_1 = require("../../utilities/logging");
+const errorLogging_1 = require("../../utilities/errorLogging");
 const Loading_1 = __importDefault(require("../Loading"));
 class SearchAction extends Action_1.default {
     constructor() {
@@ -33,7 +33,7 @@ class SearchAction extends Action_1.default {
             }
             catch (err) {
                 this.loading.stop();
-                logging_1.error(err);
+                errorLogging_1.error(err);
             }
         });
         this.loading = new Loading_1.default();
@@ -56,7 +56,7 @@ class SearchAction extends Action_1.default {
             });
             if (!searchStr || !searchStr.trim()) {
                 clear_1.default();
-                logging_1.warn("No search term entered");
+                errorLogging_1.warn("No search term entered");
                 return yield this.promptSearchStr();
             }
             return searchStr;
@@ -64,7 +64,7 @@ class SearchAction extends Action_1.default {
     }
     logBooks(googleResults, searchStr) {
         if (!googleResults.length) {
-            return logging_1.warn(`No books found for: "${searchStr}"`);
+            return errorLogging_1.warn(`No books found for: "${searchStr}"`);
         }
         console.log(`${chalk_1.default.bold("Search results for:")} "${searchStr}"\n`);
         googleResults.forEach(this.logOneBook);

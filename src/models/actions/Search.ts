@@ -7,7 +7,7 @@ import { prompt } from 'inquirer';
 import Action from './Action';
 import Book from '../Book';
 import BookSearch from '../BookSearch';
-import { error, warn } from '../../utilities/logging';
+import { error, warn } from '../../utilities/errorLogging';
 import Loading from '../Loading';
 
 

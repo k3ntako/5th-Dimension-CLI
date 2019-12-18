@@ -7,7 +7,7 @@ import { User as IUser } from '../sequelize/models/user';
 import promptChoices from '../utilities/promptChoices';
 import actions from './actions';
 
-import { warn } from '../utilities/logging';
+import { warn } from '../utilities/errorLogging';
 
 const APP_NAME = chalk.cyanBright.bold("5th Dimension CLI");
 
