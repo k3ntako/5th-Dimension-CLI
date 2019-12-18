@@ -4,7 +4,7 @@ import User from '../../src/models/User';
 import Book from '../../src/models/Book';
 import db from '../../src/sequelize/models';
 
-const params = {
+const tddParams = {
   title: "Test-driven Development",
   publisher: "Addison-Wesley Professional",
   authors: ["Kent Beck"],
@@ -14,7 +14,7 @@ const params = {
   other_identifier: null,
 }
 
-const params2 = {
+const eloquentJSParams = {
   title: "Eloquent JavaScript",
   publisher: "No Starch Press",
   authors: ["Marijn Haverbeke"],
@@ -33,12 +33,12 @@ describe('ReadingList', (): void => {
 
   describe('.addBook', (): void => {
     it('should add a book to the database', async (): Promise<void> => {
-      await ReadingList.addBook(params, defaultUser);
+      await ReadingList.addBook(tddParams, defaultUser);
 
       // Find the book above
       const books = await db.Book.findAll({
         where: {
-          isbn_13: params.isbn_13,
+          isbn_13: tddParams.isbn_13,
         },
       });
 
@@ -47,70 +47,70 @@ describe('ReadingList', (): void => {
       // The book should have all the fields provided.
       // Remove the "authors" field because it's a bit more complicated to test,
       // and the AuthorBook relationship is already tested elsewhere.
-      let paramsWithoutAuthors = Object.assign({}, params);
-      delete paramsWithoutAuthors.authors;
+      const tddParamsWithoutAuthors = Object.assign({}, tddParams);
+      delete tddParamsWithoutAuthors.authors;
 
       const book = await books[0].toJSON();
 
-      assert.include(book, paramsWithoutAuthors);
+      assert.include(book, tddParamsWithoutAuthors);
     });
 
 
     it('should not add a book twice (ISBN)', async (): Promise<void> => {
       // Add the same book twice
-      const book1 = await ReadingList.addBook(params, defaultUser);
-      const book2 = await ReadingList.addBook(params, defaultUser);
+      const tddFirstAdd = await ReadingList.addBook(tddParams, defaultUser);
+      const tddSecondAdd = await ReadingList.addBook(tddParams, defaultUser);
 
-      assert.strictEqual(book1.id, book2.id);
+      assert.strictEqual(tddFirstAdd.id, tddSecondAdd.id);
     });
 
     it('should not add a book twice (ISSN)', async (): Promise<void> => {
-      const paramsISSN = Object.assign({}, params, {
+      const tddParamsWithISSN = Object.assign({}, tddParams, {
         isbn_10: null,
         isbn_13: null,
         issn: "3129873221231",
       });
 
       // Add the same book twice
-      const book1 = await ReadingList.addBook(paramsISSN, defaultUser);
-      const book2 = await ReadingList.addBook(paramsISSN, defaultUser);
+      const tddFirstAdd = await ReadingList.addBook(tddParamsWithISSN, defaultUser);
+      const tddSecondAdd = await ReadingList.addBook(tddParamsWithISSN, defaultUser);
 
-      assert.strictEqual(book1.id, book2.id);
+      assert.strictEqual(tddFirstAdd.id, tddSecondAdd.id);
     });
 
     it('should not add a book twice (other identifiers)', async (): Promise<void> => {
-      const paramsOtherIdentifier = Object.assign({}, params, {
+      const tddParamsWithOtherIdentifier = Object.assign({}, tddParams, {
         isbn_10: null,
         isbn_13: null,
         other_identifier: "Harvard:3129873221231",
       });
 
       // Add the same book twice
-      const book1 = await ReadingList.addBook(paramsOtherIdentifier, defaultUser);
-      const book2 = await ReadingList.addBook(paramsOtherIdentifier, defaultUser);
+      const tddFirstAdd = await ReadingList.addBook(tddParamsWithOtherIdentifier, defaultUser);
+      const tddSecondAdd = await ReadingList.addBook(tddParamsWithOtherIdentifier, defaultUser);
 
-      assert.strictEqual(book1.id, book2.id);
+      assert.strictEqual(tddFirstAdd.id, tddSecondAdd.id);
     });
 
     it('should not add a book twice (no identifiers)', async (): Promise<void> => {
-      const paramsWithoutIdentifiers = Object.assign({}, params, {
+      const tddParamsWithoutIdentifiers = Object.assign({}, tddParams, {
         isbn_10: null,
         isbn_13: null,
       });
 
       // Add the same book twice
-      const book1 = await ReadingList.addBook(paramsWithoutIdentifiers, defaultUser);
-      const book2 = await ReadingList.addBook(paramsWithoutIdentifiers, defaultUser);
+      const tddFirstAdd = await ReadingList.addBook(tddParamsWithoutIdentifiers, defaultUser);
+      const tddSecondAdd = await ReadingList.addBook(tddParamsWithoutIdentifiers, defaultUser);
 
-      assert.strictEqual(book1.id, book2.id);
+      assert.strictEqual(tddFirstAdd.id, tddSecondAdd.id);
     });
 
     it('should add book to ReadingList', async (): Promise<void> => {
-      const createdBook = await ReadingList.addBook(params2, defaultUser);
+      const createdBook = await ReadingList.addBook(eloquentJSParams, defaultUser);
 
       // get books associated with defaultUser with the same ISBN
       const books = await defaultUser.getBooks({
-        where: { isbn_13: params2.isbn_13 },
+        where: { isbn_13: eloquentJSParams.isbn_13 },
       });
 
       const associatedBook = await books[0].toJSON();
@@ -132,17 +132,17 @@ describe('ReadingList', (): void => {
     });
 
     it('should remove book from database', async (): Promise<void> => {
-      const book = await ReadingList.addBook(params, defaultUser);
+      const tddBook = await ReadingList.addBook(tddParams, defaultUser);
 
       await ReadingList.removeBook(book.id, defaultUser.id);
-      const books = await db.UserBook.findAll({
+      const userBooks = await db.UserBook.findAll({
         where: {
-          book_id: book.id,
+          book_id: tddBook.id,
           user_id: defaultUser.id,
         },
       });
 
-      assert.lengthOf(books, 0);
+      assert.lengthOf(userBooks, 0);
     });
   });
 
@@ -150,36 +150,36 @@ describe('ReadingList', (): void => {
     beforeEach(async (): Promise<void> => {
       // Delete all the books added above
       await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(params, defaultUser);
+      await ReadingList.addBook(tddParams, defaultUser);
     });
 
     it('should return reading list (array of Book)', async (): Promise<void> => {
-      const books: Book[] = await ReadingList.getList(defaultUser, 1);
-      assert.lengthOf(books, 1);
+      const userBooks: Book[] = await ReadingList.getList(defaultUser, 1);
+      assert.lengthOf(userBooks, 1);
 
       // The book should have all the fields provided.
       // Remove the "authors" field because it's a bit more complicated to test,
       // and the AuthorBook relationship is already tested elsewhere.
-      let paramsWithoutAuthors = Object.assign({}, params);
-      delete paramsWithoutAuthors.authors;
+      const tddParamsWithoutAuthors = Object.assign({}, tddParams);
+      delete tddParamsWithoutAuthors.authors;
 
-      assert.include(books[0], paramsWithoutAuthors);
-      assert.instanceOf(books[0], Book);
+      assert.include(userBooks[0], tddParamsWithoutAuthors);
+      assert.instanceOf(userBooks[0], Book);
     });
 
     it('should return newest additions to the reading list first', async (): Promise<void> => {
-      await ReadingList.addBook(params2, defaultUser);
+      await ReadingList.addBook(eloquentJSParams, defaultUser);
 
-      const book1Results = await db.Book.findAll({where: {title: params.title}});
-      const book1 = await book1Results[0].toJSON();
+      const tddBooksInDB = await db.Book.findAll({where: {title: tddParams.title}});
+      const tddBook = await tddBooksInDB[0].toJSON();
 
-      await ReadingList.removeBook(book1.id, defaultUser.id);
-      await ReadingList.addBook(params, defaultUser);
+      await ReadingList.removeBook(tddBook.id, defaultUser.id);
+      await ReadingList.addBook(tddParams, defaultUser);
 
-      const books = await ReadingList.getList(defaultUser, 1);
+      const userBooks = await ReadingList.getList(defaultUser, 1);
 
-      assert.strictEqual(books[0].title, params.title);
-      assert.strictEqual(books[1].title, params2.title);
+      assert.strictEqual(userBooks[0].title, tddParams.title);
+      assert.strictEqual(userBooks[1].title, eloquentJSParams.title);
     });
   });
 
@@ -187,8 +187,8 @@ describe('ReadingList', (): void => {
     before(async (): Promise<void> => {
       // Delete all the books added above
       await db.UserBook.destroy({ where: {} });
-      await ReadingList.addBook(params, defaultUser);
-      await ReadingList.addBook(params2, defaultUser);
+      await ReadingList.addBook(tddParams, defaultUser);
+      await ReadingList.addBook(eloquentJSParams, defaultUser);
     });
 
     it('should return reading list length', async (): Promise<void> => {
