@@ -9,7 +9,7 @@ const params = {
   isbn_13: "9780393249866",
   issn: null,
   other_identifier: null,
-  random_param: "123",
+  randomParam: "123",
 }
 
 const paramsGoogleFormat = {
@@ -36,13 +36,13 @@ describe('Book', (): void => {
       assert.strictEqual(book.isbn_13, params.isbn_13);
       assert.strictEqual(book.issn, params.issn);
       assert.strictEqual(book.other_identifier, params.other_identifier);
-      assert.doesNotHaveAnyKeys(book, ['random_param']);
+      assert.doesNotHaveAnyKeys(book, ['randomParam']);
     });
   });
 
-  describe('Book.create()', (): void => {
+  describe('Book.createFromGoogle()', (): void => {
     it('should return a Book given params', (): void => {
-      const book = Book.create(params);
+      const book = Book.createFromGoogle(params);
       assert.instanceOf(book, Book);
     });
 
@@ -51,7 +51,7 @@ describe('Book', (): void => {
         title: null,
       });
 
-      const book = Book.create(paramsWithoutTitle);
+      const book = Book.createFromGoogle(paramsWithoutTitle);
       assert.notInstanceOf(book, Book);
       assert.deepEqual(book, null);
     });
@@ -62,13 +62,13 @@ describe('Book', (): void => {
         publisher: ` ${params.publisher}`,
       });
 
-      const book = Book.create(paramsWithExtraSpace);
+      const book = Book.createFromGoogle(paramsWithExtraSpace);
       assert.strictEqual(book.title, params.title);
       assert.strictEqual(book.publisher, params.publisher);
     });
 
     it('should parse industryIdentifiers object to match books table in database', (): void => {
-      const book = Book.create(paramsGoogleFormat);
+      const book = Book.createFromGoogle(paramsGoogleFormat);
 
       assert.strictEqual(book.isbn_10, paramsGoogleFormat.industryIdentifiers[0].identifier);
       assert.strictEqual(book.isbn_13, paramsGoogleFormat.industryIdentifiers[1].identifier);
@@ -85,7 +85,7 @@ describe('Book', (): void => {
           { type: "OTHER", identifier: "COLUMBIA:11291994," },
         ],
       });
-      const book = Book.create(paramsMissing);
+      const book = Book.createFromGoogle(paramsMissing);
 
       assert.strictEqual(book.isbn_10, null);
       assert.strictEqual(book.isbn_13, null);

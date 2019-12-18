@@ -57,7 +57,7 @@ BookSearch.parseGoogleResults = (googleResultsRaw) => {
     }
     const books = [];
     googleResultsRaw.items.forEach(bookInfo => {
-        const book = Book_1.default.create(bookInfo.volumeInfo);
+        const book = Book_1.default.createFromGoogle(bookInfo.volumeInfo);
         if (book)
             books.push(book);
     });

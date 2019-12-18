@@ -2,6 +2,7 @@ import db from '../sequelize/models';
 import Book from './Book';
 import { Book as IBook } from '../sequelize/models/book';
 import { User as IUser } from '../sequelize/models/user';
+import ReadingListManager from './ReadingListManager';
 
 interface TitleAndPublisher {
   title?: string;
@@ -16,71 +17,78 @@ export default class ReadingList {
     return await user.countBooks();
   }
 
-  static async addBook(book: Book, user: IUser): Promise<Book>{
-    try{
-      const { isbn_10, isbn_13, issn, other_identifier, title, publisher, authors } = book;
+  static async findExistingBook(book: Book): Promise<IBook> {
+    const { isbn_10, isbn_13, issn, other_identifier, title, publisher } = book;
 
-      // Check if this book already exists in database
-      // Prioritize ISBN, ISSN, Other Identifier, Title/Publisher/Author, in that order
-      let where: {};
-      if (isbn_10 || isbn_13) {
-        where = {
-          [db.Sequelize.Op.or]: {
-            isbn_10,
-            isbn_13,
-          }
-        };
-      } else if (issn) {
-        where = {
-          issn,
-        };
-      } else if (other_identifier) {
-        where = {
-          other_identifier,
-        };
-      } else {
-        const and: TitleAndPublisher = {
-          title
-        };
-        and.publisher = publisher || null;
-
-        where = {
-          [db.Sequelize.Op.and]: and,
-          // TODO: add author
-        };
-      }
-
-      const books = await db.Book.findAll({ where });
-      let newBook = books[0];
-
-      // If book does not exist in database, add it
-      if (!newBook) {
-        const authorsAttributes = authors.map(name => ({ name }));
-
-        newBook = await db.Book.create({
-          title,
-          publisher,
-          authors: authorsAttributes,
+    // Check if this book already exists in database
+    // Prioritize ISBN, ISSN, Other Identifier, Title/Publisher/Author, in that order
+    let where: {};
+    if (isbn_10 || isbn_13) { // use ISBN to find book
+      where = {
+        [db.Sequelize.Op.or]: {
           isbn_10,
           isbn_13,
-          issn,
-          other_identifier,
-        }, {
-          include: [{
-            model: db.Author,
-            through: db.AuthorBook,
-            as: 'authors',
-          }],
-        });
+        }
+      };
+    } else if (issn) { // use ISSN to find book
+      where = { issn };
+    } else if (other_identifier) { // use ISSN to find book
+      where = { other_identifier };
+    } else { // use title and/or publisher to find book
+      const and: TitleAndPublisher = {
+        title
+      };
+      and.publisher = publisher || null;
+
+      where = {
+        [db.Sequelize.Op.and]: and,
+      };
+    }
+
+    const books: IBook = await db.Book.findAll({ where });
+    return books[0];
+  }
+
+  static async addBook(book: Book, user: IUser): Promise<Book>{
+    try{
+      let newBookDB: IBook = await this.findExistingBook(book);
+
+      // If book does not exist in database, add it
+      if (!newBookDB) {
+        newBookDB = await ReadingList.addNewBook(book);
       }
 
-      // make association (aka add to reading list)
-      await user.addBook(newBook);
+      // make association (aka add to reading list in DB)
+      await user.addBook(newBookDB);
 
-      return newBook;
+      // turn newBookDB into Book instannce
+      const newBook = await ReadingList.createBooksFromDB([ newBookDB ]);
+
+      return newBook[0];
     } catch(err) {
       console.error(err);
     }
+  }
+
+  static async addNewBook(book: Book): Promise<IBook>{
+    const { isbn_10, isbn_13, issn, other_identifier, title, publisher, authors } = book;
+    const authorsAttributes = authors && authors.map(name => ({ name }));
+
+    return await db.Book.create({
+      title,
+      publisher,
+      authors: authorsAttributes,
+      isbn_10,
+      isbn_13,
+      issn,
+      other_identifier,
+    }, {
+      include: [{
+        model: db.Author,
+        through: db.AuthorBook,
+        as: 'authors',
+      }],
+    });
   }
 
   static async removeBook(id: string, userId: string): Promise<number>{
@@ -112,16 +120,13 @@ export default class ReadingList {
       limit: 10,
     });
 
+    return await ReadingList.createBooksFromDB(books);
+  }
+
+  static async createBooksFromDB(books: FD.DBBook[]): Promise<Book[]>{
     const bookPromises = books.map(book => book.toJSON());
-    const bookJSON = await Promise.all(bookPromises);
+    const bookJSONs: FD.DBBook[] = await Promise.all(bookPromises);
 
-    // Book#authors is an object because it is an association
-    // below turns authors, an array of objects, to an array of author names (string)
-    const parsedBookJSON = bookJSON.map(bookJSON => {
-      bookJSON.authors = bookJSON.authors.map(author => author.name);
-      return bookJSON;
-    });
-
-    return parsedBookJSON.map(book => new Book(book));
+    return bookJSONs.map(book => Book.createFromDB(book));
   }
 }

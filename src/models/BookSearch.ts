@@ -49,7 +49,7 @@ export default class BookSearch{
 
     const books = [];
     googleResultsRaw.items.forEach(bookInfo => {
-      const book: Book = Book.create(bookInfo.volumeInfo);
+      const book: Book = Book.createFromGoogle(bookInfo.volumeInfo);
 
       if (book) books.push(book);
     });

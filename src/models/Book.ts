@@ -14,7 +14,22 @@ export default class Book {
     });
   }
 
-  static create(params: FD.GoogleBook): Book{
+  static createFromDB(params: FD.DBBook): Book{
+    const { id, title, publisher, isbn_10, isbn_13, issn, other_identifier } = params;
+
+    // create params with empty "authors"
+    const parsedParams: FD.BookParams = {
+      id, title, publisher, isbn_10, isbn_13, issn, other_identifier,
+      authors: [],
+    }
+
+    // convert authors into an array of strings (their names)
+    parsedParams.authors = params.authors ? params.authors.map(author => author.name) : [];
+
+    return new Book(parsedParams);
+  }
+
+  static createFromGoogle(params: FD.GoogleBook): Book{
     const { title, publisher, authors, industryIdentifiers } = params;
     if(!title || !title.trim()) return null;
 

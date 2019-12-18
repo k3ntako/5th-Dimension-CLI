@@ -21,68 +21,77 @@ class ReadingList {
             return yield user.countBooks();
         });
     }
+    static findExistingBook(book) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { isbn_10, isbn_13, issn, other_identifier, title, publisher } = book;
+            // Check if this book already exists in database
+            // Prioritize ISBN, ISSN, Other Identifier, Title/Publisher/Author, in that order
+            let where;
+            if (isbn_10 || isbn_13) { // use ISBN to find book
+                where = {
+                    [models_1.default.Sequelize.Op.or]: {
+                        isbn_10,
+                        isbn_13,
+                    }
+                };
+            }
+            else if (issn) { // use ISSN to find book
+                where = { issn };
+            }
+            else if (other_identifier) { // use ISSN to find book
+                where = { other_identifier };
+            }
+            else { // use title and/or publisher to find book
+                const and = {
+                    title
+                };
+                and.publisher = publisher || null;
+                where = {
+                    [models_1.default.Sequelize.Op.and]: and,
+                };
+            }
+            const books = yield models_1.default.Book.findAll({ where });
+            return books[0];
+        });
+    }
     static addBook(book, user) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { isbn_10, isbn_13, issn, other_identifier, title, publisher, authors } = book;
-                // Check if this book already exists in database
-                // Prioritize ISBN, ISSN, Other Identifier, Title/Publisher/Author, in that order
-                let where;
-                if (isbn_10 || isbn_13) {
-                    where = {
-                        [models_1.default.Sequelize.Op.or]: {
-                            isbn_10,
-                            isbn_13,
-                        }
-                    };
-                }
-                else if (issn) {
-                    where = {
-                        issn,
-                    };
-                }
-                else if (other_identifier) {
-                    where = {
-                        other_identifier,
-                    };
-                }
-                else {
-                    const and = {
-                        title
-                    };
-                    and.publisher = publisher || null;
-                    where = {
-                        [models_1.default.Sequelize.Op.and]: and,
-                    };
-                }
-                const books = yield models_1.default.Book.findAll({ where });
-                let newBook = books[0];
+                let newBookDB = yield this.findExistingBook(book);
                 // If book does not exist in database, add it
-                if (!newBook) {
-                    const authorsAttributes = authors.map(name => ({ name }));
-                    newBook = yield models_1.default.Book.create({
-                        title,
-                        publisher,
-                        authors: authorsAttributes,
-                        isbn_10,
-                        isbn_13,
-                        issn,
-                        other_identifier,
-                    }, {
-                        include: [{
-                                model: models_1.default.Author,
-                                through: models_1.default.AuthorBook,
-                                as: 'authors',
-                            }],
-                    });
+                if (!newBookDB) {
+                    newBookDB = yield ReadingList.addNewBook(book);
                 }
-                // make association (aka add to reading list)
-                yield user.addBook(newBook);
-                return newBook;
+                // make association (aka add to reading list in DB)
+                yield user.addBook(newBookDB);
+                // turn newBookDB into Book instannce
+                const newBook = yield ReadingList.createBooksFromDB([newBookDB]);
+                return newBook[0];
             }
             catch (err) {
                 console.error(err);
             }
+        });
+    }
+    static addNewBook(book) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { isbn_10, isbn_13, issn, other_identifier, title, publisher, authors } = book;
+            const authorsAttributes = authors && authors.map(name => ({ name }));
+            return yield models_1.default.Book.create({
+                title,
+                publisher,
+                authors: authorsAttributes,
+                isbn_10,
+                isbn_13,
+                issn,
+                other_identifier,
+            }, {
+                include: [{
+                        model: models_1.default.Author,
+                        through: models_1.default.AuthorBook,
+                        as: 'authors',
+                    }],
+            });
         });
     }
     static removeBook(id, userId) {
@@ -114,15 +123,14 @@ class ReadingList {
                 offset,
                 limit: 10,
             });
+            return yield ReadingList.createBooksFromDB(books);
+        });
+    }
+    static createBooksFromDB(books) {
+        return __awaiter(this, void 0, void 0, function* () {
             const bookPromises = books.map(book => book.toJSON());
-            const bookJSON = yield Promise.all(bookPromises);
-            // Book#authors is an object because it is an association
-            // below turns authors, an array of objects, to an array of author names (string)
-            const parsedBookJSON = bookJSON.map(bookJSON => {
-                bookJSON.authors = bookJSON.authors.map(author => author.name);
-                return bookJSON;
-            });
-            return parsedBookJSON.map(book => new Book_1.default(book));
+            const bookJSONs = yield Promise.all(bookPromises);
+            return bookJSONs.map(book => Book_1.default.createFromDB(book));
         });
     }
 }

@@ -6,7 +6,18 @@ class Book {
             this[key] = params[key] || null;
         });
     }
-    static create(params) {
+    static createFromDB(params) {
+        const { id, title, publisher, isbn_10, isbn_13, issn, other_identifier } = params;
+        // create params with empty "authors"
+        const parsedParams = {
+            id, title, publisher, isbn_10, isbn_13, issn, other_identifier,
+            authors: [],
+        };
+        // convert authors into an array of strings (their names)
+        parsedParams.authors = params.authors ? params.authors.map(author => author.name) : [];
+        return new Book(parsedParams);
+    }
+    static createFromGoogle(params) {
         const { title, publisher, authors, industryIdentifiers } = params;
         if (!title || !title.trim())
             return null;
