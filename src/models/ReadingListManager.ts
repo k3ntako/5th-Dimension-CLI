@@ -17,9 +17,15 @@ export default class ReadingListManager {
   googleResults: Book[];
   user: IUser;
   readingListPage: number;
+  actions: {};
   constructor(user) {
     if(!user || !user.id){
       throw new Error("No user passed in");
+    }
+
+    this.actions = {};
+    for(const action in actions){
+      this.actions[action] = new actions[action]()
     }
 
     this.user = user;
@@ -102,56 +108,49 @@ export default class ReadingListManager {
     setTimeout(this.promptNextAction, 300); // Delay before prompting them again
   }
 
+  async search(): Promise<void>{
+    const { googleResults, searchStr } = await actions.Search.start();
+    this.googleResults = googleResults;
+    loggers.search(googleResults, searchStr);
+  }
+
+  async viewList(): Promise<void>{
+    const tenBooksInList: Book[] = await ReadingList.getList(this.user, this.readingListPage);
+    loggers.viewList(tenBooksInList);
+  }
+
+  async addBook(): Promise<void>{
+    const booksAdded = await actions.AddBook.start(this.googleResults, this.user);
+    loggers.addBook(booksAdded);
+  }
+
+  async removeBook(): Promise<void>{
+    const tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
+    const removedBooks = await actions.RemoveBook.start(tenBooksInList, this.user);
+    loggers.removeBook(removedBooks);
+  }
+
+  async next(): Promise<void>{
+    this.readingListPage++;
+    const tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
+    await loggers.viewList(tenBooksInList);
+  }
+
+  async previous(): Promise<void>{
+    this.readingListPage--;
+    const tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
+    await loggers.viewList(tenBooksInList);
+  }
+
+  exit(): void{
+    ReadingListManager.exit();
+  }
+
   async performAction(action): Promise<void>{
-    let tenBooksInList: Book[];
-
-    // calls appropriate action based on input
-    switch (action) {
-      case "search":
-        try {
-          const { googleResults, searchStr } = await actions.Search.start();
-          this.googleResults = googleResults;
-          loggers.search(googleResults, searchStr);
-        } catch (error) {
-          warn(error.message);
-        }
-        break;
-
-      case "viewList":
-        tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
-        loggers.viewList(tenBooksInList);
-        break;
-
-      case "addBook":
-        const booksAdded = await actions.AddBook.start(this.googleResults, this.user);
-        loggers.addBook(booksAdded);
-        break;
-
-      case "removeBook":
-        tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
-        const removedBooks = await actions.RemoveBook.start(tenBooksInList, this.user);
-        loggers.removeBook(removedBooks);
-        break;
-
-      case "next":
-        this.readingListPage++;
-        tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
-        await loggers.viewList(tenBooksInList);
-        break;
-
-      case "previous":
-        this.readingListPage--;
-        tenBooksInList = await ReadingList.getList(this.user, this.readingListPage);
-        await loggers.viewList(tenBooksInList);
-        break;
-
-      case "exit":
-        ReadingListManager.exit();
-        break;
-
-      default:
-        warn('Command was not found: ' + action);
-        break;
+    try {
+      await this[action]();
+    } catch(error) {
+      warn(error.message);
     }
   }
 }

@@ -78,6 +78,10 @@ class ReadingListManager {
         if (!user || !user.id) {
             throw new Error("No user passed in");
         }
+        this.actions = {};
+        for (const action in actions_1.default) {
+            this.actions[action] = new actions_1.default[action]();
+        }
         this.user = user;
         this.googleResults = [];
         this.readingListPage = 0; // 0 means reading list not shown
@@ -95,50 +99,56 @@ class ReadingListManager {
             return yield inquirer_1.prompt(promptOptions);
         });
     }
+    search() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { googleResults, searchStr } = yield actions_1.default.Search.start();
+            this.googleResults = googleResults;
+            loggers_1.default.search(googleResults, searchStr);
+        });
+    }
+    viewList() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
+            loggers_1.default.viewList(tenBooksInList);
+        });
+    }
+    addBook() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const booksAdded = yield actions_1.default.AddBook.start(this.googleResults, this.user);
+            loggers_1.default.addBook(booksAdded);
+        });
+    }
+    removeBook() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
+            const removedBooks = yield actions_1.default.RemoveBook.start(tenBooksInList, this.user);
+            loggers_1.default.removeBook(removedBooks);
+        });
+    }
+    next() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.readingListPage++;
+            const tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
+            yield loggers_1.default.viewList(tenBooksInList);
+        });
+    }
+    previous() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.readingListPage--;
+            const tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
+            yield loggers_1.default.viewList(tenBooksInList);
+        });
+    }
+    exit() {
+        ReadingListManager.exit();
+    }
     performAction(action) {
         return __awaiter(this, void 0, void 0, function* () {
-            let tenBooksInList;
-            // calls appropriate action based on input
-            switch (action) {
-                case "search":
-                    try {
-                        const { googleResults, searchStr } = yield actions_1.default.Search.start();
-                        this.googleResults = googleResults;
-                        loggers_1.default.search(googleResults, searchStr);
-                    }
-                    catch (error) {
-                        errorLogging_1.warn(error.message);
-                    }
-                    break;
-                case "viewList":
-                    tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
-                    loggers_1.default.viewList(tenBooksInList);
-                    break;
-                case "addBook":
-                    const booksAdded = yield actions_1.default.AddBook.start(this.googleResults, this.user);
-                    loggers_1.default.addBook(booksAdded);
-                    break;
-                case "removeBook":
-                    tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
-                    const removedBooks = yield actions_1.default.RemoveBook.start(tenBooksInList, this.user);
-                    loggers_1.default.removeBook(removedBooks);
-                    break;
-                case "next":
-                    this.readingListPage++;
-                    tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
-                    yield loggers_1.default.viewList(tenBooksInList);
-                    break;
-                case "previous":
-                    this.readingListPage--;
-                    tenBooksInList = yield ReadingList_1.default.getList(this.user, this.readingListPage);
-                    yield loggers_1.default.viewList(tenBooksInList);
-                    break;
-                case "exit":
-                    ReadingListManager.exit();
-                    break;
-                default:
-                    errorLogging_1.warn('Command was not found: ' + action);
-                    break;
+            try {
+                yield this[action]();
+            }
+            catch (error) {
+                errorLogging_1.warn(error.message);
             }
         });
     }
